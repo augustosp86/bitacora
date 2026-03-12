@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bitacora — Tu viaje, organizado</title>
+<meta name="description" content="Planificá itinerarios día a día, controlá gastos y consultá el clima. Sin cuentas, sin servidores, sin drama.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,400;0,700;0,900;1,300;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#F5F3EE;--bg2:#EDE9E3;--ink:#1A1714;--ink2:#6B6460;--ink3:#9C9690;
+  --card:#FFFFFF;--border:#E5E0D8;
+  --blue:#2563EB;--blue-bg:#EFF4FF;--blue-bd:#BFCFFE;
+  --green:#059669;--green-bg:#ECFDF5;
+  --amber:#D97706;--red:#DC2626;--sky:#0EA5E9;
+}
+html{scroll-behavior:smooth}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);overflow-x:hidden}
+
+/* ── NAV ── */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:16px 32px;background:rgba(245,243,238,.9);backdrop-filter:blur(16px);border-bottom:1px solid transparent;transition:border-color .3s}
+nav.scrolled{border-bottom-color:var(--border)}
+.nav-logo{font-family:'Fraunces',serif;font-size:1.4rem;font-weight:700;letter-spacing:-.03em;color:var(--ink);text-decoration:none}
+.nav-logo span{color:var(--blue)}
+.nav-r{display:flex;align-items:center;gap:10px}
+.lang-tog{display:flex;background:rgba(0,0,0,.06);border-radius:8px;padding:3px;gap:2px}
+.lang-btn{padding:5px 11px;border-radius:6px;font-size:.74rem;font-weight:700;cursor:pointer;border:none;background:transparent;color:var(--ink2);transition:all .15s;font-family:'DM Sans',sans-serif}
+.lang-btn.on{background:#fff;color:var(--ink);box-shadow:0 1px 4px rgba(0,0,0,.12)}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:10px 20px;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.88rem;font-weight:600;text-decoration:none;cursor:pointer;border:none;transition:all .18s}
+.btn-ghost{background:transparent;color:var(--ink2)}
+.btn-ghost:hover{color:var(--ink);background:rgba(0,0,0,.05)}
+.btn-primary{background:var(--blue);color:#fff}
+.btn-primary:hover{background:#1d4ed8;transform:translateY(-1px);box-shadow:0 6px 20px rgba(37,99,235,.35)}
+.btn-outline{background:transparent;color:var(--ink);border:1.5px solid var(--border)}
+.btn-outline:hover{border-color:var(--ink)}
+.btn-lg{padding:13px 28px;font-size:.98rem;border-radius:12px}
+.btn-dark{background:var(--ink);color:#fff}
+.btn-dark:hover{background:#2d2926;transform:translateY(-1px);box-shadow:0 6px 20px rgba(0,0,0,.2)}
+@media(max-width:500px){nav{padding:13px 18px}.btn-ghost{display:none}}
+
+/* ── HERO ── */
+.hero{min-height:100svh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:110px 24px 56px;position:relative;overflow:hidden}
+.hero-glow{position:absolute;inset:0;z-index:0;background:radial-gradient(ellipse 60% 55% at 62% 26%,rgba(37,99,235,.1) 0%,transparent 68%),radial-gradient(ellipse 40% 38% at 18% 72%,rgba(14,165,233,.07) 0%,transparent 65%),radial-gradient(ellipse 38% 34% at 84% 78%,rgba(5,150,105,.07) 0%,transparent 62%)}
+.hero-badge{display:inline-flex;align-items:center;gap:7px;padding:6px 15px;border-radius:999px;background:rgba(37,99,235,.07);border:1px solid rgba(37,99,235,.18);font-size:.75rem;font-weight:700;color:var(--blue);margin-bottom:22px;position:relative;z-index:1;animation:fadeUp .6s ease both}
+.hero h1{font-family:'Fraunces',serif;font-size:clamp(2.7rem,8.5vw,5.4rem);font-weight:900;line-height:1.04;letter-spacing:-.04em;color:var(--ink);max-width:840px;position:relative;z-index:1;animation:fadeUp .6s .08s ease both}
+.hero h1 em{font-style:italic;color:var(--blue)}
+.hero-sub{font-size:clamp(.9rem,2vw,1.08rem);color:var(--ink2);line-height:1.7;max-width:490px;margin:18px auto 0;position:relative;z-index:1;animation:fadeUp .6s .16s ease both}
+.hero-chips{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:22px;position:relative;z-index:1;animation:fadeUp .6s .22s ease both}
+.hero-chip{display:inline-flex;align-items:center;gap:5px;padding:5px 13px;border-radius:999px;background:var(--card);border:1px solid var(--border);font-size:.75rem;font-weight:600;color:var(--ink2);box-shadow:0 1px 4px rgba(0,0,0,.05)}
+.hero-ctas{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:28px;position:relative;z-index:1;animation:fadeUp .6s .28s ease both}
+.hero-mockup{margin-top:52px;position:relative;z-index:1;animation:fadeUp .7s .38s ease both}
+
+/* ── PHONE ── */
+.phone{width:238px;height:476px;background:var(--ink);border-radius:38px;border:6px solid #252320;box-shadow:0 40px 90px rgba(0,0,0,.3),inset 0 0 0 1px rgba(255,255,255,.04);overflow:hidden;position:relative;margin:0 auto}
+.phone::before{content:'';position:absolute;top:11px;left:50%;transform:translateX(-50%);width:56px;height:5px;background:#3a3836;border-radius:999px;z-index:10}
+.phone-screen{width:100%;height:100%;background:var(--bg);padding:26px 10px 10px;display:flex;flex-direction:column;gap:6px;overflow:hidden;transition:opacity .22s,transform .22s}
+.ps-topbar{background:var(--ink);border-radius:10px;padding:9px 12px;color:#fff;font-size:.58rem;font-weight:700;display:flex;justify-content:space-between;align-items:center;flex-shrink:0}
+.ps-tabs{display:flex;gap:3px;background:#fff;border-radius:8px;padding:3px;flex-shrink:0;border:1px solid var(--border)}
+.ps-tab{flex:1;text-align:center;font-size:.44rem;padding:4px 1px;border-radius:5px;color:var(--ink2)}
+.ps-tab.on{background:var(--blue-bg);color:var(--blue);font-weight:700}
+.ps-card{background:#fff;border-radius:9px;padding:9px 11px;border:1px solid var(--border);flex-shrink:0}
+.ps-card-t{font-size:.58rem;font-weight:700;color:var(--ink);margin-bottom:2px}
+.ps-card-s{font-size:.49rem;color:var(--ink2)}
+.ps-pill{display:inline-block;font-size:.43rem;background:var(--blue-bg);color:var(--blue);padding:2px 6px;border-radius:999px;margin-top:3px;font-weight:600}
+.ps-pill.g{background:var(--green-bg);color:var(--green)}
+.ps-pill.a{background:#FFF7ED;color:#C2410C}
+.ps-prog{height:3px;background:var(--border);border-radius:3px;margin-top:6px}
+.ps-prog-fill{height:100%;border-radius:3px;background:var(--blue)}
+/* itin mockup */
+.ps-seg{border-radius:9px;overflow:hidden;flex-shrink:0}
+.ps-seg-hdr{padding:6px 10px;font-size:.5rem;font-weight:700;display:flex;align-items:center;gap:5px}
+.ps-seg-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.ps-seg-body{background:#fff;border:1px solid;border-top:none}
+.ps-day{display:flex;align-items:center;gap:7px;padding:6px 10px;border-bottom:1px solid var(--border)}
+.ps-day:last-child{border-bottom:none}
+.ps-day-num{width:22px;height:22px;border-radius:6px;background:var(--bg2);display:flex;align-items:center;justify-content:center;font-size:.5rem;font-weight:700;color:var(--ink2);flex-shrink:0}
+.ps-day-num.t{background:var(--ink);color:#fff}
+.ps-day-date{font-size:.43rem;font-weight:700;color:var(--ink2)}
+.ps-day-chips{display:flex;gap:3px;margin-top:2px;flex-wrap:wrap}
+.ps-day-chip{font-size:.39rem;padding:1px 5px;border-radius:999px;font-weight:600}
+.ps-day-chip.h{background:#FFF7ED;color:#C2410C}
+.ps-day-chip.f{background:var(--blue-bg);color:var(--blue)}
+/* budget mockup */
+.ps-bud-hero{background:var(--ink);border-radius:9px;padding:10px 12px;color:#fff;text-align:center;flex-shrink:0}
+.ps-bud-avail{font-size:.46rem;color:rgba(255,255,255,.5);margin-bottom:2px}
+.ps-bud-val{font-family:'Fraunces',serif;font-size:1.1rem;font-weight:700;color:#6EE7B7}
+.ps-bud-prog{height:3px;background:rgba(255,255,255,.15);border-radius:3px;margin-top:5px}
+.ps-bud-prog-fill{height:100%;background:#34D399;border-radius:3px}
+.ps-bud-rows{background:#fff;border-radius:9px;border:1px solid var(--border);flex-shrink:0}
+.ps-bud-row{display:flex;justify-content:space-between;padding:5px 11px;border-bottom:1px solid var(--border)}
+.ps-bud-row:last-child{border-bottom:none}
+.ps-bud-row-l{font-size:.49rem;color:var(--ink2)}
+.ps-bud-row-v{font-size:.51rem;font-weight:700;color:var(--ink)}
+/* map mockup */
+.ps-map-card{background:#fff;border-radius:9px;border:1px solid var(--border);overflow:hidden;flex-shrink:0}
+.ps-map-dest{padding:6px 10px;display:flex;align-items:center;gap:6px;border-bottom:1px solid var(--border)}
+.ps-map-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.ps-map-place{padding:5px 10px;display:flex;align-items:center;gap:6px;border-bottom:1px solid var(--border)}
+.ps-map-place:last-child{border-bottom:none}
+.ps-map-ico{font-size:.75rem;flex-shrink:0}
+.ps-map-name{font-size:.46rem;font-weight:600;color:var(--ink)}
+.ps-map-sub{font-size:.4rem;color:var(--ink2)}
+
+/* Float cards */
+.fc{position:absolute;background:#fff;border:1px solid var(--border);border-radius:13px;padding:9px 14px;box-shadow:0 8px 28px rgba(0,0,0,.1);font-family:'DM Sans',sans-serif;animation:float 4s ease-in-out infinite;white-space:nowrap}
+.fc-lbl{font-size:.58rem;color:var(--ink2);margin-bottom:2px}
+.fc-val{font-size:.82rem;font-weight:700;color:var(--ink)}
+.fc1{left:-112px;top:70px;animation-delay:0s}
+.fc2{right:-102px;top:140px;animation-delay:1.6s}
+.fc3{left:-92px;bottom:110px;animation-delay:.9s}
+@media(max-width:640px){.fc{display:none}}
+.mockup-tabs{display:flex;gap:8px;justify-content:center;margin-top:18px;position:relative;z-index:1;animation:fadeUp .6s .52s ease both}
+.mockup-tab{padding:5px 15px;border-radius:999px;font-size:.74rem;font-weight:600;cursor:pointer;border:1.5px solid var(--border);background:transparent;color:var(--ink2);transition:all .18s;font-family:'DM Sans',sans-serif}
+.mockup-tab.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.scroll-hint{position:absolute;bottom:26px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:7px;color:var(--ink2);font-size:.72rem;z-index:1;animation:fadeUp .6s .8s ease both}
+.scroll-hint svg{animation:bounce 2.2s ease-in-out infinite}
+
+/* ── SECTIONS ── */
+section{padding:90px 24px}
+.wrap{max-width:980px;margin:0 auto}
+.sec-label{font-size:.73rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--blue);margin-bottom:11px}
+.sec-title{font-family:'Fraunces',serif;font-size:clamp(1.8rem,4vw,2.8rem);font-weight:700;line-height:1.12;letter-spacing:-.03em;max-width:580px}
+.sec-sub{font-size:.97rem;color:var(--ink2);margin-top:12px;max-width:500px;line-height:1.7}
+
+/* ── STEPS ── */
+.steps-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:48px}
+@media(max-width:680px){.steps-grid{grid-template-columns:1fr}}
+.step{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:28px 24px;position:relative;overflow:hidden;transition:transform .2s,box-shadow .2s}
+.step:hover{transform:translateY(-4px);box-shadow:0 18px 44px rgba(0,0,0,.09)}
+.step-n{font-family:'Fraunces',serif;font-size:3rem;font-weight:900;color:rgba(0,0,0,.05);line-height:1;margin-bottom:10px}
+.step-ico{font-size:1.8rem;margin-bottom:10px;display:block}
+.step-t{font-size:.98rem;font-weight:700;margin-bottom:7px}
+.step-d{font-size:.85rem;color:var(--ink2);line-height:1.64}
+.step::after{content:'';position:absolute;bottom:0;left:0;right:0;height:3px}
+.step:nth-child(1)::after{background:var(--blue)}
+.step:nth-child(2)::after{background:var(--green)}
+.step:nth-child(3)::after{background:var(--amber)}
+
+/* ── FEATURES ── */
+.feat-section{background:var(--bg2)}
+.feat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:48px}
+@media(max-width:700px){.feat-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:420px){.feat-grid{grid-template-columns:1fr}}
+.feat{background:rgba(255,255,255,.6);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.9);border-radius:18px;padding:22px 19px;transition:background .2s,transform .2s}
+.feat:hover{background:rgba(255,255,255,.95);transform:translateY(-2px)}
+.feat-ico{font-size:1.55rem;margin-bottom:10px}
+.feat-t{font-size:.9rem;font-weight:700;margin-bottom:5px}
+.feat-d{font-size:.8rem;color:var(--ink2);line-height:1.6}
+
+/* ── SCREENS ── */
+.screens-row{display:flex;gap:18px;overflow-x:auto;padding:46px 0 16px;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none;cursor:grab;user-select:none}
+.screens-row:active{cursor:grabbing}
+.screens-row::-webkit-scrollbar{display:none}
+.sc-item{flex:0 0 188px;scroll-snap-align:start;display:flex;flex-direction:column;align-items:center;gap:12px}
+.sc-phone{width:188px;height:366px;background:var(--ink);border-radius:26px;border:5px solid #252320;box-shadow:0 20px 50px rgba(0,0,0,.22);overflow:hidden;position:relative}
+.sc-phone::before{content:'';position:absolute;top:9px;left:50%;transform:translateX(-50%);width:42px;height:4px;background:#3a3836;border-radius:999px;z-index:10}
+.sc-wrap{width:100%;height:100%;padding:22px 8px 8px;background:var(--bg);display:flex;flex-direction:column;gap:5px}
+.sc-lbl{font-size:.78rem;color:var(--ink2);font-weight:600;text-align:center}
+/* screen helpers */
+.sh-hdr{background:var(--ink);border-radius:8px;padding:8px 10px;color:#fff;font-size:.54rem;font-weight:700;display:flex;justify-content:space-between;align-items:center}
+.sh-card{background:#fff;border-radius:7px;padding:7px 10px;border:1px solid var(--border)}
+.sh-title{font-size:.55rem;font-weight:700;color:var(--ink)}
+.sh-sub{font-size:.47rem;color:var(--ink2);margin-top:1px}
+.sh-pill{display:inline-block;font-size:.41rem;background:var(--blue-bg);color:var(--blue);padding:1px 5px;border-radius:999px;margin-top:3px;font-weight:600}
+.sh-pill.g{background:var(--green-bg);color:var(--green)}
+/* screen2 itin small */
+.s2-seg{border-radius:7px;overflow:hidden;margin-bottom:3px}
+.s2-seg-hdr{padding:5px 9px;font-size:.49rem;font-weight:700;display:flex;align-items:center;gap:4px}
+.s2-seg-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0}
+.s2-seg-body{background:#fff;border:1px solid;border-top:none}
+.s2-day{display:flex;align-items:center;gap:6px;padding:5px 9px;border-bottom:1px solid var(--border)}
+.s2-day:last-child{border-bottom:none}
+.s2-num{width:18px;height:18px;border-radius:5px;background:var(--bg2);display:flex;align-items:center;justify-content:center;font-size:.45rem;font-weight:700;flex-shrink:0}
+.s2-num.t{background:var(--ink);color:#fff}
+.s2-date{font-size:.41rem;font-weight:700;color:var(--ink2)}
+.s2-chips{display:flex;gap:2px;margin-top:1px}
+.s2-chip{font-size:.37rem;padding:1px 4px;border-radius:999px;font-weight:600}
+.s2-chip.h{background:#FFF7ED;color:#C2410C}
+.s2-chip.f{background:var(--blue-bg);color:var(--blue)}
+/* screen3 budget small */
+.s3-bud{background:var(--ink);border-radius:8px;padding:8px 10px;color:#fff;text-align:center}
+.s3-avail{font-size:.44rem;color:rgba(255,255,255,.5);margin-bottom:2px}
+.s3-val{font-family:'Fraunces',serif;font-size:.95rem;font-weight:700;color:#6EE7B7}
+.s3-prog{height:3px;background:rgba(255,255,255,.15);border-radius:3px;margin-top:4px}
+.s3-prog-fill{height:100%;background:#34D399;border-radius:3px}
+.s3-rows{background:#fff;border-radius:7px;border:1px solid var(--border)}
+.s3-row{display:flex;justify-content:space-between;padding:4px 9px;border-bottom:1px solid var(--border)}
+.s3-row:last-child{border-bottom:none}
+.s3-row-l{font-size:.44rem;color:var(--ink2)}
+.s3-row-v{font-size:.46rem;font-weight:700;color:var(--ink)}
+/* screen4 map small */
+.s4-card{background:#fff;border-radius:7px;border:1px solid var(--border);overflow:hidden;margin-bottom:3px}
+.s4-dest-hdr{padding:5px 9px;display:flex;align-items:center;gap:5px;border-bottom:1px solid var(--border)}
+.s4-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.s4-dest-name{font-size:.5rem;font-weight:700;flex:1}
+.s4-open-btn{font-size:.38rem;padding:2px 6px;border-radius:999px;font-weight:700}
+.s4-place{padding:4px 9px;display:flex;align-items:center;gap:5px;border-bottom:1px solid var(--border)}
+.s4-place:last-child{border-bottom:none}
+.s4-place-ico{font-size:.68rem;flex-shrink:0}
+.s4-place-name{font-size:.44rem;font-weight:600;color:var(--ink)}
+.s4-place-sub{font-size:.38rem;color:var(--ink2)}
+.s4-arr{margin-left:auto;font-size:.46rem;color:var(--ink3)}
+
+/* ── CTA ── */
+.cta-section{background:linear-gradient(138deg,#141E2E 0%,#0E1622 100%);position:relative;overflow:hidden;text-align:center}
+.cta-section::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 55% 65% at 70% 48%,rgba(37,99,235,.22) 0%,transparent 70%)}
+.cta-inner{position:relative;z-index:1;max-width:580px;margin:0 auto}
+.cta-section .sec-label{color:rgba(255,255,255,.42)}
+.cta-section .sec-title{color:#fff;max-width:none}
+.cta-section .sec-sub{color:rgba(255,255,255,.52);max-width:none;margin:12px auto 0}
+.cta-btns{display:flex;gap:11px;justify-content:center;flex-wrap:wrap;margin-top:36px}
+.btn-white{background:#fff;color:var(--ink);font-weight:700}
+.btn-white:hover{background:#ece9e4;transform:translateY(-2px);box-shadow:0 8px 28px rgba(255,255,255,.14)}
+.btn-ghost-w{background:transparent;color:rgba(255,255,255,.72);border:1.5px solid rgba(255,255,255,.22)}
+.btn-ghost-w:hover{border-color:rgba(255,255,255,.55);background:rgba(255,255,255,.06)}
+.cta-note{font-size:.77rem;color:rgba(255,255,255,.35);margin-top:20px}
+.cta-note a{color:rgba(255,255,255,.55);text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+
+/* ── FOOTER ── */
+footer{padding:28px 24px;text-align:center;font-size:.8rem;color:var(--ink2);border-top:1px solid var(--border);display:flex;flex-direction:column;gap:9px;align-items:center}
+.foot-links{display:flex;gap:20px;flex-wrap:wrap;justify-content:center}
+footer a{color:var(--ink2);text-decoration:none}
+footer a:hover{color:var(--ink)}
+
+/* ── REVEAL ── */
+.reveal{opacity:0;transform:translateY(24px);transition:opacity .6s,transform .6s}
+.reveal.visible{opacity:1;transform:translateY(0)}
+.d1{transition-delay:.08s}.d2{transition-delay:.16s}.d3{transition-delay:.24s}
+
+/* ── TOAST ── */
+#toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(70px);background:var(--ink);color:#fff;padding:9px 20px;border-radius:10px;font-size:.86rem;font-weight:500;z-index:999;transition:transform .28s ease;pointer-events:none;white-space:nowrap}
+#toast.show{transform:translateX(-50%) translateY(0)}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:translateY(0)}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(5px)}}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav id="nav">
+  <a class="nav-logo" href="#">✈️ Bitac<span>ora</span></a>
+  <div class="nav-r">
+    <a href="#como-funciona" class="btn btn-ghost" data-i18n="nav_how">Cómo funciona</a>
+    <div class="lang-tog">
+      <button class="lang-btn on" id="btn-es" onclick="setLang('es')">ES</button>
+      <button class="lang-btn" id="btn-en" onclick="setLang('en')">EN</button>
+    </div>
+    <a href="#" id="nav-cta" class="btn btn-primary" data-i18n="nav_open">Abrir app →</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-glow"></div>
+  <div class="hero-badge" data-i18n="badge">✨ Sin registro · Sin servidores · Sin drama</div>
+  <h1 data-i18n="h1">Tu viaje, <em>organizado</em>.<br>Sin drama.</h1>
+  <p class="hero-sub" data-i18n="sub">Itinerario día a día, gastos, clima y mapa de lugares. Todo en un archivo. Todo en tu dispositivo.</p>
+
+  <div class="hero-chips">
+    <span class="hero-chip">📅 <span data-i18n="chip1">Itinerario</span></span>
+    <span class="hero-chip">📍 <span data-i18n="chip2">Mapa</span></span>
+    <span class="hero-chip">💸 <span data-i18n="chip3">Gastos</span></span>
+    <span class="hero-chip">🌤️ <span data-i18n="chip4">Clima</span></span>
+    <span class="hero-chip">🔗 <span data-i18n="chip5">Compartir</span></span>
+  </div>
+
+  <div class="hero-ctas">
+    <a href="#" id="hero-open" class="btn btn-primary btn-lg" data-i18n="cta_open">Abrir la app →</a>
+    <a href="#" class="btn btn-outline btn-lg" onclick="handleDl(event)" data-i18n="cta_dl">⬇ Descargar gratis</a>
+  </div>
+
+  <!-- Phone mockup -->
+  <div class="hero-mockup" style="position:relative">
+    <div class="phone">
+      <div class="phone-screen" id="phone-screen">
+        <!-- filled by JS -->
+      </div>
+    </div>
+    <div class="fc fc1"><div class="fc-lbl" data-i18n="fc1_l">Gastos hoy</div><div class="fc-val">$124 💸</div></div>
+    <div class="fc fc2"><div class="fc-lbl" data-i18n="fc2_l">Clima en Roma</div><div class="fc-val">☀️ 28°C</div></div>
+    <div class="fc fc3"><div class="fc-lbl" data-i18n="fc3_l">Vuelo confirmado</div><div class="fc-val">✅ AR 1432</div></div>
+  </div>
+
+  <div class="mockup-tabs">
+    <button class="mockup-tab on" onclick="showScreen('home',this)" data-i18n="mt_home">Inicio</button>
+    <button class="mockup-tab" onclick="showScreen('itin',this)" data-i18n="mt_itin">Itinerario</button>
+    <button class="mockup-tab" onclick="showScreen('budget',this)" data-i18n="mt_budget">Gastos</button>
+    <button class="mockup-tab" onclick="showScreen('map',this)" data-i18n="mt_map">Mapa</button>
+  </div>
+
+  <div class="scroll-hint">
+    <span data-i18n="scroll_hint">Cómo funciona</span>
+    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
+  </div>
+</section>
+
+<!-- CÓMO FUNCIONA -->
+<section id="como-funciona">
+  <div class="wrap">
+    <div class="reveal">
+      <div class="sec-label" data-i18n="steps_lbl">Cómo funciona</div>
+      <h2 class="sec-title" data-i18n="steps_title">Tres pasos y tu viaje está armado</h2>
+      <p class="sec-sub" data-i18n="steps_sub">Sin tutoriales. Sin onboarding. Entrás y ya sabés qué hacer.</p>
+    </div>
+    <div class="steps-grid">
+      <div class="step reveal d1">
+        <div class="step-n">01</div>
+        <span class="step-ico">📋</span>
+        <div class="step-t" data-i18n="s1_t">Creá tu viaje</div>
+        <p class="step-d" data-i18n="s1_d">Ponés nombre, fechas y destinos. La app genera el calendario automáticamente y organiza los días por ciudad.</p>
+      </div>
+      <div class="step reveal d2">
+        <div class="step-n">02</div>
+        <span class="step-ico">🗓️</span>
+        <div class="step-t" data-i18n="s2_t">Armá el itinerario</div>
+        <p class="step-d" data-i18n="s2_d">Día a día: vuelos, hoteles, actividades, notas. Todo en un timeline visual agrupado por ciudad.</p>
+      </div>
+      <div class="step reveal d3">
+        <div class="step-n">03</div>
+        <span class="step-ico">🔗</span>
+        <div class="step-t" data-i18n="s3_t">Controlá y compartí</div>
+        <p class="step-d" data-i18n="s3_d">Seguí tus gastos en tiempo real. Exportá a PDF o generá un link para compartir con tu compañero de viaje.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section class="feat-section">
+  <div class="wrap">
+    <div class="reveal">
+      <div class="sec-label" data-i18n="feat_lbl">Funcionalidades</div>
+      <h2 class="sec-title" data-i18n="feat_title">Todo lo que necesitás para viajar sin sorpresas</h2>
+    </div>
+    <div class="feat-grid">
+      <div class="feat reveal d1">
+        <div class="feat-ico">🗓️</div>
+        <div class="feat-t" data-i18n="f1_t">Itinerario por día</div>
+        <p class="feat-d" data-i18n="f1_d">Timeline visual agrupado por ciudad. Con vuelos, hoteles y actividades para cada jornada.</p>
+      </div>
+      <div class="feat reveal d2">
+        <div class="feat-ico">📍</div>
+        <div class="feat-t" data-i18n="f2_t">Mapa de lugares</div>
+        <p class="feat-d" data-i18n="f2_d">Hoteles y actividades en un listado con links directos a Google Maps. Listo para integrar mapas reales.</p>
+      </div>
+      <div class="feat reveal d3">
+        <div class="feat-ico">💸</div>
+        <div class="feat-t" data-i18n="f3_t">Presupuesto real</div>
+        <p class="feat-d" data-i18n="f3_d">Cargá gastos por categoría y ves al instante cuánto te queda. Con gráfico de torta y barras.</p>
+      </div>
+      <div class="feat reveal d1">
+        <div class="feat-ico">🌤️</div>
+        <div class="feat-t" data-i18n="f4_t">Clima integrado</div>
+        <p class="feat-d" data-i18n="f4_d">Pronóstico para cada destino desde el itinerario. Con links a Google y AccuWeather como fallback.</p>
+      </div>
+      <div class="feat reveal d2">
+        <div class="feat-ico">🔗</div>
+        <div class="feat-t" data-i18n="f5_t">Compartí el plan</div>
+        <p class="feat-d" data-i18n="f5_d">Un link con todo el viaje comprimido. Tu compañero lo abre y puede importarlo con un tap.</p>
+      </div>
+      <div class="feat reveal d3">
+        <div class="feat-ico">💾</div>
+        <div class="feat-t" data-i18n="f6_t">Tus datos, siempre</div>
+        <p class="feat-d" data-i18n="f6_d">Export e import JSON. Backup completo descargable. Funciona offline. Tus datos nunca salen de tu dispositivo.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SCREENS CAROUSEL -->
+<section>
+  <div class="wrap">
+    <div class="reveal">
+      <div class="sec-label" data-i18n="sc_lbl">La app</div>
+      <h2 class="sec-title" data-i18n="sc_title">Mirá cómo se ve</h2>
+      <p class="sec-sub" data-i18n="sc_sub">Cuatro pantallas. Las que más vas a usar.</p>
+    </div>
+  </div>
+  <div style="max-width:980px;margin:0 auto;padding:0 24px">
+    <div class="screens-row reveal" id="screens-row">
+
+      <!-- Screen 1: Home -->
+      <div class="sc-item">
+        <div class="sc-phone">
+          <div class="sc-wrap">
+            <div class="sh-hdr"><span>✈️ Bitacora</span><span>+</span></div>
+            <div class="sh-card">
+              <div class="sh-title">🌍 Europa 2025</div>
+              <div class="sh-sub" data-i18n="sc1_d1">14 jun – 2 jul · 18 días</div>
+              <div><span class="sh-pill" data-i18n="sc1_p1">En curso · Día 4</span></div>
+            </div>
+            <div class="sh-card">
+              <div class="sh-title">🏖️ Brasil</div>
+              <div class="sh-sub" data-i18n="sc1_d2">3 – 12 ene · Pasado</div>
+              <div><span class="sh-pill g" data-i18n="sc1_p2">Hace 45 días</span></div>
+            </div>
+            <div class="sh-card">
+              <div class="sh-title">🗾 Japón</div>
+              <div class="sh-sub" data-i18n="sc1_d3">Sin fechas</div>
+            </div>
+          </div>
+        </div>
+        <span class="sc-lbl" data-i18n="sc1_lbl">Mis viajes</span>
+      </div>
+
+      <!-- Screen 2: Itinerary -->
+      <div class="sc-item">
+        <div class="sc-phone">
+          <div class="sc-wrap">
+            <div style="font-size:.52rem;font-weight:700;color:var(--ink);margin-bottom:3px">🗺️ <span data-i18n="sc2_hdr">Itinerario</span></div>
+            <div class="s2-seg">
+              <div class="s2-seg-hdr" style="background:#EFF4FF;border:1px solid #BFCFFE;border-bottom:none">
+                <div class="s2-seg-dot" style="background:#2563EB"></div>
+                <span style="color:#2563EB;font-weight:700">📍 <span data-i18n="paris">París</span></span>
+                <span style="color:#2563EB;opacity:.6;margin-left:auto" data-i18n="paris_dates">14–18 jun</span>
+              </div>
+              <div class="s2-seg-body" style="border-color:#BFCFFE">
+                <div class="s2-day"><div class="s2-num t">1</div><div><div class="s2-date" data-i18n="d1">LUN 14 JUN</div><div class="s2-chips"><span class="s2-chip f">✈ AR1234</span><span class="s2-chip h">🏨 Marais</span></div></div></div>
+                <div class="s2-day"><div class="s2-num">2</div><div><div class="s2-date" data-i18n="d2">MAR 15 JUN</div><div class="s2-chips"><span class="s2-chip h">🎟 <span data-i18n="eiffel">Eiffel</span></span></div></div></div>
+              </div>
+            </div>
+            <div class="s2-seg">
+              <div class="s2-seg-hdr" style="background:#ECFDF5;border:1px solid #6EE7B7;border-bottom:none">
+                <div class="s2-seg-dot" style="background:#059669"></div>
+                <span style="color:#059669;font-weight:700">📍 <span data-i18n="rome">Roma</span></span>
+                <span style="color:#059669;opacity:.6;margin-left:auto" data-i18n="rome_dates">19–25 jun</span>
+              </div>
+              <div class="s2-seg-body" style="border-color:#6EE7B7">
+                <div class="s2-day"><div class="s2-num">6</div><div><div class="s2-date" data-i18n="d6">SAB 19 JUN</div><div class="s2-chips"><span class="s2-chip h">🏨 Colosseo</span></div></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <span class="sc-lbl" data-i18n="sc2_lbl">Itinerario</span>
+      </div>
+
+      <!-- Screen 3: Budget -->
+      <div class="sc-item">
+        <div class="sc-phone">
+          <div class="sc-wrap">
+            <div style="font-size:.52rem;font-weight:700;color:var(--ink);margin-bottom:3px">💸 <span data-i18n="sc3_hdr">Presupuesto</span></div>
+            <div class="s3-bud">
+              <div class="s3-avail" data-i18n="available">Disponible</div>
+              <div class="s3-val">$660</div>
+              <div class="s3-prog"><div class="s3-prog-fill" style="width:56%"></div></div>
+            </div>
+            <div class="s3-rows">
+              <div class="s3-row"><span class="s3-row-l" data-i18n="cat_fl">✈️ Vuelos</span><span class="s3-row-v">$320</span></div>
+              <div class="s3-row"><span class="s3-row-l" data-i18n="cat_ht">🏨 Hotel</span><span class="s3-row-v">$280</span></div>
+              <div class="s3-row"><span class="s3-row-l" data-i18n="cat_fo">🍽️ Comida</span><span class="s3-row-v">$140</span></div>
+              <div class="s3-row"><span class="s3-row-l" data-i18n="cat_ac">🎟️ Actividades</span><span class="s3-row-v">$100</span></div>
+            </div>
+          </div>
+        </div>
+        <span class="sc-lbl" data-i18n="sc3_lbl">Gastos</span>
+      </div>
+
+      <!-- Screen 4: Map -->
+      <div class="sc-item">
+        <div class="sc-phone">
+          <div class="sc-wrap">
+            <div style="font-size:.52rem;font-weight:700;color:var(--ink);margin-bottom:3px">📍 <span data-i18n="sc4_hdr">Mapa</span></div>
+            <div class="s4-card">
+              <div class="s4-dest-hdr">
+                <div class="s4-dot" style="background:#2563EB"></div>
+                <span class="s4-dest-name" style="color:#2563EB" data-i18n="paris">París</span>
+                <span class="s4-open-btn" style="background:#EFF4FF;color:#2563EB">🗺 Maps</span>
+              </div>
+              <div class="s4-place"><span class="s4-place-ico">🏨</span><div><div class="s4-place-name">Le Marais Hotel</div><div class="s4-place-sub" data-i18n="hotel_paris">Hotel · París</div></div><span class="s4-arr">↗</span></div>
+              <div class="s4-place"><span class="s4-place-ico">🎟️</span><div><div class="s4-place-name" data-i18n="eiffel">Torre Eiffel</div><div class="s4-place-sub" data-i18n="act_paris">Actividad · París</div></div><span class="s4-arr">↗</span></div>
+            </div>
+            <div class="s4-card">
+              <div class="s4-dest-hdr">
+                <div class="s4-dot" style="background:#059669"></div>
+                <span class="s4-dest-name" style="color:#059669" data-i18n="rome">Roma</span>
+                <span class="s4-open-btn" style="background:#ECFDF5;color:#059669">🗺 Maps</span>
+              </div>
+              <div class="s4-place"><span class="s4-place-ico">🏨</span><div><div class="s4-place-name">Hotel Colosseo</div><div class="s4-place-sub" data-i18n="hotel_rome">Hotel · Roma</div></div><span class="s4-arr">↗</span></div>
+            </div>
+          </div>
+        </div>
+        <span class="sc-lbl" data-i18n="sc4_lbl">Mapa</span>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section">
+  <div class="wrap">
+    <div class="cta-inner reveal">
+      <div class="sec-label" data-i18n="cta_lbl">Descargá Bitacora</div>
+      <h2 class="sec-title" data-i18n="cta_title">Sin cuentas.<br>Sin servidores.<br>Sin drama.</h2>
+      <p class="sec-sub" data-i18n="cta_sub">Tus datos viven en tu dispositivo. Exportalos, compartilos, importalos cuando quieras. Un archivo HTML que funciona en cualquier navegador.</p>
+      <div class="cta-btns">
+        <a href="#" class="btn btn-white btn-lg" onclick="handleDl(event)" data-i18n="cta_dl_big">⬇ Descargar Bitacora</a>
+        <a href="#" id="cta-open" class="btn btn-ghost-w btn-lg" data-i18n="cta_open_browser">Abrir en el navegador →</a>
+      </div>
+      <p class="cta-note"><span data-i18n="cta_note1">También podés</span> <a id="cta-note-link" data-i18n="cta_note2">abrirla directo acá</a> <span data-i18n="cta_note3">sin descargar nada.</span></p>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div data-i18n="footer_copy">Bitacora © 2025 · Hecho con ♥ para viajeros</div>
+  <div class="foot-links">
+    <a href="#" id="footer-open" data-i18n="footer_app">Abrir app</a>
+    <a href="#" onclick="handleDl(event)" data-i18n="footer_dl">Descargar</a>
+    <a href="#como-funciona" data-i18n="footer_how">Cómo funciona</a>
+    <a href="https://github.com" target="_blank" rel="noopener">GitHub</a>
+  </div>
+</footer>
+
+<div id="toast"></div>
+
+<script>
+// ─── I18N ─────────────────────────────────────────────────────────────────
+const T = {
+  es:{
+    nav_how:'Cómo funciona', nav_open:'Abrir app →',
+    badge:'✨ Sin registro · Sin servidores · Sin drama',
+    h1:'Tu viaje, <em>organizado</em>.<br>Sin drama.',
+    sub:'Itinerario día a día, gastos, clima y mapa de lugares. Todo en un archivo. Todo en tu dispositivo.',
+    chip1:'Itinerario', chip2:'Mapa', chip3:'Gastos', chip4:'Clima', chip5:'Compartir',
+    cta_open:'Abrir la app →', cta_dl:'⬇ Descargar gratis',
+    fc1_l:'Gastos hoy', fc2_l:'Clima en Roma', fc3_l:'Vuelo confirmado',
+    mt_home:'Inicio', mt_itin:'Itinerario', mt_budget:'Gastos', mt_map:'Mapa',
+    scroll_hint:'Cómo funciona',
+    // home mockup
+    ms_home_trip1:'🌍 Europa 2025', ms_home_d1:'14 jun – 2 jul · 18 días', ms_home_p1:'París · Roma · Amsterdam',
+    ms_home_trip2:'🏖️ Brasil enero', ms_home_d2:'3 – 12 ene · 9 días', ms_home_p2:'Río · Salvador',
+    ms_home_trip3:'🗾 Japón — Próximamente', ms_home_p3:'Planificando',
+    // itin mockup
+    ms_itin_p:'📍 París', ms_itin_pd:'14–18 jun',
+    ms_itin_d1:'LUN 14 JUN', ms_itin_d2:'MAR 15 JUN', ms_itin_d3:'MIÉ 16 JUN',
+    ms_itin_r:'📍 Roma', ms_itin_rd:'19–25 jun', ms_itin_rd1:'SAB 19 JUN',
+    // budget mockup
+    ms_bud_avail:'Disponible',
+    ms_bud_fl:'✈️ Vuelos', ms_bud_ht:'🏨 Hotel', ms_bud_fo:'🍽️ Comida', ms_bud_ac:'🎟️ Activ.',
+    // map mockup
+    ms_map_h_n:'Le Marais Hotel', ms_map_h_s:'Hotel · París',
+    ms_map_a_n:'Torre Eiffel', ms_map_a_s:'Actividad · París',
+    ms_map_r:'📍 Roma', ms_map_rh_n:'Hotel Colosseo', ms_map_rh_s:'Hotel · Roma',
+    // steps
+    steps_lbl:'Cómo funciona', steps_title:'Tres pasos y tu viaje está armado',
+    steps_sub:'Sin tutoriales. Sin onboarding. Entrás y ya sabés qué hacer.',
+    s1_t:'Creá tu viaje', s1_d:'Ponés nombre, fechas y destinos. La app genera el calendario automáticamente y organiza los días por ciudad.',
+    s2_t:'Armá el itinerario', s2_d:'Día a día: vuelos, hoteles, actividades, notas. Todo en un timeline visual agrupado por ciudad.',
+    s3_t:'Controlá y compartí', s3_d:'Seguí tus gastos en tiempo real. Exportá a PDF o generá un link para compartir con tu compañero de viaje.',
+    // features
+    feat_lbl:'Funcionalidades', feat_title:'Todo lo que necesitás para viajar sin sorpresas',
+    f1_t:'Itinerario por día', f1_d:'Timeline visual agrupado por ciudad. Con vuelos, hoteles y actividades para cada jornada.',
+    f2_t:'Mapa de lugares', f2_d:'Hoteles y actividades en un listado con links directos a Google Maps. Listo para integrar mapas reales.',
+    f3_t:'Presupuesto real', f3_d:'Cargá gastos por categoría y ves al instante cuánto te queda. Con gráfico de torta y barras.',
+    f4_t:'Clima integrado', f4_d:'Pronóstico para cada destino desde el itinerario. Con links a Google y AccuWeather como fallback.',
+    f5_t:'Compartí el plan', f5_d:'Un link con todo el viaje comprimido. Tu compañero lo abre y puede importarlo con un tap.',
+    f6_t:'Tus datos, siempre', f6_d:'Export e import JSON. Backup completo descargable. Funciona offline. Tus datos nunca salen de tu dispositivo.',
+    // screens carousel
+    sc_lbl:'La app', sc_title:'Mirá cómo se ve', sc_sub:'Cuatro pantallas. Las que más vas a usar.',
+    sc1_d1:'14 jun – 2 jul · 18 días', sc1_p1:'En curso · Día 4', sc1_d2:'3 – 12 ene · Pasado', sc1_p2:'Hace 45 días', sc1_d3:'Sin fechas', sc1_lbl:'Mis viajes',
+    sc2_hdr:'Itinerario', sc2_lbl:'Itinerario', paris:'París', paris_dates:'14–18 jun',
+    d1:'LUN 14 JUN', d2:'MAR 15 JUN', eiffel:'Eiffel', rome:'Roma', rome_dates:'19–25 jun', d6:'SAB 19 JUN',
+    sc3_hdr:'Presupuesto', sc3_lbl:'Gastos', available:'Disponible',
+    cat_fl:'✈️ Vuelos', cat_ht:'🏨 Hotel', cat_fo:'🍽️ Comida', cat_ac:'🎟️ Actividades',
+    sc4_hdr:'Mapa', sc4_lbl:'Mapa', hotel_paris:'Hotel · París', act_paris:'Actividad · París', hotel_rome:'Hotel · Roma',
+    // cta
+    cta_lbl:'Descargá Bitacora',
+    cta_title:'Sin cuentas.<br>Sin servidores.<br>Sin drama.',
+    cta_sub:'Tus datos viven en tu dispositivo. Exportalos, compartilos, importalos cuando quieras. Un archivo HTML que funciona en cualquier navegador.',
+    cta_dl_big:'⬇ Descargar Bitacora', cta_open_browser:'Abrir en el navegador →',
+    cta_note1:'También podés', cta_note2:'abrirla directo acá', cta_note3:'sin descargar nada.',
+    // footer
+    footer_copy:'Bitacora © 2025 · Hecho con ♥ para viajeros',
+    footer_app:'Abrir app', footer_dl:'Descargar', footer_how:'Cómo funciona',
+    toast_dl:'🔜 Link de descarga próximamente',
+  },
+  en:{
+    nav_how:'How it works', nav_open:'Open app →',
+    badge:'✨ No sign-up · No servers · No drama',
+    h1:'Your trip, <em>organized</em>.<br>No drama.',
+    sub:'Day-by-day itinerary, expenses, weather and place map. All in one file. All on your device.',
+    chip1:'Itinerary', chip2:'Map', chip3:'Expenses', chip4:'Weather', chip5:'Share',
+    cta_open:'Open the app →', cta_dl:'⬇ Download free',
+    fc1_l:"Today's expenses", fc2_l:'Weather in Rome', fc3_l:'Flight confirmed',
+    mt_home:'Home', mt_itin:'Itinerary', mt_budget:'Expenses', mt_map:'Map',
+    scroll_hint:'How it works',
+    ms_home_trip1:'🌍 Europe 2025', ms_home_d1:'Jun 14 – Jul 2 · 18 days', ms_home_p1:'Paris · Rome · Amsterdam',
+    ms_home_trip2:'🏖️ Brazil Jan', ms_home_d2:'Jan 3 – 12 · 9 days', ms_home_p2:'Rio · Salvador',
+    ms_home_trip3:'🗾 Japan — Coming soon', ms_home_p3:'Planning',
+    ms_itin_p:'📍 Paris', ms_itin_pd:'Jun 14–18',
+    ms_itin_d1:'MON JUN 14', ms_itin_d2:'TUE JUN 15', ms_itin_d3:'WED JUN 16',
+    ms_itin_r:'📍 Rome', ms_itin_rd:'Jun 19–25', ms_itin_rd1:'SAT JUN 19',
+    ms_bud_avail:'Available',
+    ms_bud_fl:'✈️ Flights', ms_bud_ht:'🏨 Hotel', ms_bud_fo:'🍽️ Food', ms_bud_ac:'🎟️ Activities',
+    ms_map_h_n:'Le Marais Hotel', ms_map_h_s:'Hotel · Paris',
+    ms_map_a_n:'Eiffel Tower', ms_map_a_s:'Activity · Paris',
+    ms_map_r:'📍 Rome', ms_map_rh_n:'Hotel Colosseo', ms_map_rh_s:'Hotel · Rome',
+    steps_lbl:'How it works', steps_title:'Three steps and your trip is ready',
+    steps_sub:"No tutorials. No onboarding. You open it and you already know what to do.",
+    s1_t:'Create your trip', s1_d:'Enter name, dates and destinations. The app builds the calendar automatically and organizes days by city.',
+    s2_t:'Build the itinerary', s2_d:'Day by day: flights, hotels, activities, notes. All in a visual timeline grouped by city.',
+    s3_t:'Track and share', s3_d:"Track expenses in real time. Export to PDF or generate a link to share with your travel companion.",
+    feat_lbl:'Features', feat_title:'Everything you need to travel without surprises',
+    f1_t:'Day-by-day itinerary', f1_d:'Visual timeline grouped by city. With flights, hotels and activities for each day.',
+    f2_t:'Place map', f2_d:'Hotels and activities in a list with direct Google Maps links. Ready to integrate real maps.',
+    f3_t:'Real budget tracking', f3_d:"Log expenses by category and instantly see what's left. With pie and bar charts.",
+    f4_t:'Integrated weather', f4_d:'Forecast for each destination in the itinerary. With Google and AccuWeather links as fallback.',
+    f5_t:'Share the plan', f5_d:'A compressed link with the full trip. Your companion opens it and can import it with one tap.',
+    f6_t:'Your data, always', f6_d:'JSON export and import. Full downloadable backup. Works offline. Your data never leaves your device.',
+    sc_lbl:'The app', sc_title:'See how it looks', sc_sub:"Four screens. The ones you'll use the most.",
+    sc1_d1:'Jun 14 – Jul 2 · 18 days', sc1_p1:'Ongoing · Day 4', sc1_d2:'Jan 3 – 12 · Past', sc1_p2:'45 days ago', sc1_d3:'No dates set', sc1_lbl:'My trips',
+    sc2_hdr:'Itinerary', sc2_lbl:'Itinerary', paris:'Paris', paris_dates:'Jun 14–18',
+    d1:'MON JUN 14', d2:'TUE JUN 15', eiffel:'Eiffel', rome:'Rome', rome_dates:'Jun 19–25', d6:'SAT JUN 19',
+    sc3_hdr:'Budget', sc3_lbl:'Expenses', available:'Available',
+    cat_fl:'✈️ Flights', cat_ht:'🏨 Hotel', cat_fo:'🍽️ Food', cat_ac:'🎟️ Activities',
+    sc4_hdr:'Map', sc4_lbl:'Map', hotel_paris:'Hotel · Paris', act_paris:'Activity · Paris', hotel_rome:'Hotel · Rome',
+    cta_lbl:'Download Bitacora',
+    cta_title:'No accounts.<br>No servers.<br>No drama.',
+    cta_sub:"Your data lives on your device. Export it, share it, import it whenever you want. One HTML file that works in any browser.",
+    cta_dl_big:'⬇ Download Bitacora', cta_open_browser:'Open in browser →',
+    cta_note1:'You can also', cta_note2:'open it directly here', cta_note3:'without downloading anything.',
+    footer_copy:'Bitacora © 2025 · Made with ♥ for travelers',
+    footer_app:'Open app', footer_dl:'Download', footer_how:'How it works',
+    toast_dl:'🔜 Download link coming soon',
+  }
+};
+
+// ─── URLs ─────────────────────────────────────────────────────────────────
+const APP_URL = '#'; // ← reemplazar con: https://tu-app.vercel.app/app.html
+const DL_URL  = '#'; // ← reemplazar con: https://tu-app.vercel.app/app.html
+
+let lang = localStorage.getItem('btc-land-lang') || 'es';
+
+function setLang(l) {
+  lang = l;
+  localStorage.setItem('btc-land-lang', l);
+  document.documentElement.lang = l;
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const k = el.getAttribute('data-i18n');
+    if (T[l][k] !== undefined) el.innerHTML = T[l][k];
+  });
+  document.getElementById('btn-es').classList.toggle('on', l === 'es');
+  document.getElementById('btn-en').classList.toggle('on', l === 'en');
+  renderCurrentMockup();
+}
+
+function applyUrls() {
+  ['nav-cta','hero-open','cta-open','footer-open','cta-note-link'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el && APP_URL !== '#') el.href = APP_URL;
+  });
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2600);
+}
+function handleDl(e) {
+  e.preventDefault();
+  if (DL_URL !== '#') {
+    const a = document.createElement('a');
+    a.href = DL_URL; a.download = 'bitacora.html';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  } else {
+    showToast(T[lang].toast_dl);
+  }
+}
+
+// ─── NAV SCROLL ───────────────────────────────────────────────────────────
+window.addEventListener('scroll', () => {
+  document.getElementById('nav').classList.toggle('scrolled', window.scrollY > 8);
+});
+
+// ─── REVEAL ───────────────────────────────────────────────────────────────
+const obs = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+}, { threshold: 0.1 });
+document.querySelectorAll('.reveal').forEach(r => obs.observe(r));
+
+// ─── PHONE MOCKUP SWITCHER ────────────────────────────────────────────────
+let currentMockup = 'home';
+const SCREENS = {
+  home: () => {
+    const t = T[lang];
+    return `
+      <div class="ps-topbar"><span>✈️ Bitacora</span><span>+</span></div>
+      <div class="ps-card"><div class="ps-card-t">${t.ms_home_trip1}</div><div class="ps-card-s">${t.ms_home_d1}</div><div><span class="ps-pill">${t.ms_home_p1}</span></div><div class="ps-prog"><div class="ps-prog-fill" style="width:60%"></div></div></div>
+      <div class="ps-card"><div class="ps-card-t">${t.ms_home_trip2}</div><div class="ps-card-s">${t.ms_home_d2}</div><div><span class="ps-pill g">${t.ms_home_p2}</span></div></div>
+      <div class="ps-card"><div class="ps-card-t">${t.ms_home_trip3}</div><div><span class="ps-pill a">${t.ms_home_p3}</span></div></div>
+      <div class="ps-tabs"><div class="ps-tab on">📅</div><div class="ps-tab">🗺️</div><div class="ps-tab">📍</div><div class="ps-tab">💰</div><div class="ps-tab">🌡️</div></div>`;
+  },
+  itin: () => {
+    const t = T[lang];
+    return `
+      <div style="font-size:.52rem;font-weight:700;color:var(--ink);margin-bottom:3px">🗺️ Itinerario</div>
+      <div class="ps-seg"><div class="ps-seg-hdr" style="background:#EFF4FF;border:1px solid #BFCFFE;border-bottom:none"><div class="ps-seg-dot" style="background:#2563EB"></div><span style="color:#2563EB;font-weight:700">${t.ms_itin_p}</span><span style="color:#2563EB;opacity:.6;margin-left:auto">${t.ms_itin_pd}</span></div><div class="ps-seg-body" style="border-color:#BFCFFE"><div class="ps-day"><div class="ps-day-num t">1</div><div><div class="ps-day-date">${t.ms_itin_d1}</div><div class="ps-day-chips"><span class="ps-day-chip f">✈ AR1234</span><span class="ps-day-chip h">🏨 Marais</span></div></div></div><div class="ps-day"><div class="ps-day-num">2</div><div><div class="ps-day-date">${t.ms_itin_d2}</div><div class="ps-day-chips"><span class="ps-day-chip h">🎟 Eiffel</span></div></div></div><div class="ps-day"><div class="ps-day-num">3</div><div><div class="ps-day-date">${t.ms_itin_d3}</div><div class="ps-day-chips"><span class="ps-day-chip h">🍝 Bistró</span></div></div></div></div></div>
+      <div class="ps-seg"><div class="ps-seg-hdr" style="background:#ECFDF5;border:1px solid #6EE7B7;border-bottom:none"><div class="ps-seg-dot" style="background:#059669"></div><span style="color:#059669;font-weight:700">${t.ms_itin_r}</span><span style="color:#059669;opacity:.6;margin-left:auto">${t.ms_itin_rd}</span></div><div class="ps-seg-body" style="border-color:#6EE7B7"><div class="ps-day"><div class="ps-day-num">6</div><div><div class="ps-day-date">${t.ms_itin_rd1}</div><div class="ps-day-chips"><span class="ps-day-chip h">🏨 Colosseo</span></div></div></div></div></div>`;
+  },
+  budget: () => {
+    const t = T[lang];
+    return `
+      <div style="font-size:.52rem;font-weight:700;color:var(--ink);margin-bottom:3px">💸 ${lang==='es'?'Presupuesto':'Budget'}</div>
+      <div class="ps-bud-hero"><div class="ps-bud-avail">${t.ms_bud_avail}</div><div class="ps-bud-val">$660</div><div class="ps-bud-prog"><div class="ps-bud-prog-fill" style="width:56%"></div></div></div>
+      <div style="font-size:.43rem;display:flex;justify-content:space-between;color:var(--ink3);padding:2px 1px 3px"><span>0</span><span>56% de $1.500</span></div>
+      <div class="ps-bud-rows"><div class="ps-bud-row"><span class="ps-bud-row-l">${t.ms_bud_fl}</span><span class="ps-bud-row-v">$320</span></div><div class="ps-bud-row"><span class="ps-bud-row-l">${t.ms_bud_ht}</span><span class="ps-bud-row-v">$280</span></div><div class="ps-bud-row"><span class="ps-bud-row-l">${t.ms_bud_fo}</span><span class="ps-bud-row-v">$140</span></div><div class="ps-bud-row"><span class="ps-bud-row-l">${t.ms_bud_ac}</span><span class="ps-bud-row-v">$100</span></div></div>`;
+  },
+  map: () => {
+    const t = T[lang];
+    return `
+      <div style="font-size:.52rem;font-weight:700;color:var(--ink);margin-bottom:4px">📍 ${lang==='es'?'Mapa de lugares':'Place map'}</div>
+      <div class="ps-map-card"><div class="ps-map-dest"><div class="ps-map-dot" style="background:#2563EB"></div><span style="font-size:.52rem;font-weight:700;color:#2563EB;flex:1">${lang==='es'?'París':'Paris'}</span><span style="font-size:.4rem;background:#EFF4FF;color:#2563EB;padding:2px 6px;border-radius:999px;font-weight:700">🗺 Maps</span></div><div class="ps-map-place"><span class="ps-map-ico">🏨</span><div><div class="ps-map-name">${t.ms_map_h_n}</div><div style="font-size:.39rem;color:var(--ink2)">${t.ms_map_h_s}</div></div><span style="margin-left:auto;font-size:.48rem;color:var(--ink3)">↗</span></div><div class="ps-map-place"><span class="ps-map-ico">🎟️</span><div><div class="ps-map-name">${t.ms_map_a_n}</div><div style="font-size:.39rem;color:var(--ink2)">${t.ms_map_a_s}</div></div><span style="margin-left:auto;font-size:.48rem;color:var(--ink3)">↗</span></div></div>
+      <div class="ps-map-card"><div class="ps-map-dest"><div class="ps-map-dot" style="background:#059669"></div><span style="font-size:.52rem;font-weight:700;color:#059669;flex:1">${lang==='es'?'Roma':'Rome'}</span><span style="font-size:.4rem;background:#ECFDF5;color:#059669;padding:2px 6px;border-radius:999px;font-weight:700">🗺 Maps</span></div><div class="ps-map-place"><span class="ps-map-ico">🏨</span><div><div class="ps-map-name">${t.ms_map_rh_n}</div><div style="font-size:.39rem;color:var(--ink2)">${t.ms_map_rh_s}</div></div><span style="margin-left:auto;font-size:.48rem;color:var(--ink3)">↗</span></div></div>`;
+  }
+};
+
+function renderCurrentMockup() {
+  const screen = document.getElementById('phone-screen');
+  if (!screen) return;
+  screen.innerHTML = SCREENS[currentMockup]();
+}
+function showScreen(key, btn) {
+  currentMockup = key;
+  document.querySelectorAll('.mockup-tab').forEach(b => b.classList.remove('on'));
+  btn.classList.add('on');
+  const screen = document.getElementById('phone-screen');
+  screen.style.opacity = '0'; screen.style.transform = 'translateY(8px)';
+  setTimeout(() => {
+    screen.innerHTML = SCREENS[key]();
+    screen.style.opacity = '1'; screen.style.transform = 'translateY(0)';
+  }, 140);
+}
+
+// ─── DRAGGABLE SCREENS ────────────────────────────────────────────────────
+const row = document.getElementById('screens-row');
+if (row) {
+  let down = false, startX, scrollLeft;
+  row.addEventListener('mousedown', e => { down = true; startX = e.pageX - row.offsetLeft; scrollLeft = row.scrollLeft; });
+  row.addEventListener('mouseleave', () => down = false);
+  row.addEventListener('mouseup', () => down = false);
+  row.addEventListener('mousemove', e => { if (!down) return; e.preventDefault(); row.scrollLeft = scrollLeft - (e.pageX - row.offsetLeft - startX) * 1.6; });
+}
+
+// ─── INIT ─────────────────────────────────────────────────────────────────
+applyUrls();
+setLang(lang);
+</script>
+</body>
+</html>

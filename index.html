@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bitacora — Tu viaje, organizado</title>
+<meta name="description" content="Planificá itinerarios día a día, controlá gastos y compartí el viaje. Sin cuentas, sin servidores.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,400;0,700;0,900;1,300;1,400&family=Geist:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#F5F3EE;--bg2:#EDE9E3;--ink:#1A1714;--ink2:#6B6460;--ink3:#9C9690;
+  --card:#FFFFFF;--border:#E5E0D8;
+  --blue:#2563EB;--blue-bg:#EFF4FF;
+  --green:#059669;--amber:#D97706;
+  --r:14px;
+}
+html{scroll-behavior:smooth}
+body{font-family:'Geist',system-ui,sans-serif;background:var(--bg);color:var(--ink);overflow-x:hidden}
+
+nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:15px 32px;background:rgba(245,243,238,.92);backdrop-filter:blur(16px);border-bottom:1px solid transparent;transition:border-color .3s}
+nav.scrolled{border-bottom-color:var(--border)}
+.nav-logo{font-family:'Fraunces',serif;font-size:1.35rem;font-weight:700;letter-spacing:-.03em;color:var(--ink);text-decoration:none}
+.nav-logo span{color:var(--blue)}
+.nav-r{display:flex;align-items:center;gap:10px}
+.lang-tog{display:flex;background:rgba(0,0,0,.06);border-radius:8px;padding:3px;gap:2px}
+.lang-btn{padding:5px 11px;border-radius:6px;font-size:.74rem;font-weight:700;cursor:pointer;border:none;background:transparent;color:var(--ink2);transition:all .15s;font-family:'Geist',sans-serif}
+.lang-btn.on{background:#fff;color:var(--ink);box-shadow:0 1px 4px rgba(0,0,0,.12)}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:10px 20px;border-radius:10px;font-family:'Geist',sans-serif;font-size:.88rem;font-weight:600;text-decoration:none;cursor:pointer;border:none;transition:all .18s}
+.btn-ghost{background:transparent;color:var(--ink2)}
+.btn-ghost:hover{color:var(--ink);background:rgba(0,0,0,.05)}
+.btn-primary{background:var(--blue);color:#fff}
+.btn-primary:hover{background:#1d4ed8;transform:translateY(-1px);box-shadow:0 6px 20px rgba(37,99,235,.35)}
+.btn-dark{background:var(--ink);color:#fff}
+.btn-dark:hover{background:#2d2926;transform:translateY(-1px);box-shadow:0 6px 20px rgba(0,0,0,.2)}
+.btn-lg{padding:14px 30px;font-size:.98rem;border-radius:12px}
+@media(max-width:500px){nav{padding:13px 18px}.btn-ghost{display:none}}
+
+.hero{min-height:100svh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:100px 24px 64px;position:relative;overflow:hidden}
+.hero-glow{position:absolute;inset:0;z-index:0;background:radial-gradient(ellipse 60% 55% at 62% 26%,rgba(37,99,235,.1) 0%,transparent 68%),radial-gradient(ellipse 40% 38% at 18% 72%,rgba(14,165,233,.07) 0%,transparent 65%),radial-gradient(ellipse 38% 34% at 84% 78%,rgba(5,150,105,.07) 0%,transparent 62%)}
+.hero-badge{display:inline-flex;align-items:center;gap:7px;padding:6px 15px;border-radius:999px;background:rgba(37,99,235,.07);border:1px solid rgba(37,99,235,.18);font-size:.75rem;font-weight:700;color:var(--blue);margin-bottom:22px;position:relative;z-index:1;animation:fadeUp .6s ease both}
+.hero h1{font-family:'Fraunces',serif;font-size:clamp(2.7rem,8.5vw,5.2rem);font-weight:900;line-height:1.05;letter-spacing:-.04em;color:var(--ink);max-width:820px;position:relative;z-index:1;animation:fadeUp .6s .08s ease both}
+.hero h1 em{font-style:italic;color:var(--blue)}
+.hero-sub{font-size:clamp(.9rem,2vw,1.06rem);color:var(--ink2);line-height:1.7;max-width:490px;margin:18px auto 0;position:relative;z-index:1;animation:fadeUp .6s .16s ease both}
+.hero-chips{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:22px;position:relative;z-index:1;animation:fadeUp .6s .22s ease both}
+.chip{display:inline-flex;align-items:center;gap:5px;padding:5px 13px;border-radius:999px;background:var(--card);border:1px solid var(--border);font-size:.8rem;font-weight:500;color:var(--ink2)}
+.hero-cta{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:32px;position:relative;z-index:1;animation:fadeUp .6s .3s ease both}
+.hero-note{font-size:.75rem;color:var(--ink3);margin-top:14px;position:relative;z-index:1;animation:fadeUp .6s .36s ease both}
+
+.phones-wrap{position:relative;z-index:1;margin-top:52px;animation:fadeUp .6s .42s ease both}
+.phone{width:270px;background:var(--ink);border-radius:36px;padding:12px;box-shadow:0 32px 80px rgba(0,0,0,.28),0 8px 24px rgba(0,0,0,.16);display:inline-block}
+.phone-inner{background:#F5F3EE;border-radius:26px;overflow:hidden}
+.p-topbar{background:#F5F3EE;padding:12px 14px 8px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #E5E0D8}
+.p-wordmark{font-family:'Fraunces',serif;font-size:16px;font-weight:700;color:#1A1714}
+.p-wordmark span{color:#2563EB}
+.p-hero-card{margin:10px 10px 0;background:#1A1714;border-radius:16px;padding:14px;color:white}
+.p-tag{font-size:7px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.45);margin-bottom:5px}
+.p-trip-name{font-family:'Fraunces',serif;font-size:15px;font-weight:500;margin-bottom:2px}
+.p-trip-dates{font-size:8px;color:rgba(255,255,255,.5);margin-bottom:8px}
+.p-pills{display:flex;gap:4px}
+.p-pill{font-size:7px;font-weight:600;padding:3px 7px;border-radius:10px;background:rgba(255,255,255,.1)}
+.p-pill-green{background:rgba(5,150,105,.3);color:#6ee7b7}
+.p-tabs{display:flex;border-bottom:1px solid #E5E0D8;margin-top:10px}
+.p-tab{flex:1;text-align:center;padding:8px 2px;font-size:7px;font-weight:700;color:#9C9690;border-bottom:2px solid transparent}
+.p-tab.on{color:#2563EB;border-bottom-color:#2563EB}
+.p-day{display:flex;align-items:center;gap:8px;padding:8px 12px;border-bottom:1px solid #F0EDE7}
+.p-day-num{width:22px;height:22px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;flex-shrink:0}
+.p-day-info{flex:1}
+.p-day-dest{font-size:9px;font-weight:700;color:#1A1714}
+.p-day-date{font-size:7px;color:#9C9690;margin-top:1px}
+.p-day-chips{display:flex;gap:3px;margin-top:3px}
+.p-chip{font-size:6px;font-weight:600;padding:2px 5px;border-radius:5px}
+
+.section{padding:80px 24px}
+.section-inner{max-width:1100px;margin:0 auto}
+.sec-tag{font-size:.72rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--blue);margin-bottom:12px}
+.sec-h{font-family:'Fraunces',serif;font-size:clamp(1.9rem,4.5vw,2.9rem);font-weight:700;letter-spacing:-.02em;line-height:1.15;margin-bottom:16px}
+.sec-h em{font-style:italic;color:var(--blue)}
+.sec-sub{font-size:1rem;color:var(--ink2);line-height:1.7;max-width:520px}
+.features-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;margin-top:48px}
+.feat-card{background:var(--card);border-radius:var(--r);padding:24px;border:1px solid var(--border);transition:transform .2s,box-shadow .2s}
+.feat-card:hover{transform:translateY(-3px);box-shadow:0 8px 32px rgba(0,0,0,.08)}
+.feat-icon{font-size:28px;margin-bottom:14px}
+.feat-title{font-size:1rem;font-weight:700;margin-bottom:7px}
+.feat-desc{font-size:.875rem;color:var(--ink2);line-height:1.65}
+.feat-badge{display:inline-flex;margin-top:10px;font-size:.7rem;font-weight:700;padding:3px 9px;border-radius:999px;background:var(--blue-bg);color:var(--blue)}
+
+.steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:24px;margin-top:48px;counter-reset:step}
+.step{background:var(--card);border-radius:var(--r);padding:24px;border:1px solid var(--border);position:relative;counter-increment:step}
+.step::before{content:counter(step);position:absolute;top:-14px;left:20px;width:28px;height:28px;background:var(--ink);color:white;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:700}
+.step-title{font-size:.95rem;font-weight:700;margin-bottom:8px;margin-top:6px}
+.step-desc{font-size:.85rem;color:var(--ink2);line-height:1.65}
+.proof-item{background:var(--card);padding:28px 16px;text-align:center}
+.proof-stat{font-family:'Fraunces',serif;font-size:2.8rem;font-weight:700;color:var(--blue)}
+.proof-label{font-size:.85rem;color:var(--ink3);margin-top:4px}
+
+.cta-section{background:var(--ink);padding:80px 24px;text-align:center}
+.cta-section h2{font-family:'Fraunces',serif;font-size:clamp(2rem,5vw,3.2rem);font-weight:700;color:white;letter-spacing:-.03em;line-height:1.1;margin-bottom:16px}
+.cta-section h2 em{font-style:italic;color:#93C5FD}
+.cta-section p{color:rgba(255,255,255,.55);font-size:1rem;line-height:1.7;max-width:460px;margin:0 auto 32px}
+.cta-row{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+footer{padding:32px;text-align:center;font-size:.8rem;color:var(--ink3);border-top:1px solid var(--border)}
+footer a{color:var(--ink2);text-decoration:none}
+footer a:hover{color:var(--ink)}
+.section-divider{height:1px;background:var(--border);margin:0 32px}
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.reveal{opacity:0;transform:translateY(24px);transition:opacity .6s ease,transform .6s ease}
+.reveal.visible{opacity:1;transform:none}
+</style>
+</head>
+<body>
+
+<nav id="nav">
+  <a href="#" class="nav-logo">Bita<span>cora</span></a>
+  <div class="nav-r">
+    <div class="lang-tog">
+      <button class="lang-btn on" id="btn-es" onclick="setLang('es')">ES</button>
+      <button class="lang-btn" id="btn-en" onclick="setLang('en')">EN</button>
+    </div>
+    <a href="#features" class="btn btn-ghost" id="nav-features">Funciones</a>
+    <a href="https://bitacora-theta.vercel.app/app.html" class="btn btn-primary" id="nav-cta">Abrir app →</a>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="hero-glow"></div>
+  <div class="hero-badge" id="hero-badge">✨ Gratis · Sin registro · Sin servidores</div>
+  <h1 id="hero-h1">Tu viaje,<br><em>perfectamente organizado.</em></h1>
+  <p class="hero-sub" id="hero-sub">Planificá itinerarios día a día, controlá presupuesto por categoría y compartí el viaje con un solo link.</p>
+  <div class="hero-chips">
+    <div class="chip" id="chip1">📅 Itinerario</div>
+    <div class="chip" id="chip2">💰 Presupuesto</div>
+    <div class="chip" id="chip3">📍 Mapa</div>
+    <div class="chip" id="chip4">🌡 Clima</div>
+    <div class="chip" id="chip5">🔗 Compartir</div>
+  </div>
+  <div class="hero-cta">
+    <a href="https://bitacora-theta.vercel.app/app.html" class="btn btn-dark btn-lg" id="cta-main">🗺️ Planificar ahora</a>
+    <a href="https://bitacora-theta.vercel.app/app.html" class="btn btn-lg" style="background:var(--card);border:1.5px solid var(--border)" id="cta-dl" onclick="handleDL(event)">⬇️ Descargar app</a>
+  </div>
+  <p class="hero-note" id="hero-note">Sin cuenta. Sin instalación. Funciona desde el navegador.</p>
+
+  <div class="phones-wrap">
+    <div class="phone">
+      <div class="phone-inner">
+        <div style="font-size:10px;font-family:'Geist',sans-serif">
+          <div class="p-topbar">
+            <div class="p-wordmark">Bita<span>cora</span></div>
+            <div style="font-size:7px;color:#9C9690;background:#F0EDE7;padding:3px 8px;border-radius:10px">2 viajes</div>
+          </div>
+          <div class="p-hero-card">
+            <div class="p-tag">PRÓXIMO VIAJE</div>
+            <div class="p-trip-name">Europa 2026</div>
+            <div class="p-trip-dates">15 jun — 2 jul · 18 días</div>
+            <div class="p-pills">
+              <div class="p-pill-green p-pill">⏳ 84 días</div>
+              <div class="p-pill">📍 4 destinos</div>
+            </div>
+          </div>
+          <div class="p-tabs">
+            <div class="p-tab">📅</div>
+            <div class="p-tab on">🗺️</div>
+            <div class="p-tab">📍</div>
+            <div class="p-tab">💰</div>
+            <div class="p-tab">🌡️</div>
+          </div>
+          <div class="p-day" style="background:#2563EB0D">
+            <div class="p-day-num" style="background:#2563EB28;color:#2563EB">1</div>
+            <div class="p-day-info">
+              <div class="p-day-dest">Roma</div>
+              <div class="p-day-date">LUN 15 JUN</div>
+              <div class="p-day-chips">
+                <div class="p-chip" style="background:#BFDBFE;color:#1D4ED8">✈ AZ615</div>
+                <div class="p-chip" style="background:#BBF7D0;color:#059669">🏨 NH Roma</div>
+              </div>
+            </div>
+            <div style="color:#9C9690;font-size:10px">›</div>
+          </div>
+          <div class="p-day">
+            <div class="p-day-num" style="background:#2563EB28;color:#2563EB">2</div>
+            <div class="p-day-info">
+              <div class="p-day-dest">Roma</div>
+              <div class="p-day-date">MAR 16 JUN</div>
+              <div class="p-day-chips">
+                <div class="p-chip" style="background:#FEF3C7;color:#D97706">📝 Coliseo 9am</div>
+              </div>
+            </div>
+            <div style="color:#9C9690;font-size:10px">›</div>
+          </div>
+          <div class="p-day">
+            <div class="p-day-num" style="background:#05966928;color:#059669">5</div>
+            <div class="p-day-info">
+              <div class="p-day-dest">Florencia</div>
+              <div class="p-day-date">VIE 19 JUN</div>
+              <div class="p-day-chips">
+                <div class="p-chip" style="background:#BFDBFE;color:#1D4ED8">✈ FR2211</div>
+              </div>
+            </div>
+            <div style="color:#9C9690;font-size:10px">›</div>
+          </div>
+          <div style="padding:8px 12px;text-align:center;font-size:7px;color:#9C9690">+ 15 días más</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="section-divider"></div>
+
+<section class="section" id="features">
+  <div class="section-inner">
+    <div style="text-align:center">
+      <div class="sec-tag reveal" id="feat-tag">Funciones</div>
+      <h2 class="sec-h reveal" id="feat-h">Todo lo que necesitás<br>para <em>planificar bien.</em></h2>
+      <p class="sec-sub reveal" style="margin:0 auto" id="feat-sub">Diseñado para ser rápido y simple. Cualquier acción en 2–3 toques.</p>
+    </div>
+    <div class="features-grid">
+      <div class="feat-card reveal">
+        <div class="feat-icon">📅</div>
+        <div class="feat-title" id="f1t">Itinerario día a día</div>
+        <div class="feat-desc" id="f1d">Organizá cada día con destino, hotel, vuelo, actividades y notas. Timeline visual agrupado por ciudad.</div>
+      </div>
+      <div class="feat-card reveal">
+        <div class="feat-icon">📍</div>
+        <div class="feat-title" id="f2t">Rangos de destino</div>
+        <div class="feat-desc" id="f2d">Asignás "Roma del 15 al 19" y esos días quedan agrupados con su color en el calendario y timeline.</div>
+        <div class="feat-badge" id="f2b">Selector visual de días</div>
+      </div>
+      <div class="feat-card reveal">
+        <div class="feat-icon">💰</div>
+        <div class="feat-title" id="f3t">Control de gastos</div>
+        <div class="feat-desc" id="f3d">Registrá gastos por categoría: vuelos, hoteles, comida, actividades, transporte. Gráficos de distribución.</div>
+      </div>
+      <div class="feat-card reveal">
+        <div class="feat-icon">🗺️</div>
+        <div class="feat-title" id="f4t">Mapa de lugares</div>
+        <div class="feat-desc" id="f4d">Todos tus destinos con hoteles, vuelos y actividades. Un toque abre Google Maps.</div>
+      </div>
+      <div class="feat-card reveal">
+        <div class="feat-icon">🌡️</div>
+        <div class="feat-title" id="f5t">Clima integrado</div>
+        <div class="feat-desc" id="f5d">Clima para cada día del viaje. Datos históricos y pronóstico hasta 16 días. Sin salir de la app.</div>
+      </div>
+      <div class="feat-card reveal">
+        <div class="feat-icon">🔗</div>
+        <div class="feat-title" id="f6t">Compartir con un link</div>
+        <div class="feat-desc" id="f6d">Generá un link y compartí el itinerario en modo solo lectura. También exportá PDF o HTML.</div>
+      </div>
+      <div class="feat-card reveal">
+        <div class="feat-icon">💾</div>
+        <div class="feat-title" id="f7t">Sin cuenta, sin nube</div>
+        <div class="feat-desc" id="f7d">Todo en tu dispositivo. Autosave automático, backup JSON, y funciona offline instalada como PWA.</div>
+      </div>
+      <div class="feat-card reveal">
+        <div class="feat-icon">🌍</div>
+        <div class="feat-title" id="f8t">Español e inglés</div>
+        <div class="feat-desc" id="f8d">Interfaz completamente traducida. Cambiás el idioma en un toque, sin recargar.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="section-divider"></div>
+
+<section class="section" style="background:var(--card)">
+  <div class="section-inner">
+    <div class="sec-tag reveal" id="how-tag">Cómo funciona</div>
+    <h2 class="sec-h reveal" id="how-h">De cero a itinerario<br><em>en 3 pasos.</em></h2>
+    <div class="steps">
+      <div class="step reveal">
+        <div class="step-title" id="s1t">Creá el viaje</div>
+        <div class="step-desc" id="s1d">Nombre y fechas en el calendario visual. Se generan todos los días automáticamente.</div>
+      </div>
+      <div class="step reveal">
+        <div class="step-title" id="s2t">Agregá destinos</div>
+        <div class="step-desc" id="s2d">Elegís los días en la tira visual, ponés ciudad, hotel y vuelo. Listo.</div>
+      </div>
+      <div class="step reveal">
+        <div class="step-title" id="s3t">Completá día a día</div>
+        <div class="step-desc" id="s3d">Actividades, gastos, notas por día. El clima se carga con un toque.</div>
+      </div>
+    </div>
+    <div class="reveal" style="margin-top:48px;display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);border-radius:16px;overflow:hidden;border:1px solid var(--border)">
+      <div class="proof-item">
+        <div class="proof-stat">100%</div>
+        <div class="proof-label" id="pr1">Gratis siempre</div>
+      </div>
+      <div class="proof-item">
+        <div class="proof-stat">0</div>
+        <div class="proof-label" id="pr2">Datos en servidores</div>
+      </div>
+      <div class="proof-item">
+        <div class="proof-stat">2–3</div>
+        <div class="proof-label" id="pr3">Toques por acción</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="cta-section">
+  <div style="max-width:700px;margin:0 auto">
+    <h2 id="cta-h">¿Próximo viaje?<br><em>Ya podés planificarlo.</em></h2>
+    <p id="cta-p">Abrí la app ahora. Sin registro, sin datos personales, sin nada. Solo tu viaje.</p>
+    <div class="cta-row">
+      <a href="https://bitacora-theta.vercel.app/app.html" class="btn btn-primary btn-lg" id="cta-open">🗺️ Abrir Bitacora</a>
+      <a href="https://bitacora-theta.vercel.app/app.html" class="btn btn-lg" style="background:rgba(255,255,255,.1);color:white;border:1.5px solid rgba(255,255,255,.2)" id="cta-dl2" onclick="handleDL(event)">⬇️ Instalar como app</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <p>Bitacora · <span id="ft-made">Hecho con ♥ para viajeros</span> · <a href="https://bitacora-theta.vercel.app/app.html">Abrir app</a></p>
+</footer>
+
+<script>
+const APP_URL='https://bitacora-theta.vercel.app/app.html';
+let LANG=localStorage.getItem('btc-land-lang')||'es';
+const T={
+  es:{
+    'nav-features':'Funciones','nav-cta':'Abrir app →',
+    'hero-badge':'✨ Gratis · Sin registro · Sin servidores',
+    'hero-h1':'Tu viaje,<br><em>perfectamente organizado.</em>',
+    'hero-sub':'Planificá itinerarios día a día, controlá presupuesto por categoría y compartí el viaje con un solo link.',
+    'chip1':'📅 Itinerario','chip2':'💰 Presupuesto','chip3':'📍 Mapa','chip4':'🌡 Clima','chip5':'🔗 Compartir',
+    'cta-main':'🗺️ Planificar ahora','cta-dl':'⬇️ Descargar app',
+    'hero-note':'Sin cuenta. Sin instalación. Funciona desde el navegador.',
+    'feat-tag':'Funciones','feat-h':'Todo lo que necesitás<br>para <em>planificar bien.</em>',
+    'feat-sub':'Diseñado para ser rápido y simple. Cualquier acción en 2–3 toques.',
+    'f1t':'Itinerario día a día','f1d':'Organizá cada día con destino, hotel, vuelo, actividades y notas. Timeline visual agrupado por ciudad.',
+    'f2t':'Rangos de destino','f2d':'Asignás "Roma del 15 al 19" y esos días quedan agrupados con su color en el calendario y timeline.','f2b':'Selector visual de días',
+    'f3t':'Control de gastos','f3d':'Registrá gastos por categoría: vuelos, hoteles, comida, actividades, transporte. Gráficos de distribución.',
+    'f4t':'Mapa de lugares','f4d':'Todos tus destinos con hoteles, vuelos y actividades. Un toque abre Google Maps.',
+    'f5t':'Clima integrado','f5d':'Clima para cada día del viaje. Datos históricos y pronóstico hasta 16 días. Sin salir de la app.',
+    'f6t':'Compartir con un link','f6d':'Generá un link y compartí en modo solo lectura. También exportá PDF o HTML.',
+    'f7t':'Sin cuenta, sin nube','f7d':'Todo en tu dispositivo. Autosave, backup JSON, y funciona offline como PWA.',
+    'f8t':'Español e inglés','f8d':'Interfaz completamente traducida. Cambiás el idioma en un toque.',
+    'how-tag':'Cómo funciona','how-h':'De cero a itinerario<br><em>en 3 pasos.</em>',
+    's1t':'Creá el viaje','s1d':'Nombre y fechas en el calendario visual. Todos los días se generan solos.',
+    's2t':'Agregá destinos','s2d':'Elegís los días en la tira visual, ponés ciudad, hotel y vuelo. Listo.',
+    's3t':'Completá día a día','s3d':'Actividades, gastos, notas por día. El clima con un toque.',
+    'pr1':'Gratis siempre','pr2':'Datos en servidores','pr3':'Toques por acción',
+    'cta-h':'¿Próximo viaje?<br><em>Ya podés planificarlo.</em>',
+    'cta-p':'Abrí la app ahora. Sin registro, sin datos personales, sin nada. Solo tu viaje.',
+    'cta-open':'🗺️ Abrir Bitacora','cta-dl2':'⬇️ Instalar como app',
+    'ft-made':'Hecho con ♥ para viajeros',
+  },
+  en:{
+    'nav-features':'Features','nav-cta':'Open app →',
+    'hero-badge':'✨ Free · No account · No servers',
+    'hero-h1':'Your trip,<br><em>perfectly organized.</em>',
+    'hero-sub':'Plan itineraries day by day, track expenses by category and share your trip with one link.',
+    'chip1':'📅 Itinerary','chip2':'💰 Budget','chip3':'📍 Map','chip4':'🌡 Weather','chip5':'🔗 Share',
+    'cta-main':'🗺️ Start planning','cta-dl':'⬇️ Download app',
+    'hero-note':'No account. No install. Works right in your browser.',
+    'feat-tag':'Features','feat-h':'Everything you need<br>to <em>plan it right.</em>',
+    'feat-sub':'Designed to be fast and simple. Every action in 2–3 taps.',
+    'f1t':'Day-by-day itinerary','f1d':'Plan each day with destination, hotel, flights, activities and notes. Visual timeline grouped by city.',
+    'f2t':'Destination ranges','f2d':'Assign "Rome Jun 15–19" and those days are grouped with their color in the calendar and timeline.','f2b':'New visual day selector',
+    'f3t':'Expense tracking','f3d':'Log expenses by category: flights, hotels, food, activities, transport. Distribution charts.',
+    'f4t':'Places map','f4d':'All your destinations with hotels, flights and activities. One tap opens Google Maps.',
+    'f5t':'Built-in weather','f5d':'Weather for each trip day. Historical data and 16-day forecast. Without leaving the app.',
+    'f6t':'Share with one link','f6d':'Generate a link and share in read-only mode. Also export as PDF or HTML.',
+    'f7t':'No account, no cloud','f7d':'Everything on your device. Autosave, JSON backup, and works offline as a PWA.',
+    'f8t':'Spanish and English','f8d':'Fully translated interface. Switch languages in one tap.',
+    'how-tag':'How it works','how-h':'From zero to itinerary<br><em>in 3 steps.</em>',
+    's1t':'Create the trip','s1d':'Name and dates on the visual calendar. All days are generated automatically.',
+    's2t':'Add destinations','s2d':'Pick days on the visual strip, set city, hotel and flight. Done.',
+    's3t':'Fill in day by day','s3d':'Activities, expenses, notes per day. Weather with one tap.',
+    'pr1':'Always free','pr2':'Data on servers','pr3':'Taps per action',
+    'cta-h':'Next trip?<br><em>Start planning it now.</em>',
+    'cta-p':'Open the app now. No account, no personal data, nothing. Just your trip.',
+    'cta-open':'🗺️ Open Bitacora','cta-dl2':'⬇️ Install as app',
+    'ft-made':'Made with ♥ for travelers',
+  }
+};
+
+function setLang(l){
+  LANG=l;
+  localStorage.setItem('btc-land-lang',l);
+  document.getElementById('btn-es').classList.toggle('on',l==='es');
+  document.getElementById('btn-en').classList.toggle('on',l==='en');
+  const tx=T[l];
+  for(const[id,val]of Object.entries(tx)){const el=document.getElementById(id);if(el)el.innerHTML=val;}
+}
+function handleDL(e){
+  if(!/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)){
+    e.preventDefault();const a=document.createElement('a');a.href=APP_URL;a.download='bitacora.html';a.click();
+  }
+}
+const ro=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');ro.unobserve(e.target);}});
+},{threshold:0.12});
+document.querySelectorAll('.reveal').forEach(el=>ro.observe(el));
+window.addEventListener('scroll',()=>document.getElementById('nav').classList.toggle('scrolled',window.scrollY>20));
+setLang(LANG);
+</script>
+</body>
+</html>

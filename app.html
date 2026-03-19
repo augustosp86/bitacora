@@ -1272,6 +1272,17 @@ function updTripNotes(id, val) {
   updTripNotes._t=setTimeout(()=>save(), 600);
 }
 
+
+// ─── ITEMS PER DAY helper ──────────────────────────────────────────────────
+function itemsForDay(t, dayIdx) {
+  // Returns {total, items[]} from t.items[] matching the day's date
+  if (!Array.isArray(t.items) || !t.days[dayIdx]) return {total:0, items:[]};
+  const dayDate = t.days[dayIdx].date.split('T')[0]; // YYYY-MM-DD
+  const matched = t.items.filter(itm => itm.date === dayDate);
+  const total = matched.reduce((s, itm) => s + (parseFloat(itm.price)||0), 0);
+  return {total, items: matched};
+}
+
 // ─── TRIP BUDGET ───
 function updTripBudget(val){
   const t=trip(); if(!t) return;
@@ -1353,8 +1364,9 @@ function saveSeg(city, fromDate, toDate, hotel, flight) {
   if(!city?.name){toast(L('toastCity'));return;}
   if(!fromDate||!toDate){toast(L('toastDates'));return;}
 
-  const tripStart=new Date(t.startDate); tripStart.setHours(0,0,0,0);
-  const tripEnd=new Date(t.endDate); tripEnd.setHours(0,0,0,0);
+  // Use T12:00 to avoid UTC parse giving previous day in negative-offset timezones
+  const tripStart=new Date(t.startDate+'T12:00'); tripStart.setHours(0,0,0,0);
+  const tripEnd=new Date(t.endDate+'T12:00'); tripEnd.setHours(0,0,0,0);
   const from=new Date(fromDate); from.setHours(0,0,0,0);
   const to=new Date(toDate); to.setHours(0,0,0,0);
 
@@ -1757,7 +1769,7 @@ function rTrip() {
       t.days.forEach((d,i)=>{
         const seg=effectiveSeg(t,i);
         const si=seg?t.segments.indexOf(seg):-1;
-        const bv=parseFloat(d.budget)||0,ev=parseFloat(d.expense)||0,df=bv-ev;
+        const ifd_b=itemsForDay(t,i); const bv=parseFloat(d.budget)||0,ev=ifd_b.total>0?ifd_b.total:(parseFloat(d.expense)||0),df=bv-ev;
         const dc=(!bv&&!ev)?'ne':df>=0?'ok':'ov',ds=(!bv&&!ev)?'—':(df>=0?'+':'')+df.toLocaleString('es-AR',{maximumFractionDigits:0});
         const dt=new Date(d.date.split('T')[0]+'T12:00').toLocaleDateString('es-ES',{weekday:'short',day:'numeric',month:'short'});
         const catEmoji=CAT_EMOJI[d.category]||'';
@@ -1771,10 +1783,20 @@ function rTrip() {
             <div class="bdiff ${dc}">${ds}</div>
           </div>
           <div class="cat-row">${cats().map(c=>`<button class="cat-btn ${d.category===c.key?'on':''}" data-cat="${c.key}" onclick="setCat(${i},'${c.key}',this)">${c.emoji} ${c.label}</button>`).join('')}</div>
-          <div class="binps">
-            <div class="binp-w"><label>${L('budget')}</label><input class="binp" type="number" min="0" value="${esc(d.budget)}" placeholder="0" oninput="updDay(${i},'budget',this.value)"/></div>
-            <div class="binp-w"><label>${catEmoji||'💰'} ${L('expense')}</label><input class="binp" type="number" min="0" value="${esc(d.expense)}" placeholder="0" oninput="updDay(${i},'expense',this.value)"/></div>
-          </div>
+          ${(()=>{ const ifd=itemsForDay(t,i); const autoExp=ifd.total; const manExp=parseFloat(d.expense)||0; const showExp=autoExp>0?autoExp:manExp;
+            return `<div class="binps">
+              <div class="binp-w"><label>${L('budget')}</label><input class="binp" type="number" min="0" value="${esc(d.budget)}" placeholder="0" oninput="updDay(${i},'budget',this.value)"/></div>
+              <div class="binp-w">
+                <label>${catEmoji||'💰'} ${L('expense')}${autoExp>0?` <span style="font-size:9px;font-weight:600;color:var(--green);background:var(--green-bg);padding:1px 5px;border-radius:8px">auto</span>`:''}</label>
+                ${autoExp>0
+                  ? `<div class="binp" style="display:flex;align-items:center;justify-content:flex-end;background:var(--green-bg);border-color:#6EE7B7;color:var(--green);font-family:var(--fd);font-size:17px;font-weight:500">${showExp.toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2})}</div>`
+                  : `<input class="binp" type="number" min="0" value="${esc(d.expense)}" placeholder="0" oninput="updDay(${i},'expense',this.value)"/>`
+                }
+              </div>
+            </div>
+            ${autoExp>0&&ifd.items.length?`<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:4px">${ifd.items.map(itm=>`<div style="font-size:9px;padding:3px 7px;border-radius:6px;background:var(--bg2);color:var(--ink2)">${icatIcon(itm.category)} ${esc(itm.name||'')} ${parseFloat(itm.price).toLocaleString('es-AR',{maximumFractionDigits:0})}</div>`).join('')}</div>`:''}
+            `;
+          })()}
         </div>`;
       });
       h+=`</div>`;
@@ -2550,11 +2572,10 @@ function buildRangeCal(containerId, fromId, toId) {
   }
   const month = c._rpMonth;
   const year = c._rpYear;
-  const today = new Date(); today.setHours(0,0,0,0);
-  const fromVal = fromEl.value;
-  const toVal = toEl.value;
-  const from = fromVal ? new Date(fromVal + 'T12:00') : null;
-  const to = toVal ? new Date(toVal + 'T12:00') : null;
+  // Use YYYY-MM-DD strings for comparison to avoid all timezone issues
+  const todayStr = new Date().toLocaleDateString('en-CA'); // YYYY-MM-DD local
+  const fromVal = fromEl.value;  // YYYY-MM-DD or ''
+  const toVal = toEl.value;      // YYYY-MM-DD or ''
 
   const months = S.lang === 'en' ? MONTHS_EN : MONTHS_ES;
   const dayNames = S.lang === 'en' ? DAYS_EN : DAYS_ES;
@@ -2568,12 +2589,11 @@ function buildRangeCal(containerId, fromId, toId) {
   for (let i = 0; i < startDow; i++) grid += `<div class="rdp-empty"></div>`;
 
   for (let d = 1; d <= lastDay; d++) {
-    const date = new Date(year, month, d);
     const ds = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-    const isToday = date.getTime() === today.getTime();
-    const isFrom = from && date.getTime() === from.getTime();
-    const isTo = to && date.getTime() === to.getTime();
-    const inRange = from && to && date > from && date < to;
+    const isFrom = ds === fromVal;
+    const isTo   = ds === toVal;
+    const inRange = fromVal && toVal && ds > fromVal && ds < toVal;
+    const isToday = ds === todayStr;
 
     let cls = 'rdp-d';
     if (isFrom || isTo) cls += ' rdp-sel';

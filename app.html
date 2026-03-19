@@ -1553,6 +1553,7 @@ function rTrip() {
       });
       h+='</tbody></table>';
       h+=`<div class="cal-legend"><div class="cal-li"><div class="cal-sw" style="background:#2563EB26;border:1.5px solid #2563EB55"></div>${L('legDest')}</div><div class="cal-li"><div class="cal-sw" style="background:var(--bg2)"></div>${L('legNone')}</div><div class="cal-li"><div class="cal-sw" style="box-shadow:inset 0 0 0 2px var(--ink)"></div>${L('legToday')}</div></div>`;
+      h+=`<button class="add-seg-btn" onclick="openNewSeg()" style="margin-top:8px">${L('addDestBtn')}</button>`;
       h+='</div>';
     }
   }
@@ -2666,12 +2667,9 @@ function rpNext(cid, fid, tid) {
 }
 
 function wireRangePicker() {
-  if (S.sheet === 'new') {
-    setTimeout(() => buildRangeCal('trip-rdp', 'ss', 'se'), 50);
-  }
-  if (S.sheet === 'edit') {
-    setTimeout(() => buildRangeCal('edit-rdp', 'es', 'ee'), 50);
-  }
+  // Direct call, no extra setTimeout (caller already inside setTimeout)
+  if (S.sheet === 'new') buildRangeCal('trip-rdp', 'ss', 'se');
+  if (S.sheet === 'edit') buildRangeCal('edit-rdp', 'es', 'ee');
 }
 
 // ─── MAIN RENDER ───
@@ -2719,8 +2717,8 @@ function render() {
 
   // Post-render: wire autocomplete and focus
   if(S.sheet==='seg') { setTimeout(()=>{ wireSegAutocomplete(); wireSegDayStrip(); },50); }
-  if(S.sheet==='new') { setTimeout(()=>{ document.getElementById('sn')?.focus(); wireRangePicker(); },60); }
-  if(S.sheet==='edit') { setTimeout(()=>{ wireRangePicker(); },50); }
+  if(S.sheet==='new') { setTimeout(()=>{ document.getElementById('sn')?.focus(); wireRangePicker(); },80); }
+  if(S.sheet==='edit') { setTimeout(()=>{ wireRangePicker(); },80); }
   if(S.sheet==='item') { setTimeout(()=>document.getElementById('item-name')?.focus(),60); }
   if(S.sheet==='activity') { setTimeout(()=>document.getElementById('act-name')?.focus(),60); }
   if(S.sheet==='edit') setTimeout(()=>document.getElementById('en')?.focus(),60);

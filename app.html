@@ -1770,8 +1770,8 @@ function rTrip() {
       t.days.forEach((d,i)=>{
         const seg=effectiveSeg(t,i);
         const si=seg?t.segments.indexOf(seg):-1;
-        const ifd_b=itemsForDay(t,i); const bv=parseFloat(d.budget)||0,ev=ifd_b.total>0?ifd_b.total:(parseFloat(d.expense)||0),df=bv-ev;
-        const dc=(!bv&&!ev)?'ne':df>=0?'ok':'ov',ds=(!bv&&!ev)?'—':(df>=0?'+':'')+df.toLocaleString('es-AR',{maximumFractionDigits:0});
+        const ifd_b=itemsForDay(t,i); const ev=ifd_b.total>0?ifd_b.total:(parseFloat(d.expense)||0);
+        const dc=!ev?'ne':'ok', ds=ev>0?`${t.currency||'USD'} ${ev.toLocaleString('es-AR',{maximumFractionDigits:0})}`:'—';
         const dt=new Date(d.date.split('T')[0]+'T12:00').toLocaleDateString('es-ES',{weekday:'short',day:'numeric',month:'short'});
         const catEmoji=CAT_EMOJI[d.category]||'';
         h+=`<div class="brow">
@@ -1784,19 +1784,22 @@ function rTrip() {
             <div class="bdiff ${dc}">${ds}</div>
           </div>
           <div class="cat-row">${cats().map(c=>`<button class="cat-btn ${d.category===c.key?'on':''}" data-cat="${c.key}" onclick="setCat(${i},'${c.key}',this)">${c.emoji} ${c.label}</button>`).join('')}</div>
-          ${(()=>{ const ifd=itemsForDay(t,i); const autoExp=ifd.total; const manExp=parseFloat(d.expense)||0; const showExp=autoExp>0?autoExp:manExp;
-            return `<div class="binps">
-              <div class="binp-w"><label>${L('budget')}</label><input class="binp" type="number" min="0" value="${esc(d.budget)}" placeholder="0" oninput="updDay(${i},'budget',this.value)"/></div>
-              <div class="binp-w">
-                <label>${catEmoji||'💰'} ${L('expense')}${autoExp>0?` <span style="font-size:9px;font-weight:600;color:var(--green);background:var(--green-bg);padding:1px 5px;border-radius:8px">auto</span>`:''}</label>
-                ${autoExp>0
-                  ? `<div class="binp" style="display:flex;align-items:center;justify-content:flex-end;background:var(--green-bg);border-color:#6EE7B7;color:var(--green);font-family:var(--fd);font-size:17px;font-weight:500">${showExp.toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2})}</div>`
-                  : `<input class="binp" type="number" min="0" value="${esc(d.expense)}" placeholder="0" oninput="updDay(${i},'expense',this.value)"/>`
-                }
-              </div>
-            </div>
-            ${autoExp>0&&ifd.items.length?`<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:4px">${ifd.items.map(itm=>`<div style="font-size:9px;padding:3px 7px;border-radius:6px;background:var(--bg2);color:var(--ink2)">${icatIcon(itm.category)} ${esc(itm.name||'')} ${parseFloat(itm.price).toLocaleString('es-AR',{maximumFractionDigits:0})}</div>`).join('')}</div>`:''}
-            `;
+          ${(()=>{
+            const ifd=itemsForDay(t,i);
+            const autoExp=ifd.total;
+            if(autoExp>0){
+              // Auto mode: show total + item pills, no editable fields
+              return `<div style="margin-top:6px">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+                  <span style="font-size:10px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px">💰 ${S.lang==='en'?'Expenses':'Gastos'}</span>
+                  <span style="font-family:var(--fd);font-size:18px;font-weight:500;color:var(--green)">${t.currency||'USD'} ${autoExp.toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2})}</span>
+                </div>
+                <div style="display:flex;flex-wrap:wrap;gap:4px">${ifd.items.map(itm=>`<div style="font-size:9px;padding:3px 8px;border-radius:6px;background:var(--bg2);color:var(--ink2);display:flex;align-items:center;gap:3px"><span>${icatIcon(itm.category)}</span><span>${esc(itm.name||'')}</span><span style="font-weight:700">${(t.currency||'USD')} ${parseFloat(itm.price).toLocaleString('es-AR',{maximumFractionDigits:0})}</span></div>`).join('')}</div>
+              </div>`;
+            } else {
+              // No items: show empty state, no input needed
+              return `<div style="margin-top:4px;font-size:10px;color:var(--ink3);padding:6px 2px">${S.lang==='en'?'No expenses for this day yet. Add them in the Expenses tab.':'Sin gastos para este día. Agregálos en el tab Gastos.'}</div>`;
+            }
           })()}
         </div>`;
       });
@@ -2326,10 +2329,12 @@ function segStripClick(ds) {
   if (!fromEl || !toEl) return;
   const fv = fromEl.value, tv = toEl.value;
   if (!fv || (fv && tv)) {
+    // Start fresh selection
     fromEl.value = ds; toEl.value = '';
   } else {
+    // Have from, need to
     if (ds < fv) { toEl.value = fv; fromEl.value = ds; }
-    else if (ds === fv) { fromEl.value = ''; }
+    else if (ds === fv) { toEl.value = ds; } // same day = 1-day range
     else { toEl.value = ds; }
   }
   const strip = document.getElementById('seg-day-strip');

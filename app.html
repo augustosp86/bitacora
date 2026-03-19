@@ -1305,7 +1305,7 @@ function openNewItem(){
 function openEditItem(i){
   S.sheet='item'; S.editItemIdx=i;
   const it=trip()?.items?.[i]||{};
-  S._itemDraft={name:it.name||'',category:it.category||'flight',price:it.price!=null?String(it.price):''};
+  S._itemDraft={name:it.name||'',category:it.category||'flight',price:it.price!=null?String(it.price):'',date:it.date||''};
   render();
 }
 function saveItem(){
@@ -1319,7 +1319,7 @@ function saveItem(){
   if(price===''||price==null||isNaN(p)||p<0){toast(L('toastFields'));return;}
   const cat=d.category||'other';
   const existing=(S.editItemIdx!=null&&S.editItemIdx>=0&&S.editItemIdx<t.items.length)?t.items[S.editItemIdx]:null;
-  const item={id:existing?.id||Date.now(),name:n,category:cat,icon:icatIcon(cat),price:p};
+  const item={id:existing?.id||Date.now(),name:n,category:cat,icon:icatIcon(cat),price:p,date:d.date||''};
   if(existing) t.items[S.editItemIdx]=item;
   else t.items.push(item);
   S.sheet=null; S.editItemIdx=null; S._itemDraft={name:'',category:'flight',price:''};
@@ -1405,8 +1405,9 @@ function buildCal() {
   const label=new Date(y,m,1).toLocaleDateString('es-ES',{month:'long',year:'numeric'});
   const daysInMonth=new Date(y,m+1,0).getDate();
   const firstDow=new Date(y,m,1).getDay();
-  const tripStart=new Date(t.startDate); tripStart.setHours(0,0,0,0);
-  const tripEnd=new Date(t.endDate); tripEnd.setHours(0,0,0,0);
+  // String comparison avoids all timezone issues (same approach as range picker)
+  const tripStartStr=t.startDate.split('T')[0];
+  const tripEndStr=t.endDate.split('T')[0];
   const lookup={};
   t.days.forEach((d,i)=>{
     const ds=d.date.split('T')[0]; // "YYYY-MM-DD"
@@ -1419,8 +1420,8 @@ function buildCal() {
   });
   const weeks=[]; let week=new Array(firstDow).fill(null);
   for(let day=1;day<=daysInMonth;day++){
-    const cur=new Date(y,m,day); cur.setHours(0,0,0,0);
-    const inTrip=cur>=tripStart&&cur<=tripEnd;
+    const ds2=`${y}-${String(m+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+    const inTrip=ds2>=tripStartStr&&ds2<=tripEndStr;
     week.push({day,info:lookup[day]||null,inTrip});
     if(week.length===7){weeks.push(week);week=[];}
   }
@@ -2275,7 +2276,8 @@ function wireSegDayStrip() {
       const inSelf  = fromVal && !toVal && ds === fromVal;
 
       const dayNum = i + 1;
-      const dateObj = new Date(d.date + 'T00:00');
+      const [dy2,dm2,dd2]=ds.split('-').map(Number);
+      const dateObj = new Date(dy2, dm2-1, dd2);
       const label = dateObj.toLocaleDateString(S.lang === 'en' ? 'en-US' : 'es-ES', {day:'numeric',month:'short'});
 
       let bg, border, color, fw='500';

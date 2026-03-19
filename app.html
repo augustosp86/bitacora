@@ -1365,10 +1365,11 @@ function saveSeg(city, fromDate, toDate, hotel, flight) {
   if(!fromDate||!toDate){toast(L('toastDates'));return;}
 
   // Use T12:00 to avoid UTC parse giving previous day in negative-offset timezones
-  const tripStart=new Date(t.startDate+'T12:00'); tripStart.setHours(0,0,0,0);
-  const tripEnd=new Date(t.endDate+'T12:00'); tripEnd.setHours(0,0,0,0);
-  const from=new Date(fromDate); from.setHours(0,0,0,0);
-  const to=new Date(toDate); to.setHours(0,0,0,0);
+  // Always parse with T12:00 to avoid UTC off-by-one in negative-offset timezones
+  const tripStart=new Date(t.startDate.split('T')[0]+'T12:00'); tripStart.setHours(0,0,0,0);
+  const tripEnd=new Date(t.endDate.split('T')[0]+'T12:00'); tripEnd.setHours(0,0,0,0);
+  const from=new Date(fromDate.split('T')[0]+'T12:00'); from.setHours(0,0,0,0);
+  const to=new Date(toDate.split('T')[0]+'T12:00'); to.setHours(0,0,0,0);
 
   if(from>to){toast(L('toastFromTo'));return;}
   if(from<tripStart||to>tripEnd){toast(L('toastRange'));return;}

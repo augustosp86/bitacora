@@ -2554,8 +2554,8 @@ async function copyTripText(){
   const NL='\n';
   const parts=[];
   parts.push('✈ '+t.name);
-  const loc=loc();
-  parts.push('📅 '+new Date(t.startDate+'T12:00').toLocaleDateString(loc,{day:'numeric',month:'long',year:'numeric'})+' → '+new Date(t.endDate+'T12:00').toLocaleDateString(loc,{day:'numeric',month:'long',year:'numeric'}));
+  const locFmt=loc();
+  parts.push('📅 '+new Date(t.startDate+'T12:00').toLocaleDateString(locFmt,{day:'numeric',month:'long',year:'numeric'})+' → '+new Date(t.endDate+'T12:00').toLocaleDateString(locFmt,{day:'numeric',month:'long',year:'numeric'}));
   parts.push('⏱ '+t.days.length+' '+(S.lang==='en'?'days':'días'));
   if(segs.length){
     parts.push('');
@@ -2563,7 +2563,7 @@ async function copyTripText(){
     segs.forEach(s=>{
       let line='  • '+s.dest;
       const fd=t.days[s.fromIdx]?.date,td=t.days[s.toIdx]?.date;
-      if(fd&&td) line+=' ('+new Date(fd+'T12:00').toLocaleDateString(loc,{day:'numeric',month:'short'})+' → '+new Date(td+'T12:00').toLocaleDateString(loc,{day:'numeric',month:'short'})+')';
+      if(fd&&td) line+=' ('+new Date(fd+'T12:00').toLocaleDateString(locFmt,{day:'numeric',month:'short'})+' → '+new Date(td+'T12:00').toLocaleDateString(locFmt,{day:'numeric',month:'short'})+')';
       if(s.hotel) line+=' · 🏨 '+s.hotel;
       if(s.flight) line+=' · ✈ '+s.flight;
       parts.push(line);

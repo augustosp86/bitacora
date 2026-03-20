@@ -1871,8 +1871,8 @@ function rTrip() {
         h+=`</div><div class="tl-group-days" style="border-color:${bdColor}">`;
         days.forEach(i=>{
           const d=t.days[i]; const iT=isToday(d.date);
-          const dateStr=new Date(d.date+'T12:00').toLocaleDateString(loc(),{day:'numeric',month:'short'}).toUpperCase();
-          const dow=new Date(d.date+'T12:00').toLocaleDateString(loc(),{weekday:'short'});
+          const dateStr=new Date(d.date.split('T')[0]+'T12:00').toLocaleDateString(loc(),{day:'numeric',month:'short'}).toUpperCase();
+          const dow=new Date(d.date.split('T')[0]+'T12:00').toLocaleDateString(loc(),{weekday:'short'});
           const ev=parseFloat(d.expense)||0;
           let chips='';
           const dayHotel=(d.hotels||[]).filter(Boolean)[0]||d.hotel||'';
@@ -1900,8 +1900,8 @@ function rTrip() {
         h+=`<div class="tl-ungrouped">`;
         days.forEach(i=>{
           const d=t.days[i]; const iT=isToday(d.date);
-          const dateStr=new Date(d.date+'T12:00').toLocaleDateString(loc(),{day:'numeric',month:'short'}).toUpperCase();
-          const dow=new Date(d.date+'T12:00').toLocaleDateString(loc(),{weekday:'short'});
+          const dateStr=new Date(d.date.split('T')[0]+'T12:00').toLocaleDateString(loc(),{day:'numeric',month:'short'}).toUpperCase();
+          const dow=new Date(d.date.split('T')[0]+'T12:00').toLocaleDateString(loc(),{weekday:'short'});
           const ev=parseFloat(d.expense)||0;
           let chips='';
           if(ev>0){const ce=CAT_EMOJI[d.category]||'💰';chips+=`<span class="tl-chip expense">${ce} ${sym} ${ev.toLocaleString(loc(),{maximumFractionDigits:0})}</span>`;}
@@ -2166,7 +2166,7 @@ function rTrip() {
         const ds=d.date.split('T')[0]; // YYYY-MM-DD
         const key=`${seg.dest.toLowerCase()}|${ds}`;
         const w=S.wCache[key];
-        const dt=new Date(d.date).toLocaleDateString(loc(),{weekday:'short',day:'numeric',month:'short'});
+        const dt=new Date(d.date.split('T')[0]+'T12:00').toLocaleDateString(loc(),{weekday:'short',day:'numeric',month:'short'});
         const destEnc=encodeURIComponent(seg.dest);
         const googleUrl=`https://www.google.com/search?q=clima+${destEnc}+${ds}`;
         const acUrl=`https://www.accuweather.com/en/search-locations?query=${destEnc}`;
@@ -2298,7 +2298,7 @@ function rDay() {
   const eff=effectiveSeg(t,i);
   const dt=new Date(d.date.split('T')[0]+'T12:00').toLocaleDateString(loc(),{weekday:'long',day:'numeric',month:'long'});
   const iT=isToday(d.date);
-  const ds=new Date(d.date).toISOString().split('T')[0];
+  const ds=d.date.split('T')[0];
   const key=eff?.dest?`${eff.dest.toLowerCase()}|${ds}`:null;
   const w=key?S.wCache[key]:null;
 
@@ -2467,7 +2467,7 @@ function buildExportHTML(t, forPrint) {
     daysHtml+=`<div style="padding:10px 0;border-bottom:1px solid #f0f0f0">
       <div style="display:flex;align-items:center;gap:10px">
         <div style="width:28px;height:28px;border-radius:50%;background:#1A1714;color:white;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0">${i+1}</div>
-        <div style="font-size:13px;font-weight:600">${new Date(d.date).toLocaleDateString(loc(),{weekday:'short',day:'numeric',month:'short'}).toUpperCase()}</div>
+        <div style="font-size:13px;font-weight:600">${new Date(d.date.split('T')[0]+'T12:00').toLocaleDateString(loc(),{weekday:'short',day:'numeric',month:'short'}).toUpperCase()}</div>
         ${dayExp>0?`<div style="margin-left:auto;font-size:12px;font-weight:700;color:#059669">${sym} ${dayExp.toLocaleString(loc(),{maximumFractionDigits:0})}</div>`:''}
       </div>
       ${dayHotel}${dayFlight}${dayNote}

@@ -962,8 +962,10 @@ const AFF = {
 };
 // Helper: build affiliate URLs
 function affBooking(dest, year, month, day) {
+  if(!dest) return 'https://www.booking.com';
   const enc = encodeURIComponent(dest);
-  return `https://www.booking.com/search.html?ss=${enc}&checkin_year=${year}&checkin_month=${parseInt(month)}&checkin_monthday=${parseInt(day)}&affiliate_id=${AFF.booking}&label=bitacora`;
+  const y=year||''; const m=parseInt(month)||''; const d=parseInt(day)||'';
+  return `https://www.booking.com/search.html?ss=${enc}${y?`&checkin_year=${y}&checkin_month=${m}&checkin_monthday=${d}`:''}&affiliate_id=${AFF.booking}&label=bitacora`;
 }
 function affSkyscanner(dest) {
   // Use standard search: works without partner ID, deep-links to destination
@@ -2202,102 +2204,86 @@ function rTrip() {
   // ── SEARCH ──
   if(S.tab==='search') {
     const segs=t.segments||[];
-    const uniqDests=[...new Map(segs.map(s=>[s.dest,s])).values()];
-    // Active destination for search (default: first, or selected)
-    if(!S._srchDestIdx) S._srchDestIdx=0;
+    // Unique destinations
+    const destsSeen=new Set();
+    const uniqDests=segs.filter(s=>{ if(destsSeen.has(s.dest)) return false; destsSeen.add(s.dest); return true; });
+    if(S._srchDestIdx===undefined||S._srchDestIdx===null||S._srchDestIdx>=uniqDests.length) S._srchDestIdx=0;
     const activeSeg=uniqDests[S._srchDestIdx]||null;
-    const dest=activeSeg?.dest||'';
-    const destFull=activeSeg?.destFull||dest;
+    const dest=activeSeg?activeSeg.dest:'';
+    const destFull=activeSeg?(activeSeg.destFull||activeSeg.dest):'';
+    const segFromIdx=activeSeg?activeSeg.fromIdx:0;
+    const segToIdx=activeSeg?activeSeg.toIdx:0;
+    const dateFrom=activeSeg?(t.days[segFromIdx]?t.days[segFromIdx].date.split('T')[0]:''):'';
+    const dateTo=activeSeg?(t.days[segToIdx]?t.days[segToIdx].date.split('T')[0]:''):'';
+    const dateParts=dateFrom?dateFrom.split('-'):['','',''];
+    const bY=dateParts[0]||''; const bM=dateParts[1]||''; const bD=dateParts[2]||'';
     const destEnc=encodeURIComponent(dest);
-    // Get date range for this segment
-    const segObj=segs.find(s=>s.dest===dest);
-    const dateFrom=segObj?t.days[segObj.fromIdx]?.date?.split('T')[0]:'';
-    const dateTo=segObj?t.days[segObj.toIdx]?.date?.split('T')[0]:'';
-    const [bY,bM,bD]=dateFrom?dateFrom.split('-'):['','',''];
+    const insuranceUrl='https://www.iati.com.ar/seguros-de-viaje/?destino='+destEnc+'&utm_source=bitacora';
+    const esimUrl='https://www.airalo.com/?utm_source=bitacora';
 
-    h+=`<div class="srch-wrap">`;
+    h+='<div class="srch-wrap">';
 
     if(!uniqDests.length){
-      h+=`<div style="margin:32px 0;text-align:center"><div style="font-size:36px;margin-bottom:12px">🔍</div><p style="font-size:13px;color:var(--ink3);line-height:1.6">${L('srchNoDestHint')}</p></div>`;
+      h+='<div style="margin:32px 0;text-align:center"><div style="font-size:36px;margin-bottom:12px">🔍</div>';
+      h+='<p style="font-size:13px;color:var(--ink3);line-height:1.6">'+L('srchNoDestHint')+'</p></div>';
     } else {
-      // Destination selector pills
-      h+=`<div class="srch-dest-selector">`;
-      uniqDests.forEach((sg,idx)=>{
+      // Destination pills
+      h+='<div class="srch-dest-selector">';
+      uniqDests.forEach(function(sg,idx){
         const col=destColor(segs.indexOf(sg));
-        h+=`<button class="srch-dest-btn ${idx===S._srchDestIdx?'on':''}" onclick="S._srchDestIdx=${idx};render()" style="${idx===S._srchDestIdx?`background:${col};border-color:${col}`:''}">📍 ${esc(sg.dest)}</button>`;
+        const isOn=idx===S._srchDestIdx;
+        const style=isOn?('background:'+col+';border-color:'+col+';color:white'):'';
+        h+='<button class="srch-dest-btn'+(isOn?' on':'')+'" onclick="S._srchDestIdx='+idx+';render()" style="'+style+'">📍 '+esc(sg.dest)+'</button>';
       });
-      h+=`</div>`;
+      h+='</div>';
 
       if(dest){
-        // Destination header
-        h+=`<div style="margin-bottom:14px;padding:12px 14px;background:var(--white);border-radius:var(--r);box-shadow:var(--sh);display:flex;align-items:center;gap:10px">
-          <div style="font-size:22px">📍</div>
-          <div><div style="font-size:14px;font-weight:700;color:var(--ink)">${esc(destFull||dest)}</div>
-          <div style="font-size:11px;color:var(--ink3);margin-top:1px">${dateFrom&&dateTo?`${fmtShort(dateFrom)} → ${fmtShort(dateTo)}`:S.lang==='en'?'No dates set':'Sin fechas'}</div></div>
-        </div>`;
+        // Header
+        const dateLabel=dateFrom&&dateTo?fmtShort(dateFrom)+' → '+fmtShort(dateTo):(S.lang==='en'?'No dates':'Sin fechas');
+        h+='<div style="margin-bottom:14px;padding:12px 14px;background:var(--white);border-radius:var(--r);box-shadow:var(--sh);display:flex;align-items:center;gap:10px">';
+        h+='<div style="font-size:22px">📍</div>';
+        h+='<div><div style="font-size:14px;font-weight:700;color:var(--ink)">'+esc(destFull||dest)+'</div>';
+        h+='<div style="font-size:11px;color:var(--ink3);margin-top:1px">'+dateLabel+'</div></div></div>';
 
-        const btnS='display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;padding:16px 10px;background:var(--white);border-radius:var(--r);border:1.5px solid var(--line2);text-decoration:none;color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.06);transition:transform .15s;cursor:pointer;text-align:center';
-        const btnHL='display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;padding:16px 10px;background:var(--blue-bg);border-radius:var(--r);border:1.5px solid var(--blue-bd);text-decoration:none;color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.06);transition:transform .15s;cursor:pointer;text-align:center';
+        const btnHL='flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;padding:16px 10px;background:var(--blue-bg);border-radius:var(--r);border:1.5px solid var(--blue-bd);text-decoration:none;color:var(--ink);text-align:center;cursor:pointer';
+        const btnN='flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;padding:16px 10px;background:var(--white);border-radius:var(--r);border:1.5px solid var(--line2);text-decoration:none;color:var(--ink);text-align:center;cursor:pointer';
         const lbl='font-size:12px;font-weight:700;color:var(--ink)';
         const sub='font-size:10px;color:var(--ink3);line-height:1.4;margin-top:1px';
 
-        // Flight + Hotel highlighted (highest conversion)
-        h+=`<div style="margin-bottom:10px">
-          <div class="srch-section-title">${S.lang==='en'?'✈️ Transport & accommodation':'✈️ Transporte y alojamiento'}</div>
-          <div class="srch-grid">
-            <a href="${affSkyscanner(dest)}" target="_blank" rel="noopener nofollow" style="${btnHL}">
-              <span style="font-size:28px">✈️</span>
-              <span style="${lbl}">${L('srchFlights')}</span>
-              <span style="${sub}">${L('srchFlightsSub')}</span>
-            </a>
-            <a href="${affBooking(dest,bY,bM,bD)}" target="_blank" rel="noopener nofollow" style="${btnHL}">
-              <span style="font-size:28px">🏨</span>
-              <span style="${lbl}">${L('srchHotels')}</span>
-              <span style="${sub}">${L('srchHotelsSub')}</span>
-            </a>
-          </div>
-        </div>`;
+        // Section 1: Flights + Hotels
+        h+='<div style="margin-bottom:10px">';
+        h+='<div class="srch-section-title">'+(S.lang==='en'?'✈️ Transport & accommodation':'✈️ Transporte y alojamiento')+'</div>';
+        h+='<div class="srch-grid">';
+        h+='<a href="'+affSkyscanner(dest)+'" target="_blank" rel="noopener nofollow" style="'+btnHL+'">';
+        h+='<span style="font-size:28px">✈️</span><span style="'+lbl+'">'+L('srchFlights')+'</span><span style="'+sub+'">'+L('srchFlightsSub')+'</span></a>';
+        h+='<a href="'+affBooking(dest,bY,bM,bD)+'" target="_blank" rel="noopener nofollow" style="'+btnHL+'">';
+        h+='<span style="font-size:28px">🏨</span><span style="'+lbl+'">'+L('srchHotels')+'</span><span style="'+sub+'">'+L('srchHotelsSub')+'</span></a>';
+        h+='</div></div>';
 
-        // Activities + Cars
-        h+=`<div style="margin-bottom:10px">
-          <div class="srch-section-title">${S.lang==='en'?'🎟️ Experiences & transport':'🎟️ Experiencias y transporte'}</div>
-          <div class="srch-grid">
-            <a href="${affGYG(dest)}" target="_blank" rel="noopener nofollow" style="${btnS}">
-              <span style="font-size:28px">🎟️</span>
-              <span style="${lbl}">${L('srchActivities')}</span>
-              <span style="${sub}">${L('srchActivitiesSub')}</span>
-            </a>
-            <a href="${affRentalcars(dest,dateFrom)}" target="_blank" rel="noopener nofollow" style="${btnS}">
-              <span style="font-size:28px">🚗</span>
-              <span style="${lbl}">${L('srchCars')}</span>
-              <span style="${sub}">${L('srchCarsSub')}</span>
-            </a>
-          </div>
-        </div>`;
+        // Section 2: Activities + Cars
+        h+='<div style="margin-bottom:10px">';
+        h+='<div class="srch-section-title">'+(S.lang==='en'?'🎟️ Experiences':'🎟️ Experiencias')+'</div>';
+        h+='<div class="srch-grid">';
+        h+='<a href="'+affGYG(dest)+'" target="_blank" rel="noopener nofollow" style="'+btnN+'">';
+        h+='<span style="font-size:28px">🎟️</span><span style="'+lbl+'">'+L('srchActivities')+'</span><span style="'+sub+'">'+L('srchActivitiesSub')+'</span></a>';
+        h+='<a href="'+affRentalcars(dest,dateFrom)+'" target="_blank" rel="noopener nofollow" style="'+btnN+'">';
+        h+='<span style="font-size:28px">🚗</span><span style="'+lbl+'">'+L('srchCars')+'</span><span style="'+sub+'">'+L('srchCarsSub')+'</span></a>';
+        h+='</div></div>';
 
-        // Insurance + eSIM
-        const insuranceUrl=`https://www.iati.com.ar/seguros-de-viaje/?destino=${destEnc}&utm_source=bitacora`;
-        const esimUrl=`https://www.airalo.com/?utm_source=bitacora`;
-        h+=`<div style="margin-bottom:14px">
-          <div class="srch-section-title">${S.lang==='en'?'🛡️ Protection':'🛡️ Protección'}</div>
-          <div class="srch-grid">
-            <a href="${insuranceUrl}" target="_blank" rel="noopener nofollow" style="${btnS}">
-              <span style="font-size:28px">🛡️</span>
-              <span style="${lbl}">${L('srchInsurance')}</span>
-              <span style="${sub}">${L('srchInsuranceSub')}</span>
-            </a>
-            <a href="${esimUrl}" target="_blank" rel="noopener nofollow" style="${btnS}">
-              <span style="font-size:28px">📱</span>
-              <span style="${lbl}">${L('srchEsim')}</span>
-              <span style="${sub}">${L('srchEsimSub')}</span>
-            </a>
-          </div>
-        </div>`;
+        // Section 3: Insurance + eSIM
+        h+='<div style="margin-bottom:14px">';
+        h+='<div class="srch-section-title">'+(S.lang==='en'?'🛡️ Protection':'🛡️ Protección')+'</div>';
+        h+='<div class="srch-grid">';
+        h+='<a href="'+insuranceUrl+'" target="_blank" rel="noopener nofollow" style="'+btnN+'">';
+        h+='<span style="font-size:28px">🛡️</span><span style="'+lbl+'">'+L('srchInsurance')+'</span><span style="'+sub+'">'+L('srchInsuranceSub')+'</span></a>';
+        h+='<a href="'+esimUrl+'" target="_blank" rel="noopener nofollow" style="'+btnN+'">';
+        h+='<span style="font-size:28px">📱</span><span style="'+lbl+'">'+L('srchEsim')+'</span><span style="'+sub+'">'+L('srchEsimSub')+'</span></a>';
+        h+='</div></div>';
 
-        h+=`<div class="srch-tip">${L('srchDisclaimer')}</div>`;
+        h+='<div class="srch-tip">'+L('srchDisclaimer')+'</div>';
       }
     }
-    h+=`</div>`;
+    h+='</div>';
   }
 
   return h;

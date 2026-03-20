@@ -1224,7 +1224,7 @@ function status(t) {
   const s=new Date(sStr+'T12:00'); const td=new Date(todayStr+'T12:00');
   return{type:'future',n:Math.round((s-td)/864e5)};
 }
-function loc(){return loc();}
+function loc(){return S.lang==='en'?'en-US':'es-ES';}
 function fmtD(str,opts){
   if(!str) return '';
   const s=str.split('T')[0];

@@ -107,6 +107,32 @@ footer a:hover{color:var(--ink)}
 @keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
 .reveal{opacity:0;transform:translateY(24px);transition:opacity .6s ease,transform .6s ease}
 .reveal.visible{opacity:1;transform:none}
+
+/* VIDEO SECTION */
+.vid-section{padding:80px 24px;background:var(--ink)}
+.vid-inner{max-width:900px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:center}
+@media(max-width:680px){.vid-inner{grid-template-columns:1fr;gap:32px;text-align:center}}
+.vid-phone{position:relative;margin:0 auto;width:260px}
+.vid-phone-frame{background:#111;border-radius:38px;padding:10px;box-shadow:0 32px 80px rgba(0,0,0,.5)}
+.vid-phone-inner{background:#F5F3EE;border-radius:30px;overflow:hidden;aspect-ratio:9/19.5;display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative}
+.vid-play-btn{width:64px;height:64px;border-radius:50%;background:rgba(37,99,235,.9);display:flex;align-items:center;justify-content:center;font-size:24px;color:white;backdrop-filter:blur(8px);transition:transform .2s;box-shadow:0 8px 32px rgba(37,99,235,.4)}
+.vid-play-btn:hover{transform:scale(1.08)}
+.vid-phone-inner video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:28px}
+.vid-text h2{font-family:'Fraunces',serif;font-size:clamp(1.8rem,4vw,2.6rem);font-weight:700;color:white;letter-spacing:-.03em;line-height:1.15;margin-bottom:16px}
+.vid-text h2 em{font-style:italic;color:#93C5FD}
+.vid-text p{color:rgba(255,255,255,.55);font-size:.95rem;line-height:1.7;margin-bottom:24px}
+.vid-steps{display:flex;flex-direction:column;gap:12px}
+.vid-step{display:flex;align-items:flex-start;gap:12px}
+.vid-step-num{width:28px;height:28px;border-radius:50%;background:rgba(37,99,235,.3);border:1px solid rgba(37,99,235,.5);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#93C5FD;flex-shrink:0;margin-top:1px}
+.vid-step-text{font-size:.875rem;color:rgba(255,255,255,.7);line-height:1.5}
+.vid-step-text strong{color:white}
+
+/* TESTIMONIAL / SOCIAL */
+.social-section{padding:64px 24px;background:var(--card);border-top:1px solid var(--border)}
+.social-inner{max-width:800px;margin:0 auto;text-align:center}
+.social-chips{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:20px}
+.social-chip{display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border-radius:12px;background:var(--bg);border:1px solid var(--border);font-size:.85rem;color:var(--ink2)}
+.social-chip strong{color:var(--ink)}
 </style>
 </head>
 <body>
@@ -319,6 +345,14 @@ let LANG=localStorage.getItem('btc-land-lang')||'es';
 const T={
   es:{
     'nav-features':'Funciones','nav-cta':'Abrir app →',
+    'vid-tag':'Demo','vid-h':'Mirá cómo<br><em>funciona en vivo.</em>',
+    'vid-p':'En menos de 30 segundos ves todo lo que podés hacer: itinerario, gastos, mapa y cómo compartir el viaje.',
+    'vs1':'<strong>Creá el viaje</strong> con nombre y fechas en el calendario visual',
+    'vs2':'<strong>Agregá destinos</strong> y organizá el itinerario día a día',
+    'vs3':'<strong>Controlá gastos</strong> por categoría y compartí con un link',
+    'soc-tag':'Por qué Bitacora','soc-h':'Todo lo que necesitás<br>para <em>organizar tu viaje.</em>',
+    'sc1':'Funciona en cualquier dispositivo','sc2':'Sin registro ni contraseña',
+    'sc3':'Tus datos en tu dispositivo','sc4':'Español e inglés','sc5':'Abre en 1 segundo','sc6':'Compartí con un link',
     'hero-badge':'✨ Gratis · Sin registro · Sin servidores',
     'hero-h1':'Tu viaje,<br><em>perfectamente organizado.</em>',
     'hero-sub':'Planificá itinerarios día a día, controlá presupuesto por categoría y compartí el viaje con un solo link.',
@@ -347,6 +381,14 @@ const T={
   },
   en:{
     'nav-features':'Features','nav-cta':'Open app →',
+    'vid-tag':'Demo','vid-h':'See how<br><em>it works live.</em>',
+    'vid-p':'In under 30 seconds you see everything: itinerary, expenses, map and how to share your trip.',
+    'vs1':'<strong>Create the trip</strong> with name and dates on the visual calendar',
+    'vs2':'<strong>Add destinations</strong> and organize the itinerary day by day',
+    'vs3':'<strong>Track expenses</strong> by category and share with one link',
+    'soc-tag':'Why Bitacora','soc-h':'Everything you need<br>to <em>organize your trip.</em>',
+    'sc1':'Works on any device','sc2':'No sign-up or password',
+    'sc3':'Your data on your device','sc4':'Spanish and English','sc5':'Opens in 1 second','sc6':'Share with one link',
     'hero-badge':'✨ Free · No account · No servers',
     'hero-h1':'Your trip,<br><em>perfectly organized.</em>',
     'hero-sub':'Plan itineraries day by day, track expenses by category and share your trip with one link.',
@@ -374,6 +416,14 @@ const T={
     'ft-made':'Made with ♥ for travelers',
   }
 };
+
+function playDemo() {
+  const container = document.getElementById('vid-container');
+  const overlay = document.getElementById('play-btn-overlay');
+  if (!container) return;
+  // Open the demo in a new tab (tiktok-demo.html hosted alongside)
+  window.open('https://bitacora-theta.vercel.app/tiktok-demo.html', '_blank');
+}
 
 function setLang(l){
   LANG=l;

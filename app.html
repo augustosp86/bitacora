@@ -2073,26 +2073,21 @@ function rDay() {
     <a href="${flH||skySrc||'#'}" target="_blank" rel="noopener nofollow" class="ql sk"><span class="qi">✈</span>${L('vuelo')}</a>
     <a href="${htH||bookingSrc||'#'}" target="_blank" rel="noopener nofollow" class="ql ${htH||bookingSrc?'':'disabled'}"><span class="qi">🏨</span>${L('hotel')}</a>
   </div>`;
-  // Affiliate banner — only shows if no user links set and destination exists
-  if(!flH&&!htH&&eff?.dest){
-    h+=`<div style="margin:0 18px 16px;padding:11px 14px;background:var(--blue-bg);border:1.5px solid var(--blue-bd);border-radius:var(--r2)">
-      <div style="font-size:10px;font-weight:700;color:var(--blue);margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px">🔍 ${S.lang==='en'?'Search for':'Buscar en'} ${esc(eff.dest)}</div>
-      <div style="display:flex;gap:8px">
-        <a href="${skySrc}" target="_blank" rel="noopener nofollow"
-          style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:9px 10px;background:white;border:1.5px solid var(--blue-bd);border-radius:var(--r2);text-decoration:none;font-size:12px;font-weight:700;color:var(--blue)">
-          ✈ ${S.lang==='en'?'Flights':'Vuelos'}
-        </a>
-        <a href="${bookingSrc||'https://www.booking.com'}" target="_blank" rel="noopener nofollow"
-          style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:9px 10px;background:white;border:1.5px solid var(--blue-bd);border-radius:var(--r2);text-decoration:none;font-size:12px;font-weight:700;color:var(--blue)">
-          🏨 ${S.lang==='en'?'Hotels':'Hoteles'}
-        </a>
+  if(dest_name){
+    const btnS='flex:1;display:flex;align-items:center;justify-content:center;gap:5px;padding:9px 8px;background:white;border:1.5px solid var(--blue-bd);border-radius:var(--r2);text-decoration:none;font-size:11px;font-weight:700;color:var(--blue)';
+    h+=`<div style="margin:0 18px 8px;padding:12px 14px;background:var(--blue-bg);border:1.5px solid var(--blue-bd);border-radius:var(--r2)">
+      <div style="font-size:10px;font-weight:700;color:var(--blue);margin-bottom:9px;text-transform:uppercase;letter-spacing:.5px">🔍 ${S.lang==='en'?'Search in':'Buscar en'} ${esc(dest_name)}</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+        <a href="${skySrc}" target="_blank" rel="noopener nofollow" style="${btnS}">✈ ${S.lang==='en'?'Flights':'Vuelos'}</a>
+        <a href="${bookingSrc}" target="_blank" rel="noopener nofollow" style="${btnS}">🏨 ${S.lang==='en'?'Hotels':'Hoteles'}</a>
+        <a href="${gygSrc}" target="_blank" rel="noopener nofollow" style="${btnS}">🎟️ ${S.lang==='en'?'Activities':'Actividades'}</a>
+        <a href="${rentalSrc}" target="_blank" rel="noopener nofollow" style="${btnS}">🚗 ${S.lang==='en'?'Car rental':'Alquilar auto'}</a>
       </div>
-      <div style="font-size:9px;color:var(--ink3);margin-top:7px;text-align:center">${S.lang==='en'?'Links open Skyscanner and Booking.com':'Los links abren Skyscanner y Booking.com'}</div>
+      <div style="font-size:9px;color:var(--ink3);margin-top:8px;text-align:center">${S.lang==='en'?'Via Skyscanner · Booking · GetYourGuide · Rentalcars':'Vía Skyscanner · Booking · GetYourGuide · Rentalcars'}</div>
     </div>`;
-  }`;
+  }
   return h;
 }
-
 // onDayDestInput moved above clearDayDest
 function clearDayDest(idx) {
   const t=trip(); if(!t) return;

@@ -823,7 +823,32 @@ function renderBars(items,sym){
 }
 
 // ─── DATA VERSION ───
-const DATA_VERSION = 2; // increment when data structure changes
+const DATA_VERSION = 2;
+
+// ─── AFFILIATE IDs — reemplazá con tus IDs reales ───────────────────────────
+const AFF = {
+  booking:    'BOOKING_AFFILIATE_ID',    // booking.com/affiliate
+  skyscanner: 'SKYSCANNER_PARTNER_ID',   // partners.skyscanner.net
+  gyg:        'GETYOURGUIDE_PARTNER_ID', // partner.getyourguide.com
+  rentalcars: 'RENTALCARS_AFFILIATE_ID', // partners.rentalcars.com
+};
+// Helper: build affiliate URLs
+function affBooking(dest, year, month, day) {
+  const enc = encodeURIComponent(dest);
+  return `https://www.booking.com/search.html?ss=${enc}&checkin_year=${year}&checkin_month=${parseInt(month)}&checkin_monthday=${parseInt(day)}&affiliate_id=${AFF.booking}&label=bitacora`;
+}
+function affSkyscanner(dest) {
+  return `https://www.skyscanner.com/transport/flights/anywhere/${encodeURIComponent(dest)}/?adults=1&partner=${AFF.skyscanner}&utm_source=bitacora`;
+}
+function affGYG(dest) {
+  // GetYourGuide: search activities in city
+  return `https://www.getyourguide.com/s/?q=${encodeURIComponent(dest)}&partner_id=${AFF.gyg}&utm_source=bitacora`;
+}
+function affRentalcars(dest, dateStr) {
+  // dateStr = YYYY-MM-DD
+  return `https://www.rentalcars.com/SearchResults.do?city=${encodeURIComponent(dest)}&puDay=${dateStr}&affiliate=${AFF.rentalcars}&utm_source=bitacora`;
+}
+// ──────────────────────────────────────────────────────────────────────────── // increment when data structure changes
 
 // ─── STATE ───
 const S = {
@@ -1455,7 +1480,12 @@ function rHome() {
       <div class="hf-card"><div class="hf-icon">💰</div><div class="hf-label">${L('hfBu')}</div><div class="hf-sub">${L('hfBuSub')}</div></div>
       <div class="hf-card"><div class="hf-icon">📍</div><div class="hf-label">${L('hfMa')}</div><div class="hf-sub">${L('hfMaSub')}</div></div>
     </div>
-    <div class="empty" style="margin-top:10px"><div class="ei">🗺️</div><h3>${L('startPlanning')}</h3><p>${L('startSub')}</p></div>`;
+    <div class="empty" style="margin-top:10px;cursor:pointer;transition:transform .15s" onclick="S.sheet='new';render()" ontouchstart="this.style.transform='scale(0.98)'" ontouchend="this.style.transform=''">
+      <div class="ei">🗺️</div>
+      <h3>${L('startPlanning')}</h3>
+      <p>${L('startSub')}</p>
+      <div style="margin-top:16px;display:inline-flex;align-items:center;gap:7px;background:var(--ink);color:white;padding:10px 20px;border-radius:20px;font-size:13px;font-weight:700">＋ ${S.lang==='en'?'Create trip':'Crear viaje'}</div>
+    </div>`;
   }
   const others=future.slice(next?1:0);
   if(others.length){
@@ -2029,7 +2059,37 @@ function rDay() {
   const mH=eff?.dest?`https://www.google.com/maps/search/${encodeURIComponent(eff.destFull||eff.dest)}`:null;
   const flH=d.flightUrl||rawSeg?.flightUrl||null;
   const htH=d.hotelUrl||rawSeg?.hotelUrl||null;
-  h+=`<div class="qlinks"><a href="${mH||'#'}" target="_blank" rel="noopener" class="ql bl ${mH?'':'disabled'}"><span class="qi">🗺️</span>${L('maps')}</a><a href="${flH||'#'}" target="_blank" rel="noopener" class="ql sk ${flH?'':'disabled'}"><span class="qi">✈</span>${L('vuelo')}</a><a href="${htH||'#'}" target="_blank" rel="noopener" class="ql ${htH?'':'disabled'}"><span class="qi">🏨</span>${L('hotel')}</a></div>`;
+  // Affiliate links
+  const [bYear,bMonth,bDay]=(d.date.split('T')[0]).split('-');
+  const dest_name = eff?.dest||'';
+  const skySrc    = dest_name ? affSkyscanner(dest_name) : null;
+  const bookingSrc= dest_name ? affBooking(dest_name,bYear,bMonth,bDay) : null;
+  const gygSrc    = dest_name ? affGYG(dest_name) : null;
+  const rentalSrc = dest_name ? affRentalcars(dest_name, d.date.split('T')[0]) : null;
+  // Detect arrival day (has flight) for rental cars
+  const hasFlightToday = (Array.isArray(d.flights)&&d.flights.some(Boolean)) || d.flight;
+  h+=`<div class="qlinks">
+    <a href="${mH||'#'}" target="_blank" rel="noopener" class="ql bl ${mH?'':'disabled'}"><span class="qi">🗺️</span>${L('maps')}</a>
+    <a href="${flH||skySrc||'#'}" target="_blank" rel="noopener nofollow" class="ql sk"><span class="qi">✈</span>${L('vuelo')}</a>
+    <a href="${htH||bookingSrc||'#'}" target="_blank" rel="noopener nofollow" class="ql ${htH||bookingSrc?'':'disabled'}"><span class="qi">🏨</span>${L('hotel')}</a>
+  </div>`;
+  // Affiliate banner — only shows if no user links set and destination exists
+  if(!flH&&!htH&&eff?.dest){
+    h+=`<div style="margin:0 18px 16px;padding:11px 14px;background:var(--blue-bg);border:1.5px solid var(--blue-bd);border-radius:var(--r2)">
+      <div style="font-size:10px;font-weight:700;color:var(--blue);margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px">🔍 ${S.lang==='en'?'Search for':'Buscar en'} ${esc(eff.dest)}</div>
+      <div style="display:flex;gap:8px">
+        <a href="${skySrc}" target="_blank" rel="noopener nofollow"
+          style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:9px 10px;background:white;border:1.5px solid var(--blue-bd);border-radius:var(--r2);text-decoration:none;font-size:12px;font-weight:700;color:var(--blue)">
+          ✈ ${S.lang==='en'?'Flights':'Vuelos'}
+        </a>
+        <a href="${bookingSrc||'https://www.booking.com'}" target="_blank" rel="noopener nofollow"
+          style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:9px 10px;background:white;border:1.5px solid var(--blue-bd);border-radius:var(--r2);text-decoration:none;font-size:12px;font-weight:700;color:var(--blue)">
+          🏨 ${S.lang==='en'?'Hotels':'Hoteles'}
+        </a>
+      </div>
+      <div style="font-size:9px;color:var(--ink3);margin-top:7px;text-align:center">${S.lang==='en'?'Links open Skyscanner and Booking.com':'Los links abren Skyscanner y Booking.com'}</div>
+    </div>`;
+  }`;
   return h;
 }
 

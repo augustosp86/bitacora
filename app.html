@@ -2391,20 +2391,20 @@ function rSheets() {
   if(S.sheet==='new'){
     h+=`<div class="sheet"><div class="sh-handle"></div><div class="sh-body"><div class="sh-title">${L('newTrip')}</div>
       <div class="sf"><label>${L('name')}</label><input class="si" id="sn" type="text" placeholder="${L('namePh')}"/></div>
-      <input type="hidden" id="ss"/>
-      <input type="hidden" id="se"/>
+      <input type="hidden" id="trip-rdp-f"/>
+      <input type="hidden" id="trip-rdp-t"/>
       <label class="sf-rdp-label">📅 ${S.lang==='en'?'Select dates':'Seleccioná las fechas'}</label>
-      <div id="trip-rdp"></div>
-    </div><div class="sh-btns"><button class="btn-can" onclick="S.sheet=null;render()">${L('cancel')}</button><button class="btn-ok" onclick="createTrip(document.getElementById('sn').value,document.getElementById('ss').value,document.getElementById('se').value)">${L('create')}</button></div></div>`;
+      <div>${rdpHTML('trip-rdp','','',0)}</div>
+    </div><div class="sh-btns"><button class="btn-can" onclick="S.sheet=null;render()">${L('cancel')}</button><button class="btn-ok" onclick="createTrip(document.getElementById('sn').value,document.getElementById('trip-rdp-f').value,document.getElementById('trip-rdp-t').value)">${L('create')}</button></div></div>`;
   }
   if(S.sheet==='edit'&&t){
     h+=`<div class="sheet"><div class="sh-handle"></div><div class="sh-body"><div class="sh-title">${L('editTrip')}</div>
       <div class="sf"><label>${L('name')}</label><input class="si" id="en" type="text" value="${esc(t.name)}"/></div>
-      <input type="hidden" id="es" value="${t.startDate}"/>
-      <input type="hidden" id="ee" value="${t.endDate}"/>
+      <input type="hidden" id="edit-rdp-f" value="${t.startDate.split('T')[0]}"/>
+      <input type="hidden" id="edit-rdp-t" value="${t.endDate.split('T')[0]}"/>
       <label class="sf-rdp-label">📅 ${S.lang==='en'?'Select dates':'Seleccioná las fechas'}</label>
-      <div id="edit-rdp"></div>
-    </div><div class="sh-btns"><button class="btn-can" onclick="S.sheet=null;render()">${L('cancel')}</button><button class="btn-ok" onclick="editTrip(document.getElementById('en').value,document.getElementById('es').value,document.getElementById('ee').value)">${L('save')}</button></div></div>`;
+      <div>${rdpHTML('edit-rdp',t.startDate.split('T')[0],t.endDate.split('T')[0],0)}</div>
+    </div><div class="sh-btns"><button class="btn-can" onclick="S.sheet=null;render()">${L('cancel')}</button><button class="btn-ok" onclick="editTrip(document.getElementById('en').value,document.getElementById('edit-rdp-f').value,document.getElementById('edit-rdp-t').value)">${L('save')}</button></div></div>`;
   }
   if(S.sheet==='del'){
     h+=`<div class="sheet"><div class="sh-handle"></div><div class="sh-body"><div class="sh-title">${L('delTrip')}</div><p style="font-size:13px;color:var(--ink3)">${L('delConfirm')}</p></div><div class="sh-btns"><button class="btn-can" onclick="S.sheet=null;render()">${L('cancel')}</button><button class="btn-del" onclick="delTrip()">${L('delete')}</button></div></div>`;
@@ -2556,6 +2556,87 @@ function wireSegAutocomplete() {
   });
 }
 
+
+
+// ─── RANGE PICKER — pure string, no DOM needed ──────────────────────────────
+function rdpHTML(containerId, fromVal, toVal, monthOffset) {
+  const today = new Date();
+  const ref = fromVal ? new Date(fromVal + 'T12:00') : new Date();
+  ref.setMonth(ref.getMonth() + (monthOffset||0));
+  const month = ref.getMonth();
+  const year  = ref.getFullYear();
+  const todayStr = today.toLocaleDateString('en-CA');
+  const months   = S.lang==='en' ? MONTHS_EN : MONTHS_ES;
+  const dayNames = S.lang==='en' ? DAYS_EN   : DAYS_ES;
+  const lastDay  = new Date(year, month+1, 0).getDate();
+  const startDow = (new Date(year, month, 1).getDay() + 6) % 7;
+
+  let grid = dayNames.map(d=>`<div class="rdp-dh">${d}</div>`).join('');
+  for (let i=0;i<startDow;i++) grid += `<div class="rdp-empty"></div>`;
+  for (let d=1;d<=lastDay;d++) {
+    const ds = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const isFrom = ds===fromVal, isTo=ds===toVal;
+    const inRange = fromVal&&toVal&&ds>fromVal&&ds<toVal;
+    const isToday = ds===todayStr;
+    let cls='rdp-d';
+    if(isFrom||isTo) cls+=' rdp-sel';
+    else if(inRange)  cls+=' rdp-range';
+    else if(isToday)  cls+=' rdp-today';
+    grid += `<div class="${cls}" onclick="rpClick('${containerId}','${containerId}-f','${containerId}-t','${ds}')">${d}</div>`;
+  }
+
+  let preview='';
+  if(fromVal&&toVal){
+    const [fy,fm,fd]=fromVal.split('-').map(Number);
+    const [ty,tm,td]=toVal.split('-').map(Number);
+    const fDate=new Date(fy,fm-1,fd), tDate=new Date(ty,tm-1,td);
+    const diff=Math.round((tDate-fDate)/86400000)+1;
+    const fl=fDate.toLocaleDateString(S.lang==='en'?'en-US':'es-ES',{day:'numeric',month:'short'});
+    const tl=tDate.toLocaleDateString(S.lang==='en'?'en-US':'es-ES',{day:'numeric',month:'short'});
+    preview=`${fl} → ${tl} · ${diff} ${S.lang==='en'?'days':'días'}`;
+  } else if(fromVal){
+    preview=S.lang==='en'?'Now tap end date →':'Ahora tocá la fecha de fin →';
+  } else {
+    preview=S.lang==='en'?'Tap start date':'Tocá la fecha de inicio';
+  }
+
+  return `<div class="rdp" data-rdp="${containerId}">
+    <div class="rdp-nav">
+      <button class="rdp-btn" onclick="rpNav('${containerId}',-1)">‹</button>
+      <span class="rdp-title">${months[month]} ${year}</span>
+      <button class="rdp-btn" onclick="rpNav('${containerId}',1)">›</button>
+    </div>
+    <div class="rdp-grid">${grid}</div>
+    <div class="rdp-preview">${preview}</div>
+  </div>`;
+}
+
+// State for month navigation (keyed by containerId)
+const _rdpOffsets = {};
+
+function rpNav(cid, dir) {
+  _rdpOffsets[cid] = (_rdpOffsets[cid]||0) + dir;
+  // Read current from/to from hidden inputs
+  const fv = document.getElementById(cid+'-f')?.value||'';
+  const tv = document.getElementById(cid+'-t')?.value||'';
+  const wrap = document.querySelector(`[data-rdp="${cid}"]`)?.parentElement;
+  if(wrap) wrap.innerHTML = rdpHTML(cid, fv, tv, _rdpOffsets[cid]);
+}
+
+function rpClick(cid, fid, tid, ds) {
+  const fromEl=document.getElementById(fid), toEl=document.getElementById(tid);
+  if(!fromEl||!toEl) return;
+  const fv=fromEl.value, tv=toEl.value;
+  if(!fv||(fv&&tv)){ fromEl.value=ds; toEl.value=''; }
+  else {
+    if(ds<fv){ toEl.value=fv; fromEl.value=ds; }
+    else if(ds===fv){ toEl.value=ds; } // 1-day range
+    else { toEl.value=ds; }
+  }
+  _rdpOffsets[cid]=_rdpOffsets[cid]||0;
+  const wrap=document.querySelector(`[data-rdp="${cid}"]`)?.parentElement;
+  if(wrap) wrap.innerHTML=rdpHTML(cid,fromEl.value,toEl.value,_rdpOffsets[cid]);
+}
 
 // ─── SHARE / EXPORT ───
 
@@ -2717,8 +2798,8 @@ function render() {
 
   // Post-render: wire autocomplete and focus
   if(S.sheet==='seg') { setTimeout(()=>{ wireSegAutocomplete(); wireSegDayStrip(); },50); }
-  if(S.sheet==='new') { setTimeout(()=>{ document.getElementById('sn')?.focus(); wireRangePicker(); },80); }
-  if(S.sheet==='edit') { setTimeout(()=>{ wireRangePicker(); },80); }
+  if(S.sheet==='new') { setTimeout(()=>document.getElementById('sn')?.focus(),50); }
+  // edit rdp rendered inline
   if(S.sheet==='item') { setTimeout(()=>document.getElementById('item-name')?.focus(),60); }
   if(S.sheet==='activity') { setTimeout(()=>document.getElementById('act-name')?.focus(),60); }
   if(S.sheet==='edit') setTimeout(()=>document.getElementById('en')?.focus(),60);

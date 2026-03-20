@@ -469,6 +469,25 @@ body{font-family:var(--fb);background:var(--bg);color:var(--ink);height:100dvh;o
 .rdp-today{font-weight:800;color:var(--blue)}
 .rdp-preview{text-align:center;font-size:12px;color:var(--ink2);margin-top:10px;padding-top:10px;border-top:1px solid var(--line);min-height:18px;font-weight:500}
 .sf-rdp-label{font-size:11px;font-weight:700;color:var(--ink2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;display:block}
+
+/* SEARCH TAB */
+.srch-wrap{padding:0 18px 24px}
+.srch-dest-selector{display:flex;gap:8px;overflow-x:auto;padding:4px 0 12px;scrollbar-width:none}
+.srch-dest-selector::-webkit-scrollbar{display:none}
+.srch-dest-btn{flex-shrink:0;padding:7px 14px;border-radius:20px;border:1.5px solid var(--line2);background:var(--white);font-family:var(--fb);font-size:12px;font-weight:600;color:var(--ink2);cursor:pointer;transition:all .15s;box-shadow:var(--sh2)}
+.srch-dest-btn.on{background:var(--ink);color:white;border-color:var(--ink)}
+.srch-dest-btn:active{transform:scale(0.96)}
+.srch-section{margin-bottom:18px}
+.srch-section-title{font-size:10px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:1.2px;margin-bottom:10px}
+.srch-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.srch-card{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;padding:16px 10px;background:var(--white);border-radius:var(--r);border:1.5px solid var(--line2);text-decoration:none;color:var(--ink);box-shadow:var(--sh);transition:transform .15s,box-shadow .15s;cursor:pointer;text-align:center}
+.srch-card:active{transform:scale(0.97);box-shadow:none}
+.srch-card-icon{font-size:28px}
+.srch-card-label{font-size:12px;font-weight:700;color:var(--ink)}
+.srch-card-sub{font-size:10px;color:var(--ink3);line-height:1.4}
+.srch-card.highlight{background:var(--blue-bg);border-color:var(--blue-bd)}
+.srch-card.highlight .srch-card-label{color:var(--blue)}
+.srch-tip{font-size:11px;color:var(--ink3);text-align:center;padding:12px 0 4px;line-height:1.6}
 </style>
 </head>
 <body>
@@ -531,6 +550,91 @@ const CITIES_LOCAL = [
   {name:'Bruselas',country:'Bélgica',admin:'Bruselas',lat:50.8503,lon:4.3517},
   {name:'Zúrich',country:'Suiza',admin:'Zúrich',lat:47.3769,lon:8.5417},
   {name:'Ginebra',country:'Suiza',admin:'Ginebra',lat:46.2044,lon:6.1432},
+  // Asia
+  {name:'Singapur',country:'Singapur',admin:'Singapur',lat:1.3521,lon:103.8198},
+  {name:'Hong Kong',country:'China',admin:'Hong Kong',lat:22.3193,lon:114.1694},
+  {name:'Seúl',country:'Corea del Sur',admin:'Seúl',lat:37.5665,lon:126.9780},
+  {name:'Shanghái',country:'China',admin:'Shanghái',lat:31.2304,lon:121.4737},
+  {name:'Pekín',country:'China',admin:'Pekín',lat:39.9042,lon:116.4074},
+  {name:'Kuala Lumpur',country:'Malasia',admin:'Kuala Lumpur',lat:3.1390,lon:101.6869},
+  {name:'Ho Chi Minh',country:'Vietnam',admin:'Ho Chi Minh',lat:10.8231,lon:106.6297},
+  {name:'Hanói',country:'Vietnam',admin:'Hanói',lat:21.0278,lon:105.8342},
+  {name:'Colombo',country:'Sri Lanka',admin:'Colombo',lat:6.9271,lon:79.8612},
+  {name:'Katmandú',country:'Nepal',admin:'Bagmati',lat:27.7172,lon:85.3240},
+  {name:'Mumbai',country:'India',admin:'Maharashtra',lat:19.0760,lon:72.8777},
+  {name:'Nueva Delhi',country:'India',admin:'Delhi',lat:28.6139,lon:77.2090},
+  {name:'Osaka',country:'Japón',admin:'Osaka',lat:34.6937,lon:135.5023},
+  {name:'Kioto',country:'Japón',admin:'Kioto',lat:35.0116,lon:135.7681},
+  // Medio Oriente y África
+  {name:'Abu Dabi',country:'Emiratos Árabes',admin:'Abu Dabi',lat:24.4539,lon:54.3773},
+  {name:'Doha',country:'Catar',admin:'Doha',lat:25.2854,lon:51.5310},
+  {name:'Tel Aviv',country:'Israel',admin:'Tel Aviv',lat:32.0853,lon:34.7818},
+  {name:'El Cairo',country:'Egipto',admin:'El Cairo',lat:30.0444,lon:31.2357},
+  {name:'Marrakech',country:'Marruecos',admin:'Marrakech-Safi',lat:31.6295,lon:-7.9811},
+  {name:'Ciudad del Cabo',country:'Sudáfrica',admin:'Western Cape',lat:-33.9249,lon:18.4241},
+  {name:'Nairobi',country:'Kenia',admin:'Nairobi',lat:-1.2921,lon:36.8219},
+  // Norteamérica
+  {name:'San Francisco',country:'Estados Unidos',admin:'California',lat:37.7749,lon:-122.4194},
+  {name:'Las Vegas',country:'Estados Unidos',admin:'Nevada',lat:36.1699,lon:-115.1398},
+  {name:'Boston',country:'Estados Unidos',admin:'Massachusetts',lat:42.3601,lon:-71.0589},
+  {name:'Washington DC',country:'Estados Unidos',admin:'DC',lat:38.9072,lon:-77.0369},
+  {name:'Seattle',country:'Estados Unidos',admin:'Washington',lat:47.6062,lon:-122.3321},
+  {name:'Toronto',country:'Canadá',admin:'Ontario',lat:43.6532,lon:-79.3832},
+  {name:'Vancouver',country:'Canadá',admin:'British Columbia',lat:49.2827,lon:-123.1207},
+  {name:'Montreal',country:'Canadá',admin:'Quebec',lat:45.5017,lon:-73.5673},
+  {name:'Ciudad de Panamá',country:'Panamá',admin:'Panamá',lat:8.9936,lon:-79.5197},
+  {name:'San José',country:'Costa Rica',admin:'San José',lat:9.9281,lon:-84.0907},
+  {name:'La Habana',country:'Cuba',admin:'La Habana',lat:23.1136,lon:-82.3666},
+  {name:'Santo Domingo',country:'República Dominicana',admin:'Distrito Nacional',lat:18.4861,lon:-69.9312},
+  {name:'Punta Cana',country:'República Dominicana',admin:'La Altagracia',lat:18.5601,lon:-68.3725},
+  // Sudamérica extra
+  {name:'Medellín',country:'Colombia',admin:'Antioquia',lat:6.2442,lon:-75.5812},
+  {name:'Cartagena',country:'Colombia',admin:'Bolívar',lat:10.3910,lon:-75.4794},
+  {name:'Quito',country:'Ecuador',admin:'Pichincha',lat:-0.1807,lon:-78.4678},
+  {name:'Guayaquil',country:'Ecuador',admin:'Guayas',lat:-2.1962,lon:-79.8862},
+  {name:'La Paz',country:'Bolivia',admin:'La Paz',lat:-16.5000,lon:-68.1193},
+  {name:'Cusco',country:'Perú',admin:'Cusco',lat:-13.5319,lon:-71.9675},
+  {name:'Florianópolis',country:'Brasil',admin:'Santa Catarina',lat:-27.5954,lon:-48.5480},
+  {name:'Brasilia',country:'Brasil',admin:'DF',lat:-15.7975,lon:-47.8919},
+  {name:'Salvador',country:'Brasil',admin:'Bahia',lat:-12.9714,lon:-38.5014},
+  {name:'Porto Alegre',country:'Brasil',admin:'Rio Grande do Sul',lat:-30.0346,lon:-51.2177},
+  {name:'Asunción',country:'Paraguay',admin:'Asunción',lat:-25.2867,lon:-57.6470},
+  {name:'Iguazú',country:'Argentina',admin:'Misiones',lat:-25.6953,lon:-54.4367},
+  {name:'Ushuaia',country:'Argentina',admin:'Tierra del Fuego',lat:-54.8019,lon:-68.3030},
+  {name:'Mar del Plata',country:'Argentina',admin:'Buenos Aires',lat:-38.0055,lon:-57.5426},
+  {name:'Tucumán',country:'Argentina',admin:'Tucumán',lat:-26.8241,lon:-65.2226},
+  // Europa extra
+  {name:'Nápoles',country:'Italia',admin:'Campania',lat:40.8518,lon:14.2681},
+  {name:'Palermo',country:'Italia',admin:'Sicilia',lat:38.1157,lon:13.3615},
+  {name:'Turín',country:'Italia',admin:'Piamonte',lat:45.0703,lon:7.6869},
+  {name:'Bolonia',country:'Italia',admin:'Emilia-Romaña',lat:44.4949,lon:11.3426},
+  {name:'Niza',country:'Francia',admin:'Provenza',lat:43.7102,lon:7.2620},
+  {name:'Lyon',country:'Francia',admin:'Auvernia',lat:45.7640,lon:4.8357},
+  {name:'Marsella',country:'Francia',admin:'Provenza',lat:43.2965,lon:5.3698},
+  {name:'Burdeos',country:'Francia',admin:'Nueva Aquitania',lat:44.8378,lon:-0.5792},
+  {name:'Valencia',country:'España',admin:'Valencia',lat:39.4699,lon:-0.3763},
+  {name:'Bilbao',country:'España',admin:'País Vasco',lat:43.2630,lon:-2.9350},
+  {name:'Málaga',country:'España',admin:'Andalucía',lat:36.7213,lon:-4.4214},
+  {name:'Varsovia',country:'Polonia',admin:'Mazovia',lat:52.2297,lon:21.0122},
+  {name:'Cracovia',country:'Polonia',admin:'Pequeña Polonia',lat:50.0647,lon:19.9450},
+  {name:'Budapest',country:'Hungría',admin:'Budapest',lat:47.4979,lon:19.0402},
+  {name:'Bucarest',country:'Rumania',admin:'Bucarest',lat:44.4268,lon:26.1025},
+  {name:'Sofía',country:'Bulgaria',admin:'Sofía',lat:42.6977,lon:23.3219},
+  {name:'Belgrado',country:'Serbia',admin:'Belgrado',lat:44.8176,lon:20.4633},
+  {name:'Zagreb',country:'Croacia',admin:'Zagreb',lat:45.8150,lon:15.9819},
+  {name:'Split',country:'Croacia',admin:'Dalmacia',lat:43.5081,lon:16.4402},
+  {name:'Tallin',country:'Estonia',admin:'Harju',lat:59.4370,lon:24.7536},
+  {name:'Riga',country:'Letonia',admin:'Riga',lat:56.9496,lon:24.1052},
+  {name:'Helsinki',country:'Finlandia',admin:'Uusimaa',lat:60.1699,lon:24.9384},
+  {name:'Estocolmo',country:'Suecia',admin:'Estocolmo',lat:59.3293,lon:18.0686},
+  {name:'Oslo',country:'Noruega',admin:'Oslo',lat:59.9139,lon:10.7522},
+  {name:'Copenhague',country:'Dinamarca',admin:'Copenhague',lat:55.6761,lon:12.5683},
+  {name:'Reikiavik',country:'Islandia',admin:'Capital Region',lat:64.1466,lon:-21.9426},
+  // Oceanía
+  {name:'Sídney',country:'Australia',admin:'Nueva Gales del Sur',lat:-33.8688,lon:151.2093},
+  {name:'Melbourne',country:'Australia',admin:'Victoria',lat:-37.8136,lon:144.9631},
+  {name:'Brisbane',country:'Australia',admin:'Queensland',lat:-27.4698,lon:153.0251},
+  {name:'Auckland',country:'Nueva Zelanda',admin:'Auckland',lat:-36.8485,lon:174.7633},
 ];
 
 // ─── I18N ───
@@ -589,6 +693,18 @@ const I18N={
     planned:'Planificado', spent2:'Gastado',
     currency:'Moneda:', total:'Total', daysWithExp:'Días con gasto', avgDay:'Promedio/día',
     budget:'Presupuesto', expense:'Gasto real', noDest:'Sin destino',
+    // Search tab
+    tabSearch:'Buscar',
+    srchTitle:'Buscar en',
+    srchAllDests:'Todos',
+    srchFlights:'Vuelos', srchFlightsSub:'Buscá vuelos al destino',
+    srchHotels:'Hoteles', srchHotelsSub:'Hoteles con fechas del viaje',
+    srchActivities:'Tours y actividades', srchActivitiesSub:'Experiencias y tours',
+    srchCars:'Alquilar auto', srchCarsSub:'Pick-up en destino',
+    srchInsurance:'Seguro de viaje', srchInsuranceSub:'Cobertura médica y más',
+    srchEsim:'eSIM Internacional', srchEsimSub:'Datos sin roaming',
+    srchNoDestHint:'Agregá destinos en el tab Itinerario para buscar aquí.',
+    srchDisclaimer:'Los links abren sitios de terceros. Bitacora puede recibir comisión por reservas.',
     // Weather
     noDestW:'Agregá destinos para consultar el clima',
     loadAll:'🌡️ Cargar clima de todos los días', seeClima:'Ver clima', noData:'Sin datos',
@@ -685,6 +801,18 @@ const I18N={
     planned:'Planned', spent2:'Spent',
     currency:'Currency:', total:'Total', daysWithExp:'Days with expenses', avgDay:'Avg/day',
     budget:'Budget', expense:'Actual expense', noDest:'No destination',
+    // Search tab
+    tabSearch:'Search',
+    srchTitle:'Search in',
+    srchAllDests:'All',
+    srchFlights:'Flights', srchFlightsSub:'Find flights to destination',
+    srchHotels:'Hotels', srchHotelsSub:'Hotels with trip dates',
+    srchActivities:'Tours & activities', srchActivitiesSub:'Experiences and tours',
+    srchCars:'Rent a car', srchCarsSub:'Pick-up at destination',
+    srchInsurance:'Travel insurance', srchInsuranceSub:'Medical & trip coverage',
+    srchEsim:'International eSIM', srchEsimSub:'Data without roaming',
+    srchNoDestHint:'Add destinations in the Itinerary tab to search here.',
+    srchDisclaimer:'Links open third-party sites. Bitacora may earn a commission on bookings.',
     noDestW:'Add destinations to check the weather',
     loadAll:'🌡️ Load weather for all days', seeClima:'See weather', noData:'No data',
     weatherNote:'Weather loads from Open-Meteo. If it fails, use the Google or AccuWeather links.',
@@ -819,7 +947,7 @@ function renderBars(items,sym){
   });
   const data=Object.entries(byCat).map(([k,v],i)=>({k,v,icon:icatIcon(k),label:icatLabel(k),color:CHART_COLORS[i%CHART_COLORS.length]})).sort((a,b)=>b.v-a.v);
   const max=data[0]?.v||1;
-  return data.map(d=>`<div class="bar-row"><div class="bar-lbl">${d.icon} ${d.label}</div><div class="bar-trk"><div class="bar-fill" style="width:${Math.round(d.v/max*100)}%;background:${d.color}"></div></div><div class="bar-val">${sym} ${d.v.toLocaleString('es-AR',{maximumFractionDigits:0})}</div></div>`).join('');
+  return data.map(d=>`<div class="bar-row"><div class="bar-lbl">${d.icon} ${d.label}</div><div class="bar-trk"><div class="bar-fill" style="width:${Math.round(d.v/max*100)}%;background:${d.color}"></div></div><div class="bar-val">${sym} ${d.v.toLocaleString(loc(),{maximumFractionDigits:0})}</div></div>`).join('');
 }
 
 // ─── DATA VERSION ───
@@ -838,7 +966,13 @@ function affBooking(dest, year, month, day) {
   return `https://www.booking.com/search.html?ss=${enc}&checkin_year=${year}&checkin_month=${parseInt(month)}&checkin_monthday=${parseInt(day)}&affiliate_id=${AFF.booking}&label=bitacora`;
 }
 function affSkyscanner(dest) {
-  return `https://www.skyscanner.com/transport/flights/anywhere/${encodeURIComponent(dest)}/?adults=1&partner=${AFF.skyscanner}&utm_source=bitacora`;
+  // Use standard search: works without partner ID, deep-links to destination
+  const enc = encodeURIComponent(dest);
+  if(AFF.skyscanner && AFF.skyscanner !== 'SKYSCANNER_PARTNER_ID'){
+    return `https://www.skyscanner.com/flights-to/${enc}/?adults=1&partnerId=${AFF.skyscanner}&utm_source=bitacora`;
+  }
+  // No affiliate ID yet: open generic search for that destination
+  return `https://www.skyscanner.com/flights-to/${enc}/?adults=1`;
 }
 function affGYG(dest) {
   // GetYourGuide: search activities in city
@@ -858,9 +992,18 @@ const S = {
   editSegIdx:null, editItemIdx:null, showDailyDetail:false,
   _itemDraft:{name:'',category:'flight',price:''},
   notesOpen:{}, // {tid: true/false} for trip notes collapse state
-  lang: (()=>{ try{return localStorage.getItem('btc-lang')||'es';}catch(e){return'es';} })(),
+  lang: (()=>{
+    try{
+      const saved=localStorage.getItem('btc-lang');
+      if(saved) return saved;
+      // Auto-detect from browser: if primary language is Spanish, use ES
+      const bl=(navigator.language||navigator.userLanguage||'en').toLowerCase();
+      return bl.startsWith('es')?'es':'en';
+    }catch(e){return'es';}
+  })(),
 };
 const TODAY = new Date(); TODAY.setHours(0,0,0,0);
+const TODAY_STR = new Date().toLocaleDateString('en-CA'); // YYYY-MM-DD, timezone-safe
 function setLang(l){S.lang=l;try{localStorage.setItem('btc-lang',l);}catch(e){}render();}
 
 // ─── STORAGE ───
@@ -1064,21 +1207,31 @@ function ensureFields(t) {
   });
 }
 function status(t) {
-  const s=new Date(t.startDate);s.setHours(0,0,0,0);
-  const e=new Date(t.endDate);e.setHours(0,0,0,0);
-  if(TODAY>e) return{type:'past',n:Math.floor((TODAY-e)/864e5)};
-  if(TODAY>=s) return{type:'ongoing',n:Math.floor((TODAY-s)/864e5)+1};
-  return{type:'future',n:Math.floor((s-TODAY)/864e5)};
+  // Use string comparison (YYYY-MM-DD) to avoid timezone off-by-one
+  const todayStr=new Date().toLocaleDateString('en-CA');
+  const sStr=t.startDate.split('T')[0];
+  const eStr=t.endDate.split('T')[0];
+  if(todayStr>eStr){
+    const e=new Date(eStr+'T12:00'); const td=new Date(todayStr+'T12:00');
+    return{type:'past',n:Math.round((td-e)/864e5)};
+  }
+  if(todayStr>=sStr){
+    const s=new Date(sStr+'T12:00'); const td=new Date(todayStr+'T12:00');
+    return{type:'ongoing',n:Math.round((td-s)/864e5)+1};
+  }
+  const s=new Date(sStr+'T12:00'); const td=new Date(todayStr+'T12:00');
+  return{type:'future',n:Math.round((s-td)/864e5)};
 }
+function loc(){return loc();}
 function fmtD(str,opts){
   if(!str) return '';
-  const s=str.split('T')[0]; // normalize to date-only first
-  return new Date(s+'T12:00').toLocaleDateString('es-ES',opts||{day:'numeric',month:'short',year:'numeric'});
+  const s=str.split('T')[0];
+  return new Date(s+'T12:00').toLocaleDateString(loc(),opts||{day:'numeric',month:'short',year:'numeric'});
 }
 function fmtShort(str){
   if(!str) return '';
   const s=str.split('T')[0];
-  return new Date(s+'T12:00').toLocaleDateString('es-ES',{day:'numeric',month:'short'});
+  return new Date(s+'T12:00').toLocaleDateString(loc(),{day:'numeric',month:'short'});
 }
 function isToday(d){
   if(!d) return false;
@@ -1214,45 +1367,105 @@ async function fetchW(idx) {
   const seg=effectiveSeg(t,idx);
   if(!seg?.dest?.trim()) return;
   const d=t.days[idx];
-  const ds=d.date.split('T')[0]; // YYYY-MM-DD, timezone-safe
+  const ds=d.date.split('T')[0]; // YYYY-MM-DD
+
   const key=`${seg.dest.toLowerCase()}|${ds}`;
-  if(S.wCache[key]&&!S.wCache[key].loading){render();return;}
+  // Allow retry if errored — clear cache on manual tap
+  if(S.wCache[key]&&!S.wCache[key].loading&&!S.wCache[key]._retry){render();return;}
   S.wCache[key]={loading:true}; render();
+
   try {
+    // ── Step 1: get coordinates ──────────────────────────────────────────────
     let lat=parseFloat(seg.destLat), lon=parseFloat(seg.destLon);
-    if(!lat||!lon){
-      const gr=await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(seg.dest)}&count=1&language=es&format=json`);
-      const gd=await gr.json();
-      if(!gd.results?.length){S.wCache[key]={error:true,dest:seg.dest,date:ds};render();return;}
-      lat=gd.results[0].latitude; lon=gd.results[0].longitude;
-      seg.destLat=String(lat); seg.destLon=String(lon);
+
+    // Try CITIES_LOCAL first (instant, no network)
+    if(!lat||!lon||isNaN(lat)||isNaN(lon)){
+      const local=CITIES_LOCAL.find(ci=>
+        ci.name.toLowerCase()===seg.dest.toLowerCase()||
+        seg.dest.toLowerCase().includes(ci.name.toLowerCase())
+      );
+      if(local){ lat=local.lat; lon=local.lon; seg.destLat=String(lat); seg.destLon=String(lon); }
     }
-    const today=new Date(); today.setHours(0,0,0,0);
-    const tripDate=new Date(ds+'T00:00:00');
-    const diffDays=Math.round((tripDate-today)/86400000);
-    let url='';
-    if(diffDays<0){
-      // Past: historical archive API
+
+    // Geocoding API as fallback
+    if(!lat||!lon||isNaN(lat)||isNaN(lon)){
+      try {
+        const gr=await fetch(
+          `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(seg.dest)}&count=1&language=es&format=json`,
+          {signal:AbortSignal.timeout(6000)}
+        );
+        if(gr.ok){
+          const gd=await gr.json();
+          if(gd.results?.length){ lat=gd.results[0].latitude; lon=gd.results[0].longitude; seg.destLat=String(lat); seg.destLon=String(lon); }
+        }
+      } catch(e){}
+    }
+
+    if(!lat||!lon||isNaN(lat)||isNaN(lon)){
+      S.wCache[key]={error:true,noCoords:true,dest:seg.dest,date:ds}; render(); return;
+    }
+
+    // ── Step 2: decide API by date (string comparison, no timezone issues) ──
+    const todayStr=new Date().toLocaleDateString('en-CA'); // YYYY-MM-DD local
+    const [ty,tm,td]=todayStr.split('-').map(Number);
+    const [dy,dm,dd]=ds.split('-').map(Number);
+    const todayNum=ty*10000+tm*100+td;
+    const dayNum  =dy*10000+dm*100+dd;
+    // Rough diff in days
+    const diffDays=Math.round((new Date(dy,dm-1,dd)-new Date(ty,tm-1,td))/86400000);
+
+    let url='', isFuture=false, isTooFar=false;
+
+    if(diffDays < 0){
+      // Past — archive
       url=`https://archive-api.open-meteo.com/v1/archive?latitude=${lat}&longitude=${lon}&daily=temperature_2m_max,temperature_2m_min,weathercode&timezone=auto&start_date=${ds}&end_date=${ds}`;
+    } else if(diffDays <= 15){
+      // Next 16 days — forecast
+      url=`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&daily=temperature_2m_max,temperature_2m_min,weathercode&timezone=auto&forecast_days=16`;
+      isFuture=true;
     } else {
-      // Present/future: forecast (works up to 16 days, returns available data otherwise)
-      url=`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&daily=temperature_2m_max,temperature_2m_min,weathercode&timezone=auto&start_date=${ds}&end_date=${ds}&forecast_days=16`;
+      // Too far in the future — no real forecast possible
+      S.wCache[key]={error:true,tooFar:true,diffDays,dest:seg.dest,date:ds}; render(); return;
     }
-    const wr=await fetch(url);
+
+    const wr=await fetch(url, {signal:AbortSignal.timeout(8000)});
     if(!wr.ok) throw new Error('HTTP '+wr.status);
     const wd=await wr.json();
-    if(!wd.daily?.temperature_2m_max?.length){
-      S.wCache[key]={error:true,dest:seg.dest,date:ds};render();return;
+
+    // For forecast: find the index matching our date in the returned array
+    let tMax, tMin, code;
+    if(isFuture && Array.isArray(wd.daily?.time)){
+      const idx2=wd.daily.time.indexOf(ds);
+      if(idx2<0){ S.wCache[key]={error:true,tooFar:true,diffDays,dest:seg.dest,date:ds}; render(); return; }
+      tMax=wd.daily.temperature_2m_max[idx2];
+      tMin=wd.daily.temperature_2m_min[idx2];
+      code=wd.daily.weathercode?.[idx2]??0;
+    } else {
+      if(!wd.daily?.temperature_2m_max?.length){ S.wCache[key]={error:true,dest:seg.dest,date:ds}; render(); return; }
+      tMax=wd.daily.temperature_2m_max[0];
+      tMin=wd.daily.temperature_2m_min[0];
+      code=wd.daily.weathercode?.[0]??0;
     }
-    const code=wd.daily.weathercode?.[0]??0;
-    S.wCache[key]={
-      emoji:wmoEmoji(code),
-      max:Math.round(wd.daily.temperature_2m_max[0]),
-      min:Math.round(wd.daily.temperature_2m_min[0]),
-    };
-  } catch(e){S.wCache[key]={error:true, dest:seg.dest, date:ds};}
+
+    if(tMax==null||tMin==null){ S.wCache[key]={error:true,dest:seg.dest,date:ds}; render(); return; }
+
+    S.wCache[key]={ emoji:wmoEmoji(code), max:Math.round(tMax), min:Math.round(tMin) };
+
+  } catch(e){
+    S.wCache[key]={error:true,dest:seg.dest,date:ds};
+  }
   render();
 }
+
+function retryW(idx){
+  const t=trip(); if(!t) return;
+  const seg=effectiveSeg(t,idx); if(!seg?.dest?.trim()) return;
+  const ds=t.days[idx]?.date?.split('T')[0]; if(!ds) return;
+  const key=`${seg.dest.toLowerCase()}|${ds}`;
+  if(S.wCache[key]) S.wCache[key]._retry=true;
+  fetchW(idx);
+}
+
 function fetchAllW() {
   const t=trip(); if(!t) return;
   t.days.forEach((_,i)=>{if(effectiveSeg(t,i)?.dest?.trim())fetchW(i);});
@@ -1428,7 +1641,7 @@ function buildCal() {
   const totalM=base.getMonth()+S.calOffset;
   const y=base.getFullYear()+Math.floor(totalM/12);
   const m=((totalM%12)+12)%12;
-  const label=new Date(y,m,1).toLocaleDateString('es-ES',{month:'long',year:'numeric'});
+  const label=new Date(y,m,1).toLocaleDateString(loc(),{month:'long',year:'numeric'});
   const daysInMonth=new Date(y,m+1,0).getDate();
   const firstDow=new Date(y,m,1).getDay();
   // String comparison avoids all timezone issues (same approach as range picker)
@@ -1526,6 +1739,7 @@ function rTrip() {
     <button class="tab ${S.tab==='itin'?'on':''}" onclick="S.tab='itin';render()"><span class="ti">🗺️</span>${L('tabItin')}</button>
     <button class="tab ${S.tab==='map'?'on':''}" onclick="S.tab='map';render()"><span class="ti">📍</span>${L('tabMap')}</button>
     <button class="tab ${S.tab==='budget'?'on':''}" onclick="S.tab='budget';render()"><span class="ti">💰</span>${L('tabBudget')}</button>
+    <button class="tab ${S.tab==='search'?'on':''}" onclick="S.tab='search';render()" style="position:relative"><span class="ti">🔍</span>${L('tabSearch')}${S.tab!=='search'?'<span style="position:absolute;top:6px;right:6px;width:6px;height:6px;border-radius:50%;background:var(--blue)"></span>':''}</button>
     <button class="tab ${S.tab==='weather'?'on':''}" onclick="S.tab='weather';render()"><span class="ti">🌡️</span>${L('tabWeather')}</button>
   </div>`;
 
@@ -1596,7 +1810,7 @@ function rTrip() {
     h+=`<div class="trip-sum">`;
     const is2=itemStats(t);
     const totalShow=is2.spent>0?is2.spent:bs.e;
-    h+=`<div class="trip-sum-header"><div><div class="trip-sum-title">${esc(t.name)}</div><div class="trip-sum-meta">${t.days.length} días${nDests?` · ${nDests} ${nDests>1?L('destinos_pl'):L('destinos')}`:''}${totalShow>0?` · ${sym} ${totalShow.toLocaleString('es-AR',{maximumFractionDigits:0})} ${L('spent')}`:''}</div></div>${totalShow>0?`<div class="trip-sum-total"><div class="trip-sum-total-v">${sym} ${totalShow.toLocaleString('es-AR',{maximumFractionDigits:0})}</div><div class="trip-sum-total-l">${L('total')}</div></div>`:''}</div>`;
+    h+=`<div class="trip-sum-header"><div><div class="trip-sum-title">${esc(t.name)}</div><div class="trip-sum-meta">${t.days.length} días${nDests?` · ${nDests} ${nDests>1?L('destinos_pl'):L('destinos')}`:''}${totalShow>0?` · ${sym} ${totalShow.toLocaleString(loc(),{maximumFractionDigits:0})} ${L('spent')}`:''}</div></div>${totalShow>0?`<div class="trip-sum-total"><div class="trip-sum-total-v">${sym} ${totalShow.toLocaleString(loc(),{maximumFractionDigits:0})}</div><div class="trip-sum-total-l">${L('total')}</div></div>`:''}</div>`;
     // Sort segments by fromIdx for display (already sorted on save, but be safe)
     const sortedSegs=[...segs].sort((a,b)=>a.fromIdx-b.fromIdx);
     if(sortedSegs.length){
@@ -1606,7 +1820,7 @@ function rTrip() {
         const origSi=t.segments.indexOf(seg);
         const destE=byDest[origSi]?.e||0;
         const nDays=seg.toIdx-seg.fromIdx+1;
-        h+=`<div class="dest-item"><div class="dest-item-dot" style="background:${destColor(origSi)}"></div><div class="dest-item-info"><div class="dest-item-name">${esc(seg.dest)}</div><div class="dest-item-dates">${fmtShort(t.days[seg.fromIdx]?.date)} – ${fmtShort(t.days[seg.toIdx]?.date)} · ${nDays} día${nDays!==1?'s':''}${seg.hotel?' · 🏨 '+esc(seg.hotel.split(' ').slice(0,2).join(' ')):''}${seg.flight?' · ✈ '+esc(seg.flight):''}</div></div>${destE>0?`<div class="dest-item-bud">${sym} ${destE.toLocaleString('es-AR',{maximumFractionDigits:0})}</div>`:''}</div>`;
+        h+=`<div class="dest-item"><div class="dest-item-dot" style="background:${destColor(origSi)}"></div><div class="dest-item-info"><div class="dest-item-name">${esc(seg.dest)}</div><div class="dest-item-dates">${fmtShort(t.days[seg.fromIdx]?.date)} – ${fmtShort(t.days[seg.toIdx]?.date)} · ${nDays} día${nDays!==1?'s':''}${seg.hotel?' · 🏨 '+esc(seg.hotel.split(' ').slice(0,2).join(' ')):''}${seg.flight?' · ✈ '+esc(seg.flight):''}</div></div>${destE>0?`<div class="dest-item-bud">${sym} ${destE.toLocaleString(loc(),{maximumFractionDigits:0})}</div>`:''}</div>`;
       });
       h+=`</div>`;
     } else {
@@ -1655,8 +1869,8 @@ function rTrip() {
         h+=`</div><div class="tl-group-days" style="border-color:${bdColor}">`;
         days.forEach(i=>{
           const d=t.days[i]; const iT=isToday(d.date);
-          const dateStr=new Date(d.date).toLocaleDateString('es-ES',{day:'numeric',month:'short'}).toUpperCase();
-          const dow=new Date(d.date).toLocaleDateString('es-ES',{weekday:'short'});
+          const dateStr=new Date(d.date+'T12:00').toLocaleDateString(loc(),{day:'numeric',month:'short'}).toUpperCase();
+          const dow=new Date(d.date+'T12:00').toLocaleDateString(loc(),{weekday:'short'});
           const ev=parseFloat(d.expense)||0;
           let chips='';
           const dayHotel=(d.hotels||[]).filter(Boolean)[0]||d.hotel||'';
@@ -1667,7 +1881,7 @@ function rTrip() {
           const segFlight=eff?.flight||'';
           const showFlight=dayFlight||(segFlight&&i===days[0]);
           if(showFlight) chips+=`<span class="tl-chip flight">✈ ${esc(dayFlight||segFlight)}</span>`;
-          if(ev>0){const ce=CAT_EMOJI[d.category]||'💰';chips+=`<span class="tl-chip expense">${ce} ${sym} ${ev.toLocaleString('es-AR',{maximumFractionDigits:0})}</span>`;}
+          if(ev>0){const ce=CAT_EMOJI[d.category]||'💰';chips+=`<span class="tl-chip expense">${ce} ${sym} ${ev.toLocaleString(loc(),{maximumFractionDigits:0})}</span>`;}
           if(d.notes?.trim()) chips+=`<span class="tl-chip note">📝 ${esc(d.notes.slice(0,18))}${d.notes.length>18?'…':''}</span>`;
           h+=`<div class="tl-day-row" onclick="S.didx=${i};S.scr='day';render()">
             <div class="tl-day-num ${iT?'today':''}">${i+1}</div>
@@ -1684,11 +1898,11 @@ function rTrip() {
         h+=`<div class="tl-ungrouped">`;
         days.forEach(i=>{
           const d=t.days[i]; const iT=isToday(d.date);
-          const dateStr=new Date(d.date).toLocaleDateString('es-ES',{day:'numeric',month:'short'}).toUpperCase();
-          const dow=new Date(d.date).toLocaleDateString('es-ES',{weekday:'short'});
+          const dateStr=new Date(d.date+'T12:00').toLocaleDateString(loc(),{day:'numeric',month:'short'}).toUpperCase();
+          const dow=new Date(d.date+'T12:00').toLocaleDateString(loc(),{weekday:'short'});
           const ev=parseFloat(d.expense)||0;
           let chips='';
-          if(ev>0){const ce=CAT_EMOJI[d.category]||'💰';chips+=`<span class="tl-chip expense">${ce} ${sym} ${ev.toLocaleString('es-AR',{maximumFractionDigits:0})}</span>`;}
+          if(ev>0){const ce=CAT_EMOJI[d.category]||'💰';chips+=`<span class="tl-chip expense">${ce} ${sym} ${ev.toLocaleString(loc(),{maximumFractionDigits:0})}</span>`;}
           if(d.notes?.trim()) chips+=`<span class="tl-chip note">📝 ${esc(d.notes.slice(0,18))}${d.notes.length>18?'…':''}</span>`;
           h+=`<div class="tl-plain-row" onclick="S.didx=${i};S.scr='day';render()">
             <div class="tl-day-num ${iT?'today':''}">${i+1}</div>
@@ -1719,15 +1933,15 @@ function rTrip() {
     if(iSt.budget>0){
       h+=`<div style="margin:0 18px 11px;background:var(--ink);border-radius:var(--r);padding:16px 17px;box-shadow:var(--sh)">`;
       h+=`<div style="display:flex;justify-content:space-between;margin-bottom:10px">`;
-      h+=`<div><div style="font-size:28px;font-family:var(--fd);font-weight:600;color:${over?'#FCA5A5':'#6EE7B7'}">${sym} ${Math.abs(iSt.rem).toLocaleString('es-AR',{maximumFractionDigits:0})}</div><div style="font-size:10px;font-weight:600;color:rgba(255,255,255,.5);margin-top:2px;text-transform:uppercase;letter-spacing:.8px">${over?L('exceeded'):L('available')}</div></div>`;
-      h+=`<div style="text-align:right"><div style="font-size:10px;color:rgba(255,255,255,.5);margin-bottom:3px;text-transform:uppercase;letter-spacing:.8px">${L('spent2')}</div><div style="font-family:var(--fd);font-size:22px;font-weight:500;color:rgba(255,255,255,.9)">${sym} ${iSt.spent.toLocaleString('es-AR',{maximumFractionDigits:0})}</div></div>`;
+      h+=`<div><div style="font-size:28px;font-family:var(--fd);font-weight:600;color:${over?'#FCA5A5':'#6EE7B7'}">${sym} ${Math.abs(iSt.rem).toLocaleString(loc(),{maximumFractionDigits:0})}</div><div style="font-size:10px;font-weight:600;color:rgba(255,255,255,.5);margin-top:2px;text-transform:uppercase;letter-spacing:.8px">${over?L('exceeded'):L('available')}</div></div>`;
+      h+=`<div style="text-align:right"><div style="font-size:10px;color:rgba(255,255,255,.5);margin-bottom:3px;text-transform:uppercase;letter-spacing:.8px">${L('spent2')}</div><div style="font-family:var(--fd);font-size:22px;font-weight:500;color:rgba(255,255,255,.9)">${sym} ${iSt.spent.toLocaleString(loc(),{maximumFractionDigits:0})}</div></div>`;
       h+=`</div><div style="height:5px;background:rgba(255,255,255,.15);border-radius:5px;overflow:hidden"><div style="height:100%;width:${pct}%;background:${over?'#F87171':'#34D399'};border-radius:5px;transition:width .6s"></div></div>`;
-      h+=`<div style="display:flex;justify-content:space-between;font-size:10px;font-weight:600;color:rgba(255,255,255,.4);margin-top:6px"><span>0</span><span>${pct}% de ${sym} ${iSt.budget.toLocaleString('es-AR',{maximumFractionDigits:0})}</span></div>`;
+      h+=`<div style="display:flex;justify-content:space-between;font-size:10px;font-weight:600;color:rgba(255,255,255,.4);margin-top:6px"><span>0</span><span>${pct}% de ${sym} ${iSt.budget.toLocaleString(loc(),{maximumFractionDigits:0})}</span></div>`;
       h+=`</div>`;
     }
 
     // Over-budget alert
-    if(over) h+=`<div class="bud-alert">⚠️ ${L('budgetOver')} — ${sym} ${Math.abs(iSt.rem).toLocaleString('es-AR',{maximumFractionDigits:0})} extra</div>`;
+    if(over) h+=`<div class="bud-alert">⚠️ ${L('budgetOver')} — ${sym} ${Math.abs(iSt.rem).toLocaleString(loc(),{maximumFractionDigits:0})} extra</div>`;
 
     // ── Budget breakdown by category ──
     h+=`<div class="items-sec" style="margin-bottom:4px">`;
@@ -1741,7 +1955,7 @@ function rTrip() {
       h+=`<div class="item-row" style="padding:8px 11px">
         <div class="item-ico" style="font-size:18px">${cat.icon}</div>
         <div class="item-info"><div class="item-name" style="font-size:12px">${cat[S.lang]}</div>
-          ${spentVal>0?`<div class="item-cat" style="color:${catOver?'var(--red)':'var(--ink3)'}">${L('spentCat')}: ${sym} ${spentVal.toLocaleString('es-AR',{maximumFractionDigits:0})}</div>`:''}
+          ${spentVal>0?`<div class="item-cat" style="color:${catOver?'var(--red)':'var(--ink3)'}">${L('spentCat')}: ${sym} ${spentVal.toLocaleString(loc(),{maximumFractionDigits:0})}</div>`:''}
         </div>
         <input type="number" min="0" step="any" placeholder="0"
           style="width:88px;padding:5px 8px;text-align:right;background:var(--bg2);border:1.5px solid ${catOver?'var(--red)':'transparent'};border-radius:8px;font-family:var(--fd);font-size:15px;font-weight:500;outline:none;-webkit-appearance:none"
@@ -1762,11 +1976,11 @@ function rTrip() {
     const items=t.items||[];
     if(items.length){
       items.forEach((it,ii)=>{
-        const itDate=it.date?new Date(it.date).toLocaleDateString('es-ES',{day:'numeric',month:'short'}):'';
+        const itDate=it.date?new Date(it.date).toLocaleDateString(loc(),{day:'numeric',month:'short'}):'';
         h+=`<div class="item-row">
           <div class="item-ico">${it.icon||icatIcon(it.category)}</div>
           <div class="item-info"><div class="item-name">${esc(it.name)}</div><div class="item-cat">${icatLabel(it.category)}${itDate?' · '+itDate:''}</div></div>
-          <div class="item-price">${sym} ${(parseFloat(it.price)||0).toLocaleString('es-AR',{maximumFractionDigits:0})}</div>
+          <div class="item-price">${sym} ${(parseFloat(it.price)||0).toLocaleString(loc(),{maximumFractionDigits:0})}</div>
           <div class="item-acts">
             <button class="item-btn e" onclick="openEditItem(${ii})">✏️</button>
             <button class="item-btn d" onclick="delItem(${ii})">🗑</button>
@@ -1774,7 +1988,7 @@ function rTrip() {
         </div>`;
       });
       // Total row
-      h+=`<div style="display:flex;justify-content:space-between;padding:8px 4px;border-top:1px solid var(--line);margin-top:2px"><div style="font-size:12px;font-weight:700;color:var(--ink2)">${L('total')}</div><div style="font-family:var(--fd);font-size:16px;font-weight:600">${sym} ${iSt.spent.toLocaleString('es-AR',{maximumFractionDigits:0})}</div></div>`;
+      h+=`<div style="display:flex;justify-content:space-between;padding:8px 4px;border-top:1px solid var(--line);margin-top:2px"><div style="font-size:12px;font-weight:700;color:var(--ink2)">${L('total')}</div><div style="font-family:var(--fd);font-size:16px;font-weight:600">${sym} ${iSt.spent.toLocaleString(loc(),{maximumFractionDigits:0})}</div></div>`;
     } else {
       h+=`<div class="no-items">${L('noItems')}</div>`;
     }
@@ -1803,8 +2017,8 @@ function rTrip() {
         const seg=effectiveSeg(t,i);
         const si=seg?t.segments.indexOf(seg):-1;
         const ifd_b=itemsForDay(t,i); const ev=ifd_b.total>0?ifd_b.total:(parseFloat(d.expense)||0);
-        const dc=!ev?'ne':'ok', ds=ev>0?`${t.currency||'USD'} ${ev.toLocaleString('es-AR',{maximumFractionDigits:0})}`:'—';
-        const dt=new Date(d.date.split('T')[0]+'T12:00').toLocaleDateString('es-ES',{weekday:'short',day:'numeric',month:'short'});
+        const dc=!ev?'ne':'ok', ds=ev>0?`${t.currency||'USD'} ${ev.toLocaleString(loc(),{maximumFractionDigits:0})}`:'—';
+        const dt=new Date(d.date.split('T')[0]+'T12:00').toLocaleDateString(loc(),{weekday:'short',day:'numeric',month:'short'});
         const catEmoji=CAT_EMOJI[d.category]||'';
         h+=`<div class="brow">
           <div class="brow-head">
@@ -1824,9 +2038,9 @@ function rTrip() {
               return `<div style="margin-top:6px">
                 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
                   <span style="font-size:10px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px">💰 ${S.lang==='en'?'Expenses':'Gastos'}</span>
-                  <span style="font-family:var(--fd);font-size:18px;font-weight:500;color:var(--green)">${t.currency||'USD'} ${autoExp.toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2})}</span>
+                  <span style="font-family:var(--fd);font-size:18px;font-weight:500;color:var(--green)">${t.currency||'USD'} ${autoExp.toLocaleString(loc(),{minimumFractionDigits:2,maximumFractionDigits:2})}</span>
                 </div>
-                <div style="display:flex;flex-wrap:wrap;gap:4px">${ifd.items.map(itm=>`<div style="font-size:9px;padding:3px 8px;border-radius:6px;background:var(--bg2);color:var(--ink2);display:flex;align-items:center;gap:3px"><span>${icatIcon(itm.category)}</span><span>${esc(itm.name||'')}</span><span style="font-weight:700">${(t.currency||'USD')} ${parseFloat(itm.price).toLocaleString('es-AR',{maximumFractionDigits:0})}</span></div>`).join('')}</div>
+                <div style="display:flex;flex-wrap:wrap;gap:4px">${ifd.items.map(itm=>`<div style="font-size:9px;padding:3px 8px;border-radius:6px;background:var(--bg2);color:var(--ink2);display:flex;align-items:center;gap:3px"><span>${icatIcon(itm.category)}</span><span>${esc(itm.name||'')}</span><span style="font-weight:700">${(t.currency||'USD')} ${parseFloat(itm.price).toLocaleString(loc(),{maximumFractionDigits:0})}</span></div>`).join('')}</div>
               </div>`;
             } else {
               // No items: show empty state, no input needed
@@ -1950,7 +2164,7 @@ function rTrip() {
         const ds=d.date.split('T')[0]; // YYYY-MM-DD
         const key=`${seg.dest.toLowerCase()}|${ds}`;
         const w=S.wCache[key];
-        const dt=new Date(d.date).toLocaleDateString('es-ES',{weekday:'short',day:'numeric',month:'short'});
+        const dt=new Date(d.date).toLocaleDateString(loc(),{weekday:'short',day:'numeric',month:'short'});
         const destEnc=encodeURIComponent(seg.dest);
         const googleUrl=`https://www.google.com/search?q=clima+${destEnc}+${ds}`;
         const acUrl=`https://www.accuweather.com/en/search-locations?query=${destEnc}`;
@@ -1958,12 +2172,20 @@ function rTrip() {
         if(w&&!w.loading&&!w.error){
           rH=`<div class="wright"><div class="wemoji">${w.emoji}</div><div class="wtemp">${w.max}°/${w.min}°</div></div>`;
         } else if(w?.loading){
-          rH=`<div class="wright"><div class="wemoji">⏳</div></div>`;
-        } else if(w?.error){
-          // Fallback: external links
+          rH=`<div class="wright" style="font-size:11px;color:var(--ink3)">⏳</div>`;
+        } else if(w?.tooFar){
+          const daysUntil=w.diffDays||0;
+          const availIn=Math.max(0,daysUntil-15);
+          rH=`<div style="font-size:9px;color:var(--ink3);text-align:right;flex-shrink:0;max-width:90px;line-height:1.4">${S.lang==='en'?`Available in ~${availIn}d`:`Disponible en ~${availIn}d`}</div>`;
+        } else if(w?.noCoords){
           rH=`<div style="display:flex;flex-direction:column;gap:4px;flex-shrink:0">
+            <button class="wbtn" onclick="event.stopPropagation();retryW(${i})" style="font-size:10px;padding:4px 8px">↻ ${S.lang==='en'?'Retry':'Reintentar'}</button>
             <a href="${googleUrl}" target="_blank" rel="noopener" class="wbtn" style="text-decoration:none;font-size:10px;padding:4px 8px">🌐 Google</a>
-            <a href="${acUrl}" target="_blank" rel="noopener" class="wbtn" style="text-decoration:none;font-size:10px;padding:4px 8px">⛅ AccuWeather</a>
+          </div>`;
+        } else if(w?.error){
+          rH=`<div style="display:flex;flex-direction:column;gap:4px;flex-shrink:0">
+            <button class="wbtn" onclick="event.stopPropagation();retryW(${i})" style="font-size:10px;padding:4px 8px">↻ ${S.lang==='en'?'Retry':'Reintentar'}</button>
+            <a href="${googleUrl}" target="_blank" rel="noopener" class="wbtn" style="text-decoration:none;font-size:10px;padding:4px 8px">🌐 Google</a>
           </div>`;
         } else {
           rH=`<button class="wbtn" onclick="event.stopPropagation();fetchW(${i})">${L('seeClima')}</button>`;
@@ -1976,6 +2198,108 @@ function rTrip() {
     }
     h+=`</div>`;
   }
+
+  // ── SEARCH ──
+  if(S.tab==='search') {
+    const segs=t.segments||[];
+    const uniqDests=[...new Map(segs.map(s=>[s.dest,s])).values()];
+    // Active destination for search (default: first, or selected)
+    if(!S._srchDestIdx) S._srchDestIdx=0;
+    const activeSeg=uniqDests[S._srchDestIdx]||null;
+    const dest=activeSeg?.dest||'';
+    const destFull=activeSeg?.destFull||dest;
+    const destEnc=encodeURIComponent(dest);
+    // Get date range for this segment
+    const segObj=segs.find(s=>s.dest===dest);
+    const dateFrom=segObj?t.days[segObj.fromIdx]?.date?.split('T')[0]:'';
+    const dateTo=segObj?t.days[segObj.toIdx]?.date?.split('T')[0]:'';
+    const [bY,bM,bD]=dateFrom?dateFrom.split('-'):['','',''];
+
+    h+=`<div class="srch-wrap">`;
+
+    if(!uniqDests.length){
+      h+=`<div style="margin:32px 0;text-align:center"><div style="font-size:36px;margin-bottom:12px">🔍</div><p style="font-size:13px;color:var(--ink3);line-height:1.6">${L('srchNoDestHint')}</p></div>`;
+    } else {
+      // Destination selector pills
+      h+=`<div class="srch-dest-selector">`;
+      uniqDests.forEach((sg,idx)=>{
+        const col=destColor(segs.indexOf(sg));
+        h+=`<button class="srch-dest-btn ${idx===S._srchDestIdx?'on':''}" onclick="S._srchDestIdx=${idx};render()" style="${idx===S._srchDestIdx?`background:${col};border-color:${col}`:''}">📍 ${esc(sg.dest)}</button>`;
+      });
+      h+=`</div>`;
+
+      if(dest){
+        // Destination header
+        h+=`<div style="margin-bottom:14px;padding:12px 14px;background:var(--white);border-radius:var(--r);box-shadow:var(--sh);display:flex;align-items:center;gap:10px">
+          <div style="font-size:22px">📍</div>
+          <div><div style="font-size:14px;font-weight:700;color:var(--ink)">${esc(destFull||dest)}</div>
+          <div style="font-size:11px;color:var(--ink3);margin-top:1px">${dateFrom&&dateTo?`${fmtShort(dateFrom)} → ${fmtShort(dateTo)}`:S.lang==='en'?'No dates set':'Sin fechas'}</div></div>
+        </div>`;
+
+        const btnS='display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;padding:16px 10px;background:var(--white);border-radius:var(--r);border:1.5px solid var(--line2);text-decoration:none;color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.06);transition:transform .15s;cursor:pointer;text-align:center';
+        const btnHL='display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;padding:16px 10px;background:var(--blue-bg);border-radius:var(--r);border:1.5px solid var(--blue-bd);text-decoration:none;color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.06);transition:transform .15s;cursor:pointer;text-align:center';
+        const lbl='font-size:12px;font-weight:700;color:var(--ink)';
+        const sub='font-size:10px;color:var(--ink3);line-height:1.4;margin-top:1px';
+
+        // Flight + Hotel highlighted (highest conversion)
+        h+=`<div style="margin-bottom:10px">
+          <div class="srch-section-title">${S.lang==='en'?'✈️ Transport & accommodation':'✈️ Transporte y alojamiento'}</div>
+          <div class="srch-grid">
+            <a href="${affSkyscanner(dest)}" target="_blank" rel="noopener nofollow" style="${btnHL}">
+              <span style="font-size:28px">✈️</span>
+              <span style="${lbl}">${L('srchFlights')}</span>
+              <span style="${sub}">${L('srchFlightsSub')}</span>
+            </a>
+            <a href="${affBooking(dest,bY,bM,bD)}" target="_blank" rel="noopener nofollow" style="${btnHL}">
+              <span style="font-size:28px">🏨</span>
+              <span style="${lbl}">${L('srchHotels')}</span>
+              <span style="${sub}">${L('srchHotelsSub')}</span>
+            </a>
+          </div>
+        </div>`;
+
+        // Activities + Cars
+        h+=`<div style="margin-bottom:10px">
+          <div class="srch-section-title">${S.lang==='en'?'🎟️ Experiences & transport':'🎟️ Experiencias y transporte'}</div>
+          <div class="srch-grid">
+            <a href="${affGYG(dest)}" target="_blank" rel="noopener nofollow" style="${btnS}">
+              <span style="font-size:28px">🎟️</span>
+              <span style="${lbl}">${L('srchActivities')}</span>
+              <span style="${sub}">${L('srchActivitiesSub')}</span>
+            </a>
+            <a href="${affRentalcars(dest,dateFrom)}" target="_blank" rel="noopener nofollow" style="${btnS}">
+              <span style="font-size:28px">🚗</span>
+              <span style="${lbl}">${L('srchCars')}</span>
+              <span style="${sub}">${L('srchCarsSub')}</span>
+            </a>
+          </div>
+        </div>`;
+
+        // Insurance + eSIM
+        const insuranceUrl=`https://www.iati.com.ar/seguros-de-viaje/?destino=${destEnc}&utm_source=bitacora`;
+        const esimUrl=`https://www.airalo.com/?utm_source=bitacora`;
+        h+=`<div style="margin-bottom:14px">
+          <div class="srch-section-title">${S.lang==='en'?'🛡️ Protection':'🛡️ Protección'}</div>
+          <div class="srch-grid">
+            <a href="${insuranceUrl}" target="_blank" rel="noopener nofollow" style="${btnS}">
+              <span style="font-size:28px">🛡️</span>
+              <span style="${lbl}">${L('srchInsurance')}</span>
+              <span style="${sub}">${L('srchInsuranceSub')}</span>
+            </a>
+            <a href="${esimUrl}" target="_blank" rel="noopener nofollow" style="${btnS}">
+              <span style="font-size:28px">📱</span>
+              <span style="${lbl}">${L('srchEsim')}</span>
+              <span style="${sub}">${L('srchEsimSub')}</span>
+            </a>
+          </div>
+        </div>`;
+
+        h+=`<div class="srch-tip">${L('srchDisclaimer')}</div>`;
+      }
+    }
+    h+=`</div>`;
+  }
+
   return h;
 }
 
@@ -1986,7 +2310,7 @@ function rDay() {
   const i=S.didx;
   const rawSeg=segForDay(t,i);
   const eff=effectiveSeg(t,i);
-  const dt=new Date(d.date).toLocaleDateString('es-ES',{weekday:'long',day:'numeric',month:'long'});
+  const dt=new Date(d.date.split('T')[0]+'T12:00').toLocaleDateString(loc(),{weekday:'long',day:'numeric',month:'long'});
   const iT=isToday(d.date);
   const ds=new Date(d.date).toISOString().split('T')[0];
   const key=eff?.dest?`${eff.dest.toLowerCase()}|${ds}`:null;
@@ -2000,7 +2324,8 @@ function rDay() {
   if(eff?.dest){
     h+=`<div class="dd-dest-chip" style="background:${segColor}18;color:${segColor};border:1.5px solid ${segColor}44">📍 ${esc(eff.destFull||eff.dest)}</div> `;
     if(w&&!w.loading&&!w.error) h+=`<div class="w-chip">${w.emoji} ${w.max}° / ${w.min}°C</div>`;
-    else if(w?.error) h+=`<div class="w-chip" style="color:var(--red);background:var(--red-bg)">⚠ ${L('noData')}</div>`;
+    else if(w?.tooFar) h+=`<div class="w-chip" style="color:var(--ink3)" onclick="fetchW(${i})">📅 ~${w.diffDays}d</div>`;
+    else if(w?.error) h+=`<div class="w-chip" style="color:var(--red);background:var(--red-bg)" onclick="retryW(${i})">↻ ${S.lang==='en'?'Retry':'Reintentar'}</div>`;
     else h+=`<div class="w-chip ${w?.loading?'loading':''}" onclick="fetchW(${i})">${w?.loading?L('loading'):L('seeWeather')}</div>`;
   }
   h+=`</div><div class="divider"></div>`;
@@ -2137,8 +2462,8 @@ function onDayDestInput(idx, val) {
 function buildExportHTML(t, forPrint) {
   const sym=t.currency||'USD';
   const iSt=itemStats(t);
-  const fmtDate=str=>new Date(str).toLocaleDateString('es-ES',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
-  const fmtShortLocal=str=>new Date(str).toLocaleDateString('es-ES',{day:'numeric',month:'short'});
+  const fmtDate=str=>new Date(str).toLocaleDateString(loc(),{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  const fmtShortLocal=str=>new Date(str).toLocaleDateString(loc(),{day:'numeric',month:'short'});
   let segs='';
   (t.segments||[]).sort((a,b)=>a.fromIdx-b.fromIdx).forEach(seg=>{
     segs+=`<div style="display:flex;align-items:baseline;gap:10px;padding:7px 0;border-bottom:1px solid #eee">
@@ -2156,8 +2481,8 @@ function buildExportHTML(t, forPrint) {
     daysHtml+=`<div style="padding:10px 0;border-bottom:1px solid #f0f0f0">
       <div style="display:flex;align-items:center;gap:10px">
         <div style="width:28px;height:28px;border-radius:50%;background:#1A1714;color:white;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0">${i+1}</div>
-        <div style="font-size:13px;font-weight:600">${new Date(d.date).toLocaleDateString('es-ES',{weekday:'short',day:'numeric',month:'short'}).toUpperCase()}</div>
-        ${dayExp>0?`<div style="margin-left:auto;font-size:12px;font-weight:700;color:#059669">${sym} ${dayExp.toLocaleString('es-AR',{maximumFractionDigits:0})}</div>`:''}
+        <div style="font-size:13px;font-weight:600">${new Date(d.date).toLocaleDateString(loc(),{weekday:'short',day:'numeric',month:'short'}).toUpperCase()}</div>
+        ${dayExp>0?`<div style="margin-left:auto;font-size:12px;font-weight:700;color:#059669">${sym} ${dayExp.toLocaleString(loc(),{maximumFractionDigits:0})}</div>`:''}
       </div>
       ${dayHotel}${dayFlight}${dayNote}
       ${acts?`<div style="margin-top:5px">${acts}</div>`:''}
@@ -2168,12 +2493,12 @@ function buildExportHTML(t, forPrint) {
     items+=`<tr>
       <td style="padding:5px 8px">${it.icon} ${it.name}</td>
       <td style="padding:5px 8px;color:#666">${icatLabel(it.category)}</td>
-      <td style="padding:5px 8px;color:#666;font-size:11px">${it.date?new Date(it.date).toLocaleDateString('es-ES',{day:'numeric',month:'short'}):''}</td>
-      <td style="padding:5px 8px;text-align:right;font-weight:700">${sym} ${(parseFloat(it.price)||0).toLocaleString('es-AR',{maximumFractionDigits:0})}</td>
+      <td style="padding:5px 8px;color:#666;font-size:11px">${it.date?new Date(it.date).toLocaleDateString(loc(),{day:'numeric',month:'short'}):''}</td>
+      <td style="padding:5px 8px;text-align:right;font-weight:700">${sym} ${(parseFloat(it.price)||0).toLocaleString(loc(),{maximumFractionDigits:0})}</td>
     </tr>`;
   });
-  const total=`${sym} ${iSt.spent.toLocaleString('es-AR',{maximumFractionDigits:0})}`;
-  const budget=iSt.budget>0?`${sym} ${iSt.budget.toLocaleString('es-AR',{maximumFractionDigits:0})}`:'—';
+  const total=`${sym} ${iSt.spent.toLocaleString(loc(),{maximumFractionDigits:0})}`;
+  const budget=iSt.budget>0?`${sym} ${iSt.budget.toLocaleString(loc(),{maximumFractionDigits:0})}`:'—';
 
   return `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -2243,7 +2568,7 @@ async function copyTripText(){
   const NL='\n';
   const parts=[];
   parts.push('✈ '+t.name);
-  const loc=S.lang==='en'?'en-US':'es-ES';
+  const loc=loc();
   parts.push('📅 '+new Date(t.startDate+'T12:00').toLocaleDateString(loc,{day:'numeric',month:'long',year:'numeric'})+' → '+new Date(t.endDate+'T12:00').toLocaleDateString(loc,{day:'numeric',month:'long',year:'numeric'}));
   parts.push('⏱ '+t.days.length+' '+(S.lang==='en'?'days':'días'));
   if(segs.length){
@@ -2261,8 +2586,8 @@ async function copyTripText(){
   if(t.items?.length){
     parts.push('');
     parts.push('💰 '+(S.lang==='en'?'EXPENSES':'GASTOS')+' ('+sym+')');
-    t.items.forEach(it=>{ parts.push('  • '+it.icon+' '+it.name+': '+sym+' '+(parseFloat(it.price)||0).toLocaleString('es-AR',{maximumFractionDigits:0})); });
-    parts.push('  TOTAL: '+sym+' '+iSt.spent.toLocaleString('es-AR',{maximumFractionDigits:0}));
+    t.items.forEach(it=>{ parts.push('  • '+it.icon+' '+it.name+': '+sym+' '+(parseFloat(it.price)||0).toLocaleString(loc(),{maximumFractionDigits:0})); });
+    parts.push('  TOTAL: '+sym+' '+iSt.spent.toLocaleString(loc(),{maximumFractionDigits:0}));
   }
   parts.push('');
   parts.push('🗺 Creado con Bitacora');
@@ -2338,7 +2663,7 @@ function wireSegDayStrip() {
       const dayNum = i + 1;
       const [dy2,dm2,dd2]=ds.split('-').map(Number);
       const dateObj = new Date(dy2, dm2-1, dd2);
-      const label = dateObj.toLocaleDateString(S.lang === 'en' ? 'en-US' : 'es-ES', {day:'numeric',month:'short'});
+      const label = dateObj.toLocaleDateString(loc(), {day:'numeric',month:'short'});
 
       let bg, border, color, fw='500';
       if (isFrom || isTo) {
@@ -2365,8 +2690,8 @@ function wireSegDayStrip() {
     if (prev) {
       if (fromVal && toVal) {
         const diff = t.days.findIndex(d => d.date.split('T')[0] === toVal) - t.days.findIndex(d => d.date.split('T')[0] === fromVal) + 1;
-        const f = new Date(fromVal + 'T00:00').toLocaleDateString(S.lang === 'en' ? 'en-US' : 'es-ES', {day:'numeric',month:'short'});
-        const tv = new Date(toVal + 'T00:00').toLocaleDateString(S.lang === 'en' ? 'en-US' : 'es-ES', {day:'numeric',month:'short'});
+        const f = new Date(fromVal + 'T00:00').toLocaleDateString(loc(), {day:'numeric',month:'short'});
+        const tv = new Date(toVal + 'T00:00').toLocaleDateString(loc(), {day:'numeric',month:'short'});
         prev.textContent = `${f} → ${tv} · ${diff} ${S.lang === 'en' ? 'days' : 'días'}`;
       } else if (fromVal) {
         prev.textContent = S.lang === 'en' ? '→ Now tap end date' : '→ Ahora tocá la fecha de fin';
@@ -2419,8 +2744,8 @@ function updateDatePreview(fromId, toId, previewId) {
   const fv=fromEl?.value, tv=toEl?.value;
   if(!fv&&!tv){prev.style.display='none';return;}
   prev.style.display='flex';
-  const fStr=fv?new Date(fv+'T12:00:00').toLocaleDateString(S.lang==='en'?'en-US':'es-ES',{day:'numeric',month:'short'}):'?';
-  const tStr=tv?new Date(tv+'T12:00:00').toLocaleDateString(S.lang==='en'?'en-US':'es-ES',{day:'numeric',month:'short'}):'?';
+  const fStr=fv?new Date(fv+'T12:00:00').toLocaleDateString(loc(),{day:'numeric',month:'short'}):'?';
+  const tStr=tv?new Date(tv+'T12:00:00').toLocaleDateString(loc(),{day:'numeric',month:'short'}):'?';
   let nights='';
   if(fv&&tv){
     const diff=Math.round((new Date(tv)-new Date(fv))/864e5);
@@ -2545,7 +2870,7 @@ function rSheets() {
         <input class="si" id="item-price" type="number" min="0" step="any" placeholder="0"
           value="${esc(priceVal)}" oninput="draftSet('price',this.value)"
           style="font-family:var(--fd);font-size:22px;font-weight:500;text-align:right"/></div>
-      ${priceVal?`<div style="text-align:right;font-size:11px;color:var(--ink3);margin:-4px 0 4px;padding-right:2px">${sym} ${parseFloat(priceVal).toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2})}</div>`:''}
+      ${priceVal?`<div style="text-align:right;font-size:11px;color:var(--ink3);margin:-4px 0 4px;padding-right:2px">${sym} ${parseFloat(priceVal).toLocaleString(loc(),{minimumFractionDigits:2,maximumFractionDigits:2})}</div>`:''}
     </div>
     <div class="sh-btns" style="${editing?'grid-template-columns:1fr 1fr 1fr':''}">
       ${editing?`<button class="btn-del" onclick="delItem(${S.editItemIdx})">${L('delete')}</button>`:''}
@@ -2646,8 +2971,8 @@ function rdpHTML(containerId, fromVal, toVal, monthOffset) {
     const [ty,tm,td]=toVal.split('-').map(Number);
     const fDate=new Date(fy,fm-1,fd), tDate=new Date(ty,tm-1,td);
     const diff=Math.round((tDate-fDate)/86400000)+1;
-    const fl=fDate.toLocaleDateString(S.lang==='en'?'en-US':'es-ES',{day:'numeric',month:'short'});
-    const tl=tDate.toLocaleDateString(S.lang==='en'?'en-US':'es-ES',{day:'numeric',month:'short'});
+    const fl=fDate.toLocaleDateString(loc(),{day:'numeric',month:'short'});
+    const tl=tDate.toLocaleDateString(loc(),{day:'numeric',month:'short'});
     preview=`${fl} → ${tl} · ${diff} ${S.lang==='en'?'days':'días'}`;
   } else if(fromVal){
     preview=S.lang==='en'?'Now tap end date →':'Ahora tocá la fecha de fin →';
@@ -2715,7 +3040,7 @@ function render() {
   const tC=S.scr==='trip'?'':(S.scr==='home'?'gone':'back');
   const dC=S.scr==='day'?'':'gone';
   const dobj=t?.days?.[S.didx];
-  const dayTitle=dobj?new Date(dobj.date).toLocaleDateString('es-ES',{weekday:'short',day:'numeric',month:'short'}):'';
+  const dayTitle=dobj?new Date(dobj.date.split('T')[0]+'T12:00').toLocaleDateString(loc(),{weekday:'short',day:'numeric',month:'short'}):'';
 
   document.getElementById('app').innerHTML=`
     <div class="screen ${hC}">

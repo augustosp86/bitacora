@@ -745,6 +745,8 @@ const I18N={
     activities:'Actividades del día', addActivity:'＋ Actividad',
     actName:'Nombre de la actividad', actNamePh:'Ej: Visita al museo',
     actCat:'Tipo', newActivity:'Nueva actividad',
+    actPrice:'Precio (opcional)', actPricePh:'0',
+    actAddedToExpenses:'✓ Actividad y gasto agregados',
     noActivities:'Sin actividades. Tocá ＋ para agregar.',
     itemDate:'Fecha', share:'Compartir', shareTitle:'Compartir itinerario',
     exportHTML:'Exportar HTML', exportPDF:'Imprimir / PDF',
@@ -851,6 +853,8 @@ const I18N={
     activities:'Day activities', addActivity:'＋ Activity',
     actName:'Activity name', actNamePh:'E.g. Museum visit',
     actCat:'Type', newActivity:'New activity',
+    actPrice:'Price (optional)', actPricePh:'0',
+    actAddedToExpenses:'✓ Activity and expense added',
     noActivities:'No activities yet. Tap ＋ to add one.',
     itemDate:'Date', share:'Share', shareTitle:'Share itinerary',
     exportHTML:'Export HTML', exportPDF:'Print / PDF',
@@ -1601,10 +1605,37 @@ function addActivity(dayIdx,name,icon){
   S.sheet=null; save(); render();
 }
 function saveActivity(){
+  const t=trip(); if(!t) return;
   const name=document.getElementById('act-name')?.value||'';
   const icon=document.getElementById('act-icon')?.value||'🎟️';
+  const priceRaw=document.getElementById('act-price')?.value||'';
+  const price=parseFloat(priceRaw);
   const dayIdx=S._actDayIdx!=null?S._actDayIdx:0;
-  addActivity(dayIdx, name, icon);
+  if(!name.trim()){toast(L('toastFields'));return;}
+
+  // Add activity
+  const d=t.days[dayIdx]; if(!d) return;
+  if(!d.activities) d.activities=[];
+  const actId=Date.now();
+  d.activities.push({id:actId,name:name.trim(),icon:icon||'🎟️'});
+
+  // If price given, also add as expense item in t.items
+  if(!isNaN(price)&&price>0){
+    if(!t.items) t.items=[];
+    const dayDate=d.date.split('T')[0];
+    t.items.push({
+      id:actId+1,
+      name:name.trim(),
+      category:'activity',
+      icon:'🎟️',
+      price:price,
+      date:dayDate,
+      fromActivity:true,  // mark so we know origin
+    });
+    toast(L('actAddedToExpenses'));
+  }
+
+  S.sheet=null; save(); render();
 }
 function delActivity(dayIdx,actId){
   const t=trip(); if(!t) return;
@@ -2997,10 +3028,21 @@ function rSheets() {
   if(S.sheet==='activity'&&t){
     const dayIdx=S._actDayIdx!=null?S._actDayIdx:0;
     const iconOptions=ACT_ICONS.map(ic=>`<option value="${ic}">${ic}</option>`).join('');
+    const actDay=t.days[dayIdx];
+    const actDate=actDay?actDay.date.split('T')[0]:'';
     h+=`<div class="sheet"><div class="sh-handle"></div><div class="sh-body">
       <div class="sh-title">${L('newActivity')}</div>
       <div class="sf"><label>${L('actName')}</label><input class="si" id="act-name" type="text" placeholder="${L('actNamePh')}"/></div>
-      <div class="sf"><label>${L('actCat')}</label><select class="si" id="act-icon">${iconOptions}</select></div>
+      <div class="sf-row">
+        <div class="sf"><label>${L('actCat')}</label><select class="si" id="act-icon">${iconOptions}</select></div>
+        <div class="sf"><label>${L('actPrice')}</label>
+          <input class="si" id="act-price" type="number" min="0" step="any" placeholder="${L('actPricePh')}"
+            style="font-family:var(--fd);font-size:18px;font-weight:500;text-align:right"/>
+        </div>
+      </div>
+      <div style="font-size:10px;color:var(--ink3);margin-top:-4px;padding:0 2px">
+        💡 ${S.lang==='en'?'If you add a price, it will also appear as an expense in the Expenses tab.':'Si agregás un precio, también aparece como gasto en el tab Gastos.'}
+      </div>
     </div>
     <div class="sh-btns">
       <button class="btn-can" onclick="S.sheet=null;render()">${L('cancel')}</button>

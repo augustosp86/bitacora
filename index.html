@@ -133,6 +133,18 @@ footer a:hover{color:var(--ink)}
 .social-chips{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:20px}
 .social-chip{display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border-radius:12px;background:var(--bg);border:1px solid var(--border);font-size:.85rem;color:var(--ink2)}
 .social-chip strong{color:var(--ink)}
+
+/* AFFILIATE LINKS in landing */
+.aff-bar{background:var(--blue-bg);border:1px solid var(--blue-bd);border-radius:12px;padding:16px 20px;margin-top:32px;text-align:center}
+.aff-bar-title{font-size:.75rem;font-weight:700;color:var(--blue);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px}
+.aff-links{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+.aff-link{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:8px;background:white;border:1px solid var(--blue-bd);font-size:.82rem;font-weight:600;color:var(--blue);text-decoration:none;transition:all .15s}
+.aff-link:hover{background:var(--blue);color:white;transform:translateY(-1px)}
+.aff-note{font-size:.7rem;color:var(--ink3);margin-top:10px}
+.feat-aff{margin-top:12px;padding:10px 12px;background:var(--bg);border-radius:8px;border:1px solid var(--border);display:flex;align-items:center;gap:8px;text-decoration:none;transition:all .15s}
+.feat-aff:hover{background:var(--blue-bg);border-color:var(--blue-bd)}
+.feat-aff-icon{font-size:16px}
+.feat-aff-text{font-size:.78rem;font-weight:600;color:var(--blue)}
 </style>
 </head>
 <body>
@@ -166,6 +178,17 @@ footer a:hover{color:var(--ink)}
     <a href="https://bitacora-theta.vercel.app/app.html" class="btn btn-lg" style="background:var(--card);border:1.5px solid var(--border)" id="cta-dl" onclick="handleDL(event)">⬇️ Descargar app</a>
   </div>
   <p class="hero-note" id="hero-note">Sin cuenta. Sin instalación. Funciona desde el navegador.</p>
+  <div class="aff-bar reveal" style="max-width:500px;margin:20px auto 0" id="aff-hero">
+    <div class="aff-bar-title" id="aff-hero-title">🔍 Buscá tu próximo viaje</div>
+    <div class="aff-links">
+      <a href="https://www.skyscanner.com" target="_blank" rel="noopener nofollow" class="aff-link" id="aff-sky">✈️ Vuelos</a>
+      <a href="https://www.booking.com" target="_blank" rel="noopener nofollow" class="aff-link" id="aff-book">🏨 Hoteles</a>
+      <a href="https://www.getyourguide.com" target="_blank" rel="noopener nofollow" class="aff-link" id="aff-gyg">🎟️ Tours</a>
+      <a href="https://www.rentalcars.com" target="_blank" rel="noopener nofollow" class="aff-link" id="aff-car">🚗 Autos</a>
+      <a href="https://www.iati.com.ar" target="_blank" rel="noopener nofollow" class="aff-link" id="aff-ins">🛡️ Seguro</a>
+    </div>
+    <div class="aff-note" id="aff-note">Links de partners — ayudás a mantener Bitacora gratis</div>
+  </div>
 
   <div class="phones-wrap">
     <div class="phone">
@@ -289,6 +312,50 @@ footer a:hover{color:var(--ink)}
 
 <div class="section-divider"></div>
 
+<!-- AFFILIATE SEARCH SECTION -->
+<section class="section" style="background:var(--blue-bg);padding:56px 24px">
+  <div class="section-inner" style="text-align:center">
+    <div class="sec-tag reveal" id="aff-sec-tag">Partners</div>
+    <h2 class="sec-h reveal" id="aff-sec-h">Buscá todo para tu viaje<br><em>desde un solo lugar.</em></h2>
+    <p class="sec-sub reveal" style="margin:0 auto 32px" id="aff-sec-sub">Usá Bitacora para planificar y estos partners para reservar. Todo conectado.</p>
+    <div class="reveal" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;max-width:700px;margin:0 auto">
+      <a href="https://www.skyscanner.com" target="_blank" rel="noopener nofollow" style="display:flex;flex-direction:column;align-items:center;gap:8px;padding:20px 12px;background:white;border-radius:var(--r);border:1px solid var(--blue-bd);text-decoration:none;transition:all .2s" onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform=''">
+        <span style="font-size:32px">✈️</span>
+        <span style="font-size:.85rem;font-weight:700;color:var(--ink)" id="aff-p1">Vuelos</span>
+        <span style="font-size:.72rem;color:var(--ink3)" id="aff-p1s">Skyscanner</span>
+      </a>
+      <a href="https://www.booking.com" target="_blank" rel="noopener nofollow" style="display:flex;flex-direction:column;align-items:center;gap:8px;padding:20px 12px;background:white;border-radius:var(--r);border:1px solid var(--blue-bd);text-decoration:none;transition:all .2s" onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform=''">
+        <span style="font-size:32px">🏨</span>
+        <span style="font-size:.85rem;font-weight:700;color:var(--ink)" id="aff-p2">Hoteles</span>
+        <span style="font-size:.72rem;color:var(--ink3)" id="aff-p2s">Booking.com</span>
+      </a>
+      <a href="https://www.getyourguide.com" target="_blank" rel="noopener nofollow" style="display:flex;flex-direction:column;align-items:center;gap:8px;padding:20px 12px;background:white;border-radius:var(--r);border:1px solid var(--blue-bd);text-decoration:none;transition:all .2s" onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform=''">
+        <span style="font-size:32px">🎟️</span>
+        <span style="font-size:.85rem;font-weight:700;color:var(--ink)" id="aff-p3">Tours</span>
+        <span style="font-size:.72rem;color:var(--ink3)" id="aff-p3s">GetYourGuide</span>
+      </a>
+      <a href="https://www.rentalcars.com" target="_blank" rel="noopener nofollow" style="display:flex;flex-direction:column;align-items:center;gap:8px;padding:20px 12px;background:white;border-radius:var(--r);border:1px solid var(--blue-bd);text-decoration:none;transition:all .2s" onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform=''">
+        <span style="font-size:32px">🚗</span>
+        <span style="font-size:.85rem;font-weight:700;color:var(--ink)" id="aff-p4">Autos</span>
+        <span style="font-size:.72rem;color:var(--ink3)" id="aff-p4s">Rentalcars</span>
+      </a>
+      <a href="https://www.iati.com.ar" target="_blank" rel="noopener nofollow" style="display:flex;flex-direction:column;align-items:center;gap:8px;padding:20px 12px;background:white;border-radius:var(--r);border:1px solid var(--blue-bd);text-decoration:none;transition:all .2s" onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform=''">
+        <span style="font-size:32px">🛡️</span>
+        <span style="font-size:.85rem;font-weight:700;color:var(--ink)" id="aff-p5">Seguro</span>
+        <span style="font-size:.72rem;color:var(--ink3)" id="aff-p5s">iati</span>
+      </a>
+      <a href="https://www.airalo.com" target="_blank" rel="noopener nofollow" style="display:flex;flex-direction:column;align-items:center;gap:8px;padding:20px 12px;background:white;border-radius:var(--r);border:1px solid var(--blue-bd);text-decoration:none;transition:all .2s" onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform=''">
+        <span style="font-size:32px">📱</span>
+        <span style="font-size:.85rem;font-weight:700;color:var(--ink)" id="aff-p6">eSIM</span>
+        <span style="font-size:.72rem;color:var(--ink3)" id="aff-p6s">Airalo</span>
+      </a>
+    </div>
+    <p class="reveal" style="font-size:.72rem;color:var(--blue);opacity:.7;margin-top:16px" id="aff-disc">Bitacora puede recibir una comisión por reservas realizadas a través de estos links. Sin costo adicional para vos.</p>
+  </div>
+</section>
+
+<div class="section-divider"></div>
+
 <section class="section" style="background:var(--card)">
   <div class="section-inner">
     <div class="sec-tag reveal" id="how-tag">Cómo funciona</div>
@@ -378,6 +445,16 @@ const T={
     'cta-p':'Abrí la app ahora. Sin registro, sin datos personales, sin nada. Solo tu viaje.',
     'cta-open':'🗺️ Abrir Bitacora','cta-dl2':'⬇️ Instalar como app',
     'ft-made':'Hecho con ♥ para viajeros',
+    'aff-hero-title':'🔍 Buscá tu próximo viaje',
+    'aff-sky':'✈️ Vuelos','aff-book':'🏨 Hoteles','aff-gyg':'🎟️ Tours','aff-car':'🚗 Autos','aff-ins':'🛡️ Seguro',
+    'aff-note':'Links de partners — ayudás a mantener Bitacora gratis',
+    'aff-sec-tag':'Partners',
+    'aff-sec-h':'Buscá todo para tu viaje<br><em>desde un solo lugar.</em>',
+    'aff-sec-sub':'Usá Bitacora para planificar y estos partners para reservar. Todo conectado.',
+    'aff-p1':'Vuelos','aff-p1s':'Skyscanner','aff-p2':'Hoteles','aff-p2s':'Booking.com',
+    'aff-p3':'Tours','aff-p3s':'GetYourGuide','aff-p4':'Autos','aff-p4s':'Rentalcars',
+    'aff-p5':'Seguro','aff-p5s':'iati','aff-p6':'eSIM','aff-p6s':'Airalo',
+    'aff-disc':'Bitacora puede recibir una comisión por reservas a través de estos links. Sin costo adicional para vos.',
   },
   en:{
     'nav-features':'Features','nav-cta':'Open app →',
@@ -414,6 +491,16 @@ const T={
     'cta-p':'Open the app now. No account, no personal data, nothing. Just your trip.',
     'cta-open':'🗺️ Open Bitacora','cta-dl2':'⬇️ Install as app',
     'ft-made':'Made with ♥ for travelers',
+    'aff-hero-title':'🔍 Search for your next trip',
+    'aff-sky':'✈️ Flights','aff-book':'🏨 Hotels','aff-gyg':'🎟️ Tours','aff-car':'🚗 Cars','aff-ins':'🛡️ Insurance',
+    'aff-note':'Partner links — help keep Bitacora free',
+    'aff-sec-tag':'Partners',
+    'aff-sec-h':'Find everything for your trip<br><em>from one place.</em>',
+    'aff-sec-sub':'Use Bitacora to plan and these partners to book. All connected.',
+    'aff-p1':'Flights','aff-p1s':'Skyscanner','aff-p2':'Hotels','aff-p2s':'Booking.com',
+    'aff-p3':'Tours','aff-p3s':'GetYourGuide','aff-p4':'Cars','aff-p4s':'Rentalcars',
+    'aff-p5':'Insurance','aff-p5s':'iati','aff-p6':'eSIM','aff-p6s':'Airalo',
+    'aff-disc':'Bitacora may earn a commission on bookings through these links. No extra cost to you.',
   }
 };
 

@@ -162,6 +162,8 @@ body{font-family:var(--fb);background:var(--bg);color:var(--ink);height:100dvh;o
 .tl-chip.flight{background:var(--sky-bg);color:var(--sky)}
 .tl-chip.expense{background:var(--green-bg);color:var(--green)}
 .tl-chip.note{background:var(--bg2);color:var(--ink3)}
+.tl-chip.activity{background:#F3E8FF;color:#7C3AED}
+.tl-chip.multi{background:var(--bg2);color:var(--ink2)}
 .tl-chip.override{background:#FFF7ED;color:#C2410C}
 /* Timeline vertical connector */
 .tl-wrap{padding:0 18px;display:flex;flex-direction:column}
@@ -1875,17 +1877,30 @@ function rTrip() {
           const d=t.days[i]; const iT=isToday(d.date);
           const dateStr=new Date(d.date.split('T')[0]+'T12:00').toLocaleDateString(loc(),{day:'numeric',month:'short'}).toUpperCase();
           const dow=new Date(d.date.split('T')[0]+'T12:00').toLocaleDateString(loc(),{weekday:'short'});
-          const ev=parseFloat(d.expense)||0;
+          const ev=itemsForDay(t,i).total||(parseFloat(d.expense)||0);
           let chips='';
-          const dayHotel=(d.hotels||[]).filter(Boolean)[0]||d.hotel||'';
-          const segHotel=eff?.hotel||'';
-          const showHotel=dayHotel||segHotel;
-          if(showHotel) chips+=`<span class="tl-chip hotel">🏨 ${esc((showHotel).split(' ').slice(0,3).join(' '))}</span>`;
-          const dayFlight=(d.flights||[]).filter(Boolean)[0]||d.flight||'';
+          // Flights — all of them
+          const allFlights=[...(d.flights||[])].filter(Boolean);
+          if(!allFlights.length&&d.flight) allFlights.push(d.flight);
           const segFlight=eff?.flight||'';
-          const showFlight=dayFlight||(segFlight&&i===days[0]);
-          if(showFlight) chips+=`<span class="tl-chip flight">✈ ${esc(dayFlight||segFlight)}</span>`;
-          if(ev>0){const ce=CAT_EMOJI[d.category]||'💰';chips+=`<span class="tl-chip expense">${ce} ${sym} ${ev.toLocaleString(loc(),{maximumFractionDigits:0})}</span>`;}
+          if(!allFlights.length&&segFlight&&i===days[0]) allFlights.push(segFlight);
+          allFlights.forEach(fl=>{ chips+=`<span class="tl-chip flight">✈ ${esc(fl)}</span>`; });
+          // Hotels — all of them
+          const allHotels=[...(d.hotels||[])].filter(Boolean);
+          if(!allHotels.length&&d.hotel) allHotels.push(d.hotel);
+          if(!allHotels.length&&eff?.hotel) allHotels.push(eff.hotel);
+          allHotels.forEach(ht=>{ chips+=`<span class="tl-chip hotel">🏨 ${esc(ht.split(' ').slice(0,3).join(' '))}</span>`; });
+          // Activities
+          const acts=d.activities||[];
+          if(acts.length<=3){
+            acts.forEach(a=>{ chips+=`<span class="tl-chip activity">${a.icon} ${esc(a.name.slice(0,16))}${a.name.length>16?'…':''}</span>`; });
+          } else {
+            acts.slice(0,2).forEach(a=>{ chips+=`<span class="tl-chip activity">${a.icon} ${esc(a.name.slice(0,14))}${a.name.length>14?'…':''}</span>`; });
+            chips+=`<span class="tl-chip multi">+${acts.length-2}</span>`;
+          }
+          // Expense
+          if(ev>0){chips+=`<span class="tl-chip expense">💰 ${sym} ${ev.toLocaleString(loc(),{maximumFractionDigits:0})}</span>`;}
+          // Notes
           if(d.notes?.trim()) chips+=`<span class="tl-chip note">📝 ${esc(d.notes.slice(0,18))}${d.notes.length>18?'…':''}</span>`;
           h+=`<div class="tl-day-row" onclick="S.didx=${i};S.scr='day';render()">
             <div class="tl-day-num ${iT?'today':''}">${i+1}</div>
@@ -1904,9 +1919,18 @@ function rTrip() {
           const d=t.days[i]; const iT=isToday(d.date);
           const dateStr=new Date(d.date.split('T')[0]+'T12:00').toLocaleDateString(loc(),{day:'numeric',month:'short'}).toUpperCase();
           const dow=new Date(d.date.split('T')[0]+'T12:00').toLocaleDateString(loc(),{weekday:'short'});
-          const ev=parseFloat(d.expense)||0;
+          const ev=itemsForDay(t,i).total||(parseFloat(d.expense)||0);
           let chips='';
-          if(ev>0){const ce=CAT_EMOJI[d.category]||'💰';chips+=`<span class="tl-chip expense">${ce} ${sym} ${ev.toLocaleString(loc(),{maximumFractionDigits:0})}</span>`;}
+          const uFlights=[...(d.flights||[])].filter(Boolean);
+          if(!uFlights.length&&d.flight) uFlights.push(d.flight);
+          uFlights.forEach(fl=>{ chips+=`<span class="tl-chip flight">✈ ${esc(fl)}</span>`; });
+          const uHotels=[...(d.hotels||[])].filter(Boolean);
+          if(!uHotels.length&&d.hotel) uHotels.push(d.hotel);
+          uHotels.forEach(ht=>{ chips+=`<span class="tl-chip hotel">🏨 ${esc(ht.split(' ').slice(0,3).join(' '))}</span>`; });
+          const uActs=d.activities||[];
+          if(uActs.length<=3){ uActs.forEach(a=>{ chips+=`<span class="tl-chip activity">${a.icon} ${esc(a.name.slice(0,16))}${a.name.length>16?'…':''}</span>`; }); }
+          else { uActs.slice(0,2).forEach(a=>{ chips+=`<span class="tl-chip activity">${a.icon} ${esc(a.name.slice(0,14))}${a.name.length>14?'…':''}</span>`; }); chips+=`<span class="tl-chip multi">+${uActs.length-2}</span>`; }
+          if(ev>0){chips+=`<span class="tl-chip expense">💰 ${sym} ${ev.toLocaleString(loc(),{maximumFractionDigits:0})}</span>`;}
           if(d.notes?.trim()) chips+=`<span class="tl-chip note">📝 ${esc(d.notes.slice(0,18))}${d.notes.length>18?'…':''}</span>`;
           h+=`<div class="tl-plain-row" onclick="S.didx=${i};S.scr='day';render()">
             <div class="tl-day-num ${iT?'today':''}">${i+1}</div>

@@ -2687,10 +2687,15 @@ function gcalUrl(dayIdx, actName, actIcon) {
     if(d.notes?.trim()) details += '📝 ' + d.notes.trim();
   }
 
+  // All-day event: end date must be day+1 in Google Calendar format
+  const endDate = new Date(ds + 'T12:00');
+  endDate.setDate(endDate.getDate() + 1);
+  const endStr = endDate.toISOString().split('T')[0].replace(/-/g,'');
+
   const params = new URLSearchParams({
     action: 'TEMPLATE',
     text:   title,
-    dates:  dateStr + '/' + dateStr,   // all-day event
+    dates:  dateStr + '/' + endStr,
     location: eff?.destFull || dest,
     details: details.trim(),
   });
@@ -2743,13 +2748,13 @@ function rDay() {
   // Destination — editable, updates the segment
   h+=`<div class="field">
     <label>📍 ${S.lang==='en'?'Destination':'Destino'}</label>
-    <input type="text"
+    <input type="text" id="day-dest-inp"
       value="${esc(rawSeg ? eff.dest : '')}"
       placeholder="${S.lang==='en'?'Enter destination...':'Ingresá el destino...'}"
+      autocomplete="off" autocorrect="off" spellcheck="false"
       style="width:100%;padding:11px 14px;background:var(--white);border:1.5px solid var(--line2);border-radius:var(--r2);font-family:var(--fb);font-size:14px;font-weight:${rawSeg?'600':'400'};color:var(--ink);outline:none;-webkit-appearance:none;transition:border-color .18s"
       onfocus="this.style.borderColor='var(--blue)'"
-      onblur="this.style.borderColor='var(--line2)'"
-      oninput="updSegDest(${i}, this.value)"
+      oninput="onDayDestSegInput(${i},this.value)"
     />
     ${rawSeg ? `<div style="font-size:10px;color:var(--ink3);margin-top:4px">✏️ ${S.lang==='en'?'Editing updates the whole range':'Editar actualiza todo el rango'}</div>` : `<div style="font-size:10px;color:var(--ink3);margin-top:4px">${S.lang==='en'?'Assign a range in the Itinerary tab to set the destination':'Asigná un rango en el tab Itinerario para definir el destino'}</div>`}
   </div>`;
@@ -3127,6 +3132,19 @@ function delDayArrItem(dayIdx, field, arrIdx) {
   save(); render();
 }
 
+
+// ─── DAY DESTINATION INPUT WITH AUTOCOMPLETE ────────────────────────────────
+function onDayDestSegInput(dayIdx, val) {
+  // Trigger city autocomplete dropdown
+  if(val.length >= 2) {
+    const inp = document.getElementById('day-dest-inp');
+    if(inp) doSearch(val, inp);
+  } else {
+    hideCityDrop();
+  }
+  // Also do the split logic with debounce
+  updSegDest(dayIdx, val);
+}
 
 // ─── SEGMENT DAY STRIP PICKER ────────────────────────────────────────────────
 function wireSegDayStrip() {
@@ -3659,6 +3677,18 @@ function render() {
     setTimeout(()=>{
       const inp=document.getElementById('day-dest-inp');
       if(inp) {
+        // Wire autocomplete: when user picks a city, update segment dest
+        const dayIdx=S.didx;
+        showCityDrop(inp, (city)=>{
+          inp.value=city.name;
+          updSegDest(dayIdx, city.name);
+          // Also store coords on the segment directly
+          const t=trip();
+          if(t){
+            const seg=segForDay(t,dayIdx);
+            if(seg){ seg.destLat=String(city.lat||''); seg.destLon=String(city.lon||''); seg.destFull=[city.name,city.admin,city.country].filter(Boolean).join(', '); save(); }
+          }
+        });
         inp.addEventListener('blur',()=>setTimeout(hideCityDrop,150));
         inp.addEventListener('keydown',onCityKeydown);
       }

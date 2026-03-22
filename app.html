@@ -28,6 +28,43 @@
   --sh:0 1px 3px rgba(0,0,0,0.06),0 4px 14px rgba(0,0,0,0.06);
   --sh2:0 2px 8px rgba(0,0,0,0.08);
 }
+/* ── DARK MODE ── */
+body.dark {
+  --bg:#141210;--bg2:#1E1C19;--white:#242220;--card2:#1A1814;
+  --ink:#F0EDE8;--ink2:#A09890;--ink3:#605850;
+  --line:rgba(255,255,255,0.06);--line2:rgba(255,255,255,0.1);
+  --blue-bg:#1A2540;--blue-bd:#2A3F70;
+  --green-bg:#0D2018;--red-bg:#2A0E0E;--sky-bg:#0A1E2A;
+  --sh:0 1px 3px rgba(0,0,0,0.3),0 4px 14px rgba(0,0,0,0.25);
+  --sh2:0 2px 8px rgba(0,0,0,0.3);
+}
+body, #app { transition: background .25s var(--ease), color .25s var(--ease); }
+/* DARK MODE — extra overrides */
+body.dark .hero{background:linear-gradient(135deg,#1E1B17,#252118)}
+body.dark .topbar{background:var(--bg)}
+body.dark .tab-bar,body.dark .tabs{background:var(--bg)}
+body.dark .cday.trip{background:var(--bg2)}
+body.dark .sheet{background:#1E1C19}
+body.dark .si{background:#2A2724;color:var(--ink)}
+body.dark .si:focus{background:#322F2A;border-color:var(--blue)}
+body.dark .field input,body.dark .field textarea{background:#2A2724;color:var(--ink);border-color:var(--line2)}
+body.dark .field input:focus,body.dark .field textarea:focus{background:#322F2A;border-color:var(--blue)}
+body.dark .act-row,body.dark .item-row,body.dark .tl-day-row,body.dark .tl-plain-row,body.dark .day-row{background:var(--white)}
+body.dark .wbtn{background:#0A1E2A;border-color:rgba(14,165,233,.3)}
+body.dark .add-seg-btn{background:var(--bg2);color:var(--ink2);border-color:var(--line2)}
+body.dark .rdp{background:var(--bg2);border-color:var(--line2)}
+body.dark .cur-sel{background:var(--bg2);color:var(--ink);border-color:var(--line2)}
+body.dark .map-place-row{background:var(--white)}
+body.dark .srch-card.nm{background:var(--white)}
+body.dark .srch-card.hl{background:var(--blue-bg)}
+body.dark .share-btn.light{background:var(--white)}
+body.dark .pack-inp{background:var(--bg2);color:var(--ink)}
+body.dark .pack-cb{background:var(--bg2)}
+body.dark .map-url-inp{background:var(--bg2);color:var(--ink)}
+body.dark input[type=url],body.dark input[type=number],body.dark input[type=text]{background:var(--bg2);color:var(--ink)}
+body.dark .items-day-hdr{background:var(--bg2)}
+body.dark .tl-group-days{background:transparent}
+body.dark select{background:var(--bg2);color:var(--ink)}
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 body{font-family:var(--fb);background:var(--bg);color:var(--ink);height:100dvh;overflow:hidden}
 ::-webkit-scrollbar{width:3px}::-webkit-scrollbar-thumb{background:var(--line2);border-radius:3px}
@@ -249,7 +286,11 @@ body{font-family:var(--fb);background:var(--bg);color:var(--ink);height:100dvh;o
 .fr-field input:focus{border-color:var(--blue)}
 .fr-field input::placeholder{color:var(--ink3)}
 .seg-note{margin:0 20px 13px;padding:10px 13px;background:var(--blue-bg);border-radius:var(--r2);font-size:12px;color:var(--blue);font-weight:500;border:1px solid var(--blue-bd)}
-.qlinks{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;padding:4px 20px 20px}
+.qlinks{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;padding:4px 20px 12px}
+.gcal-btn{display:flex;align-items:center;justify-content:center;gap:6px;margin:0 20px 16px;padding:10px;background:var(--white);border:1.5px solid var(--line2);border-radius:var(--r2);font-family:var(--fb);font-size:12px;font-weight:600;color:var(--ink2);text-decoration:none;box-shadow:var(--sh2);transition:all .15s}
+.gcal-btn:active{background:var(--bg2);transform:scale(0.98)}
+.gcal-act{font-size:11px;padding:2px 7px;border-radius:6px;border:none;background:var(--bg2);color:var(--ink3);cursor:pointer;font-family:var(--fb);font-weight:600;flex-shrink:0;transition:background .15s}
+.gcal-act:active{background:var(--blue-bg);color:var(--blue)}
 .ql{padding:10px 3px;background:var(--white);border:1.5px solid var(--line2);border-radius:var(--r2);font-size:11px;font-weight:600;text-align:center;text-decoration:none;color:var(--ink2);display:flex;flex-direction:column;align-items:center;gap:3px;box-shadow:var(--sh2)}
 .ql:active{background:var(--bg2)}.ql .qi{font-size:17px}
 .ql.disabled{opacity:.3;pointer-events:none}
@@ -502,6 +543,33 @@ body{font-family:var(--fb);background:var(--bg);color:var(--ink);height:100dvh;o
 .srch-card.highlight{background:var(--blue-bg);border-color:var(--blue-bd)}
 .srch-card.highlight .srch-card-label{color:var(--blue)}
 .srch-tip{font-size:11px;color:var(--ink3);text-align:center;padding:12px 0 4px;line-height:1.6}
+/* PACKING CHECKLIST */
+.pack-card{margin:0 18px 14px;background:var(--white);border-radius:var(--r);box-shadow:var(--sh)}
+.pack-hdr{display:flex;align-items:center;gap:8px;padding:11px 14px;cursor:pointer;border-bottom:1px solid var(--line)}
+.pack-lbl{flex:1;font-size:11px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:1px}
+.pack-chev{font-size:14px;color:var(--ink3);transition:transform .2s}
+.pack-hdr.open .pack-chev{transform:rotate(180deg)}
+.pack-body{padding:10px 14px 12px}
+.pack-item{display:flex;align-items:center;gap:9px;padding:6px 2px;border-bottom:1px solid var(--line)}
+.pack-item:last-child{border:none}
+.pack-cb{width:18px;height:18px;border-radius:5px;border:1.5px solid var(--line2);flex-shrink:0;cursor:pointer;display:flex;align-items:center;justify-content:center;background:var(--white);transition:all .15s}
+.pack-cb.done{background:var(--green);border-color:var(--green)}
+.pack-name{flex:1;font-size:13px;color:var(--ink);transition:opacity .2s}
+.pack-name.done{opacity:.4;text-decoration:line-through}
+.pack-del{background:none;border:none;cursor:pointer;font-size:14px;color:var(--ink3);padding:2px 4px;opacity:.6}
+.pack-add-row{display:flex;gap:7px;margin-top:8px}
+.pack-inp{flex:1;padding:9px 12px;background:var(--bg2);border:1.5px solid transparent;border-radius:var(--r2);font-family:var(--fb);font-size:13px;color:var(--ink);outline:none;-webkit-appearance:none}
+.pack-inp:focus{border-color:var(--blue);background:var(--white)}
+.pack-add-btn{padding:9px 14px;background:var(--ink);color:white;border:none;border-radius:var(--r2);font-family:var(--fb);font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap}
+.pack-clear{width:100%;margin-top:6px;padding:7px;background:transparent;border:1px solid var(--line2);border-radius:var(--r2);font-family:var(--fb);font-size:11px;font-weight:600;color:var(--ink3);cursor:pointer}
+.pack-clear:active{background:var(--bg2)}
+
+/* ITEMS DAY GROUPING */
+.items-day-hdr{display:flex;align-items:center;justify-content:space-between;padding:8px 14px;margin:8px -2px 2px;background:var(--bg2);border-radius:var(--r2);border-left:3px solid var(--line2)}
+.items-day-label{display:flex;align-items:center;gap:7px;font-size:11px;font-weight:700;color:var(--ink2)}
+.items-day-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.items-day-total{font-size:12px;font-weight:700;color:var(--ink);font-family:var(--fd)}
+.pack-progress{font-size:10px;color:var(--green);font-weight:700;margin-left:auto;margin-right:4px}
 </style>
 </head>
 <body>
@@ -711,6 +779,13 @@ const I18N={
     budget:'Presupuesto', expense:'Gasto real', noDest:'Sin destino',
     // Search tab
     tabSearch:'Buscar',
+    srchAlertTitle:'🔔 Crear alerta de precios',
+    srchAlertSub:'Te avisamos cuando baje el precio para estas fechas',
+    srchAlertSky:'Alerta en Skyscanner',
+    srchAlertSkySub:'Recibís email cuando baje el precio',
+    srchAlertGoogle:'Seguir en Google Flights',
+    srchAlertGoogleSub:'Trackea precios y tendencias',
+    srchAlertNote:'Las alertas se crean en Skyscanner o Google. Un toque y quedás suscripto.',
     srchTitle:'Buscar en',
     srchAllDests:'Todos',
     srchFlights:'Vuelos', srchFlightsSub:'Buscá vuelos al destino',
@@ -823,6 +898,13 @@ const I18N={
     budget:'Budget', expense:'Actual expense', noDest:'No destination',
     // Search tab
     tabSearch:'Search',
+    srchAlertTitle:'🔔 Create price alert',
+    srchAlertSub:'Get notified when prices drop for these dates',
+    srchAlertSky:'Alert on Skyscanner',
+    srchAlertSkySub:'Get email when price drops',
+    srchAlertGoogle:'Track on Google Flights',
+    srchAlertGoogleSub:'Track prices and trends',
+    srchAlertNote:"Alerts are created on Skyscanner or Google. One tap and you're subscribed.",
     srchTitle:'Search in',
     srchAllDests:'All',
     srchFlights:'Flights', srchFlightsSub:'Find flights to destination',
@@ -989,14 +1071,36 @@ function affBooking(dest, year, month, day) {
   const y=year||''; const m=parseInt(month)||''; const d=parseInt(day)||'';
   return `https://www.booking.com/search.html?ss=${enc}${y?`&checkin_year=${y}&checkin_month=${m}&checkin_monthday=${d}`:''}&affiliate_id=${AFF.booking}&label=bitacora`;
 }
-function affSkyscanner(dest) {
-  // Use standard search: works without partner ID, deep-links to destination
+function affSkyscanner(dest, dateFrom, dateTo) {
   const enc = encodeURIComponent(dest);
-  if(AFF.skyscanner && AFF.skyscanner !== 'SKYSCANNER_PARTNER_ID'){
-    return `https://www.skyscanner.com/flights-to/${enc}/?adults=1&partnerId=${AFF.skyscanner}&utm_source=bitacora`;
+  const partner = AFF.skyscanner !== 'SKYSCANNER_PARTNER_ID' ? '&partnerId='+AFF.skyscanner : '';
+  // With dates: deep link to specific route search (better for alerts)
+  if(dateFrom && dateTo) {
+    // Format: YYMMDD
+    const fmt = d => d.replace(/-/g,'').slice(2); // 2026-06-15 → 260615
+    return 'https://www.skyscanner.com/transport/flights/anywhere/'+enc+'/'+fmt(dateFrom)+'/'+fmt(dateTo)+'/?adults=1'+partner+'&utm_source=bitacora';
   }
-  // No affiliate ID yet: open generic search for that destination
-  return `https://www.skyscanner.com/flights-to/${enc}/?adults=1`;
+  return 'https://www.skyscanner.com/flights-to/'+enc+'/?adults=1'+partner+'&utm_source=bitacora';
+}
+
+function affSkyscannerAlert(dest, dateFrom, dateTo) {
+  // Deep link that opens Skyscanner with price alert modal pre-opened
+  const enc = encodeURIComponent(dest);
+  const partner = AFF.skyscanner !== 'SKYSCANNER_PARTNER_ID' ? '&partnerId='+AFF.skyscanner : '';
+  if(dateFrom && dateTo) {
+    const fmt = d => d.replace(/-/g,'').slice(2);
+    return 'https://www.skyscanner.com/transport/flights/anywhere/'+enc+'/'+fmt(dateFrom)+'/'+fmt(dateTo)+'/?adults=1&modal=createAlert'+partner+'&utm_source=bitacora';
+  }
+  return 'https://www.skyscanner.com/flights-to/'+enc+'/?adults=1'+partner+'&utm_source=bitacora';
+}
+
+function affGoogleFlightsAlert(dest, dateFrom, dateTo) {
+  // Google Flights with tracking on — great fallback for alerts
+  const enc = encodeURIComponent(dest);
+  if(dateFrom) {
+    return 'https://www.google.com/travel/flights?q=flights+to+'+enc+'&tfs='+dateFrom;
+  }
+  return 'https://www.google.com/travel/flights?q=flights+to+'+enc;
 }
 function affGYG(dest) {
   // GetYourGuide: search activities in city
@@ -1029,6 +1133,25 @@ const S = {
 const TODAY = new Date(); TODAY.setHours(0,0,0,0);
 const TODAY_STR = new Date().toLocaleDateString('en-CA'); // YYYY-MM-DD, timezone-safe
 function setLang(l){S.lang=l;try{localStorage.setItem('btc-lang',l);}catch(e){}render();}
+
+// ── DARK MODE ──────────────────────────────────────────────────────────────
+function isDark(){ return document.body.classList.contains('dark'); }
+function setTheme(dark){
+  document.body.classList.toggle('dark', dark);
+  try{ localStorage.setItem('btc-theme', dark?'dark':'light'); }catch(e){}
+  // Update toggle button icon if visible
+  const btn=document.getElementById('theme-btn');
+  if(btn) btn.textContent=dark?'☀️':'🌙';
+}
+function toggleTheme(){ setTheme(!isDark()); }
+// Apply saved theme immediately
+(function(){
+  try{
+    const saved=localStorage.getItem('btc-theme');
+    const prefersDark=window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches;
+    setTheme(saved?saved==='dark':prefersDark);
+  }catch(e){}
+})();
 
 // ─── STORAGE ───
 // ─── URL SHARE encode/decode ───
@@ -1535,6 +1658,72 @@ function updTripNotes(id, val) {
 }
 
 
+// ─── PACKING CHECKLIST ───────────────────────────────────────────────────────
+const DEFAULT_PACK_ITEMS = ['Pasaporte / DNI','Ticket de avión','Reserva de hotel','Cargador de celular','Adaptador de enchufe','Dinero en efectivo','Tarjeta de crédito','Seguro de viaje','Botiquín básico','Ropa (7 días)','Zapatillas cómodas','Abrigo','Protector solar','Auriculares'];
+
+function ensurePack(t){
+  if(!t.packList) t.packList=DEFAULT_PACK_ITEMS.map((name,i)=>({id:i+1,name,done:false}));
+}
+
+function togglePackItem(tripId, itemId){
+  const t=S.trips.find(x=>x.id===tripId); if(!t) return;
+  ensurePack(t);
+  const item=t.packList.find(x=>x.id===itemId); if(!item) return;
+  item.done=!item.done;
+  save(); renderPackSection(tripId);
+}
+
+function addPackItem(tripId){
+  const inp=document.getElementById('pack-inp-'+tripId);
+  if(!inp) return;
+  const name=inp.value.trim(); if(!name) return;
+  const t=S.trips.find(x=>x.id===tripId); if(!t) return;
+  ensurePack(t);
+  t.packList.push({id:Date.now(),name,done:false});
+  inp.value='';
+  save(); renderPackSection(tripId);
+}
+
+function delPackItem(tripId, itemId){
+  const t=S.trips.find(x=>x.id===tripId); if(!t) return;
+  ensurePack(t);
+  t.packList=t.packList.filter(x=>x.id!==itemId);
+  save(); renderPackSection(tripId);
+}
+
+function clearPackDone(tripId){
+  const t=S.trips.find(x=>x.id===tripId); if(!t) return;
+  ensurePack(t);
+  t.packList=t.packList.filter(x=>!x.done);
+  save(); renderPackSection(tripId);
+}
+
+function renderPackSection(tripId){
+  // Direct DOM update — no full render needed
+  const container=document.getElementById('pack-list-'+tripId);
+  if(!container) return;
+  const t=S.trips.find(x=>x.id===tripId); if(!t) return;
+  ensurePack(t);
+  const done=t.packList.filter(x=>x.done).length;
+  const total=t.packList.length;
+  // Update progress badge
+  const prog=document.getElementById('pack-prog-'+tripId);
+  if(prog) prog.textContent=done>0?done+'/'+total+' ✓':'';
+  // Rebuild list
+  let h='';
+  t.packList.forEach(item=>{
+    h+=`<div class="pack-item">
+      <div class="pack-cb ${item.done?'done':''}" onclick="togglePackItem(${tripId},${item.id})">${item.done?'✓':''}</div>
+      <span class="pack-name ${item.done?'done':''}">${esc(item.name)}</span>
+      <button class="pack-del" onclick="delPackItem(${tripId},${item.id})">✕</button>
+    </div>`;
+  });
+  if(done>0){
+    h+=`<button class="pack-clear" onclick="clearPackDone(${tripId})">${S.lang==='en'?'Clear completed ('+done+')':'Limpiar completados ('+done+')'}</button>`;
+  }
+  container.innerHTML=h;
+}
+
 // ─── ITEMS PER DAY helper ──────────────────────────────────────────────────
 function itemsForDay(t, dayIdx) {
   // Returns {total, items[]} from t.items[] matching the day's date
@@ -1725,7 +1914,8 @@ function rHome() {
   const past=S.trips.filter(t=>status(t).type==='past').sort((a,b)=>new Date(b.endDate)-new Date(a.endDate));
   const next=future[0]||null;
   const langBtn=`<button onclick="setLang(S.lang==='es'?'en':'es')" style="padding:4px 10px;border-radius:20px;border:1.5px solid var(--line2);background:var(--white);font-family:var(--fb);font-size:11px;font-weight:700;color:var(--ink2);cursor:pointer;box-shadow:var(--sh2)">${S.lang==='es'?'EN':'ES'}</button>`;
-  let h=`<div class="home-top"><div class="wordmark">Bita<span>cora</span></div><div style="display:flex;align-items:center;gap:8px">${langBtn}<div class="count-pill">${S.trips.length} ${S.trips.length!==1?L('trips'):L('trip')}</div></div></div>`;
+  const themeBtn=`<button id="theme-btn" onclick="toggleTheme()" style="padding:4px 9px;border-radius:20px;border:1.5px solid var(--line2);background:var(--white);font-size:14px;cursor:pointer;box-shadow:var(--sh2);line-height:1">${isDark()?'☀️':'🌙'}</button>`;
+  let h=`<div class="home-top"><div class="wordmark">Bita<span>cora</span></div><div style="display:flex;align-items:center;gap:6px">${themeBtn}${langBtn}<div class="count-pill">${S.trips.length} ${S.trips.length!==1?L('trips'):L('trip')}</div></div></div>`;
   // Tagline
   h+=`<div class="home-tagline">${L('appTagline')}</div>`;
   // Backup buttons
@@ -1790,8 +1980,8 @@ function rTrip() {
     <button class="tab ${S.tab==='itin'?'on':''}" onclick="S.tab='itin';render()"><span class="ti">🗺️</span>${L('tabItin')}</button>
     <button class="tab ${S.tab==='map'?'on':''}" onclick="S.tab='map';render()"><span class="ti">📍</span>${L('tabMap')}</button>
     <button class="tab ${S.tab==='budget'?'on':''}" onclick="S.tab='budget';render()"><span class="ti">💰</span>${L('tabBudget')}</button>
-    <button class="tab ${S.tab==='search'?'on':''}" onclick="S.tab='search';render()" style="position:relative"><span class="ti">🔍</span>${L('tabSearch')}${S.tab!=='search'?'<span style="position:absolute;top:6px;right:6px;width:6px;height:6px;border-radius:50%;background:var(--blue)"></span>':''}</button>
     <button class="tab ${S.tab==='weather'?'on':''}" onclick="S.tab='weather';render()"><span class="ti">🌡️</span>${L('tabWeather')}</button>
+    <button class="tab ${S.tab==='search'?'on':''}" onclick="S.tab='search';render()" style="position:relative"><span class="ti">🔍</span>${L('tabSearch')}${S.tab!=='search'?'<span style="position:absolute;top:6px;right:6px;width:6px;height:6px;border-radius:50%;background:var(--blue)"></span>':''}</button>
   </div>`;
 
   // ── TRIP NOTES (visible on cal + itin tabs) ──
@@ -1992,6 +2182,29 @@ function rTrip() {
       }
     });
     h+='</div>';
+
+    // ── PACKING CHECKLIST (collapsible, in itin tab) ──────────────────────
+    ensurePack(t);
+    const packDone=t.packList.filter(x=>x.done).length;
+    const packTotal=t.packList.length;
+    const packOpen=!!S.notesOpen['pack_'+t.id];
+    h+=`<div class="pack-card">
+      <div class="pack-hdr ${packOpen?'open':''}" onclick="S.notesOpen['pack_${t.id}']=!S.notesOpen['pack_${t.id}'];render()">
+        <span style="font-size:15px">🎒</span>
+        <span class="pack-lbl">${S.lang==='en'?'Packing checklist':'Checklist de equipaje'}</span>
+        <span id="pack-prog-${t.id}" class="pack-progress">${packDone>0?packDone+'/'+packTotal+' ✓':''}</span>
+        <span class="pack-chev">▼</span>
+      </div>
+      ${packOpen?`<div class="pack-body">
+        <div id="pack-list-${t.id}"></div>
+        <div class="pack-add-row">
+          <input class="pack-inp" id="pack-inp-${t.id}" type="text" placeholder="${S.lang==='en'?'Add item...':'Agregar ítem...'}"
+            onkeydown="if(event.key==='Enter')addPackItem(${t.id})"/>
+          <button class="pack-add-btn" onclick="addPackItem(${t.id})">＋</button>
+        </div>
+      </div>`:''}
+    </div>`;
+    if(packOpen) setTimeout(()=>renderPackSection(t.id),30);
   }
 
   // ── BUDGET ──
@@ -2049,20 +2262,68 @@ function rTrip() {
     h+=`<div class="items-hdr"><div class="items-lbl">${L('itemsTitle')}</div><button class="add-item-btn" onclick="openNewItem()">${L('addItem')}</button></div>`;
     const items=t.items||[];
     if(items.length){
+      // ── Group items by date ──────────────────────────────────────────────
+      const byDate={};
+      const noDate=[];
       items.forEach((it,ii)=>{
-        const itDate=it.date?new Date(it.date).toLocaleDateString(loc(),{day:'numeric',month:'short'}):'';
-        h+=`<div class="item-row">
-          <div class="item-ico">${it.icon||icatIcon(it.category)}</div>
-          <div class="item-info"><div class="item-name">${esc(it.name)}</div><div class="item-cat">${icatLabel(it.category)}${itDate?' · '+itDate:''}</div></div>
-          <div class="item-price">${sym} ${(parseFloat(it.price)||0).toLocaleString(loc(),{maximumFractionDigits:0})}</div>
-          <div class="item-acts">
-            <button class="item-btn e" onclick="openEditItem(${ii})">✏️</button>
-            <button class="item-btn d" onclick="delItem(${ii})">🗑</button>
-          </div>
-        </div>`;
+        if(it.date) {
+          if(!byDate[it.date]) byDate[it.date]=[];
+          byDate[it.date].push({it,ii});
+        } else {
+          noDate.push({it,ii});
+        }
       });
+      // Sort dates ascending
+      const sortedDates=Object.keys(byDate).sort();
+      // Render each day group
+      sortedDates.forEach(dateKey=>{
+        const group=byDate[dateKey];
+        const dayTotal=group.reduce((s,{it})=>s+(parseFloat(it.price)||0),0);
+        // Find destination for this date
+        const dayIdx=t.days.findIndex(d=>d.date.split('T')[0]===dateKey);
+        const dayDest=dayIdx>=0?effectiveSeg(t,dayIdx)?.dest:'';
+        const si=dayIdx>=0?segIdx(t,dayIdx):-1;
+        const col=si>=0?destColor(si):'var(--ink3)';
+        const dateLabel=new Date(dateKey+'T12:00').toLocaleDateString(loc(),{day:'numeric',month:'short'});
+        const destLabel=dayDest?' · '+esc(dayDest):'';
+        h+=`<div class="items-day-hdr" style="border-left-color:${col}">
+          <div class="items-day-label">
+            <div class="items-day-dot" style="background:${col}"></div>
+            <span>${dateLabel}${destLabel}</span>
+          </div>
+          <div class="items-day-total" style="color:${col}">${sym} ${dayTotal.toLocaleString(loc(),{maximumFractionDigits:0})}</div>
+        </div>`;
+        group.forEach(({it,ii})=>{
+          h+=`<div class="item-row">
+            <div class="item-ico">${it.icon||icatIcon(it.category)}</div>
+            <div class="item-info"><div class="item-name">${esc(it.name)}</div><div class="item-cat">${icatLabel(it.category)}</div></div>
+            <div class="item-price">${sym} ${(parseFloat(it.price)||0).toLocaleString(loc(),{maximumFractionDigits:0})}</div>
+            <div class="item-acts">
+              <button class="item-btn e" onclick="openEditItem(${ii})">✏️</button>
+              <button class="item-btn d" onclick="delItem(${ii})">🗑</button>
+            </div>
+          </div>`;
+        });
+      });
+      // Items without date (ungrouped)
+      if(noDate.length){
+        h+=`<div class="items-day-hdr">
+          <div class="items-day-label"><span style="color:var(--ink3)">${S.lang==='en'?'No date':'Sin fecha'}</span></div>
+        </div>`;
+        noDate.forEach(({it,ii})=>{
+          h+=`<div class="item-row">
+            <div class="item-ico">${it.icon||icatIcon(it.category)}</div>
+            <div class="item-info"><div class="item-name">${esc(it.name)}</div><div class="item-cat">${icatLabel(it.category)}</div></div>
+            <div class="item-price">${sym} ${(parseFloat(it.price)||0).toLocaleString(loc(),{maximumFractionDigits:0})}</div>
+            <div class="item-acts">
+              <button class="item-btn e" onclick="openEditItem(${ii})">✏️</button>
+              <button class="item-btn d" onclick="delItem(${ii})">🗑</button>
+            </div>
+          </div>`;
+        });
+      }
       // Total row
-      h+=`<div style="display:flex;justify-content:space-between;padding:8px 4px;border-top:1px solid var(--line);margin-top:2px"><div style="font-size:12px;font-weight:700;color:var(--ink2)">${L('total')}</div><div style="font-family:var(--fd);font-size:16px;font-weight:600">${sym} ${iSt.spent.toLocaleString(loc(),{maximumFractionDigits:0})}</div></div>`;
+      h+=`<div style="display:flex;justify-content:space-between;padding:10px 4px;border-top:1.5px solid var(--line2);margin-top:4px"><div style="font-size:12px;font-weight:700;color:var(--ink2)">${L('total')}</div><div style="font-family:var(--fd);font-size:16px;font-weight:600">${sym} ${iSt.spent.toLocaleString(loc(),{maximumFractionDigits:0})}</div></div>`;
     } else {
       h+=`<div class="no-items">${L('noItems')}</div>`;
     }
@@ -2267,11 +2528,13 @@ function rTrip() {
           rH=`<div style="display:flex;flex-direction:column;gap:4px;flex-shrink:0">
             <button class="wbtn" onclick="event.stopPropagation();retryW(${i})" style="font-size:10px;padding:4px 8px">↻ ${S.lang==='en'?'Retry':'Reintentar'}</button>
             <a href="${googleUrl}" target="_blank" rel="noopener" class="wbtn" style="text-decoration:none;font-size:10px;padding:4px 8px">🌐 Google</a>
+            <a href="${acUrl}" target="_blank" rel="noopener" class="wbtn" style="text-decoration:none;font-size:10px;padding:4px 8px">☂ Accuweather</a>
           </div>`;
         } else if(w?.error){
           rH=`<div style="display:flex;flex-direction:column;gap:4px;flex-shrink:0">
             <button class="wbtn" onclick="event.stopPropagation();retryW(${i})" style="font-size:10px;padding:4px 8px">↻ ${S.lang==='en'?'Retry':'Reintentar'}</button>
             <a href="${googleUrl}" target="_blank" rel="noopener" class="wbtn" style="text-decoration:none;font-size:10px;padding:4px 8px">🌐 Google</a>
+            <a href="${acUrl}" target="_blank" rel="noopener" class="wbtn" style="text-decoration:none;font-size:10px;padding:4px 8px">☂ Accuweather</a>
           </div>`;
         } else {
           rH=`<button class="wbtn" onclick="event.stopPropagation();fetchW(${i})">${L('seeClima')}</button>`;
@@ -2364,6 +2627,28 @@ function rTrip() {
         h+='<span style="font-size:28px">📱</span><span style="'+lbl+'">'+L('srchEsim')+'</span><span style="'+sub+'">'+L('srchEsimSub')+'</span></a>';
         h+='</div></div>';
 
+        // ── PRICE ALERTS ────────────────────────────────────────────────
+        if(dateFrom){
+          const alertSkyUrl = affSkyscannerAlert(dest, dateFrom, dateTo);
+          const alertGoogleUrl = affGoogleFlightsAlert(dest, dateFrom, dateTo);
+          const alertBtnStyle = 'display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:var(--r);text-decoration:none;color:var(--ink);margin-bottom:7px;cursor:pointer;border:1.5px solid';
+          h+='<div style="margin-bottom:14px">';
+          h+='<div class="srch-section-title">'+L('srchAlertTitle')+'</div>';
+          h+='<div style="font-size:11px;color:var(--ink3);margin-bottom:10px;line-height:1.5">'+L('srchAlertSub')+'</div>';
+          h+='<a href="'+alertSkyUrl+'" target="_blank" rel="noopener nofollow" style="'+alertBtnStyle+' var(--blue-bd);background:var(--blue-bg)">';
+          h+='<span style="font-size:28px">🔔</span>';
+          h+='<div style="flex:1"><div style="font-size:13px;font-weight:700;color:var(--blue)">'+L('srchAlertSky')+'</div>';
+          h+='<div style="font-size:10px;color:var(--ink3);margin-top:2px">'+L('srchAlertSkySub')+'</div></div>';
+          h+='<span style="font-size:18px;color:var(--blue)">↗</span></a>';
+          h+='<a href="'+alertGoogleUrl+'" target="_blank" rel="noopener nofollow" style="'+alertBtnStyle+' var(--line2);background:var(--white)">';
+          h+='<span style="font-size:28px">📊</span>';
+          h+='<div style="flex:1"><div style="font-size:13px;font-weight:700;color:var(--ink)">'+L('srchAlertGoogle')+'</div>';
+          h+='<div style="font-size:10px;color:var(--ink3);margin-top:2px">'+L('srchAlertGoogleSub')+'</div></div>';
+          h+='<span style="font-size:18px;color:var(--ink3)">↗</span></a>';
+          h+='<div style="font-size:10px;color:var(--ink3);line-height:1.5;padding:4px 2px">'+L('srchAlertNote')+'</div>';
+          h+='</div>';
+        }
+
         h+='<div class="srch-tip">'+L('srchDisclaimer')+'</div>';
       }
     }
@@ -2371,6 +2656,45 @@ function rTrip() {
   }
 
   return h;
+}
+
+
+// ─── GOOGLE CALENDAR HELPER ──────────────────────────────────────────────────
+function gcalUrl(dayIdx, actName, actIcon) {
+  const t = trip(); if(!t) return '#';
+  const d = t.days[dayIdx]; if(!d) return '#';
+  const eff = effectiveSeg(t, dayIdx);
+  const dest = eff?.dest || '';
+  const ds = d.date.split('T')[0]; // YYYY-MM-DD
+  const dateStr = ds.replace(/-/g,''); // YYYYMMDD
+
+  // If activity-specific, use activity name; otherwise use day summary
+  let title, details;
+  if(actName){
+    title = actIcon + ' ' + actName + (dest ? ' — ' + dest : '');
+    details = '';
+    if(dest)   details += '📍 ' + dest + '\n';
+    if(d.notes?.trim()) details += '📝 ' + d.notes.trim();
+  } else {
+    title = (S.lang==='en'?'Day ':'Día ') + (dayIdx+1) + (dest ? ' — ' + dest : '');
+    details = '';
+    const flights = (Array.isArray(d.flights)?d.flights:[]).filter(Boolean);
+    if(flights.length) details += '✈ ' + flights.join(', ') + '\n';
+    const hotels  = (Array.isArray(d.hotels)?d.hotels:[]).filter(Boolean);
+    if(hotels.length)  details += '🏨 ' + hotels.join(', ') + '\n';
+    const acts = (d.activities||[]);
+    if(acts.length) details += '🎟️ ' + acts.map(a=>a.icon+' '+a.name).join(' · ') + '\n';
+    if(d.notes?.trim()) details += '📝 ' + d.notes.trim();
+  }
+
+  const params = new URLSearchParams({
+    action: 'TEMPLATE',
+    text:   title,
+    dates:  dateStr + '/' + dateStr,   // all-day event
+    location: eff?.destFull || dest,
+    details: details.trim(),
+  });
+  return 'https://calendar.google.com/calendar/r/eventedit?' + params.toString();
 }
 
 // ─── RENDER DAY ───
@@ -2394,16 +2718,41 @@ function rDay() {
   if(eff?.dest){
     h+=`<div class="dd-dest-chip" style="background:${segColor}18;color:${segColor};border:1.5px solid ${segColor}44">📍 ${esc(eff.destFull||eff.dest)}</div> `;
     if(w&&!w.loading&&!w.error) h+=`<div class="w-chip">${w.emoji} ${w.max}° / ${w.min}°C</div>`;
-    else if(w?.tooFar) h+=`<div class="w-chip" style="color:var(--ink3)" onclick="fetchW(${i})">📅 ~${w.diffDays}d</div>`;
-    else if(w?.error) h+=`<div class="w-chip" style="color:var(--red);background:var(--red-bg)" onclick="retryW(${i})">↻ ${S.lang==='en'?'Retry':'Reintentar'}</div>`;
+    else if(w?.tooFar){
+      const _de2=encodeURIComponent(eff?.dest||'');
+      h+=`<div style="display:flex;gap:4px;align-items:center;flex-wrap:wrap">
+        <div class="w-chip" style="color:var(--ink3)" title="${S.lang==='en'?'Too far to forecast':'Muy lejos para pronosticar'}">📅 ~${w.diffDays}d</div>
+        <a href="https://www.google.com/search?q=clima+${_de2}" target="_blank" rel="noopener" class="wbtn" style="text-decoration:none;font-size:10px;padding:4px 8px">🌐 Google</a>
+        <a href="https://www.accuweather.com/en/search-locations?query=${_de2}" target="_blank" rel="noopener" class="wbtn" style="text-decoration:none;font-size:10px;padding:4px 8px">☂ Accuweather</a>
+        <button class="wbtn" onclick="retryW(${i})" style="font-size:10px;padding:4px 8px">↻</button>
+      </div>`;
+    }
+    else if(w?.error){
+      const _ds2=d.date.split('T')[0];
+      const _de=encodeURIComponent(eff?.dest||'');
+      h+=`<div style="display:flex;gap:4px;flex-wrap:wrap;align-items:center">
+        <div class="w-chip" style="color:var(--red);background:var(--red-bg);cursor:pointer" onclick="retryW(${i})">↻</div>
+        <a href="https://www.google.com/search?q=clima+${_de}+${_ds2}" target="_blank" rel="noopener" class="w-chip" style="text-decoration:none;color:var(--sky)">🌐</a>
+        <a href="https://www.accuweather.com/en/search-locations?query=${_de}" target="_blank" rel="noopener" class="w-chip" style="text-decoration:none;color:var(--sky)">☂</a>
+      </div>`;
+    }
     else h+=`<div class="w-chip ${w?.loading?'loading':''}" onclick="fetchW(${i})">${w?.loading?L('loading'):L('seeWeather')}</div>`;
   }
   h+=`</div><div class="divider"></div>`;
 
-  // Segment link (read-only info)
-  if(rawSeg){
-    h+=`<div class="seg-note">${L('rangeLabel')}: <strong>${esc(rawSeg.dest)}</strong> · ${fmtShort(t.days[rawSeg.fromIdx]?.date)} – ${fmtShort(t.days[rawSeg.toIdx]?.date)} · <span style="cursor:pointer;text-decoration:underline;color:var(--blue)" onclick="openEditSeg(${t.segments.indexOf(rawSeg)})">${L('editRange')}</span></div>`;
-  }
+  // Destination — editable, updates the segment
+  h+=`<div class="field">
+    <label>📍 ${S.lang==='en'?'Destination':'Destino'}</label>
+    <input type="text"
+      value="${esc(rawSeg ? eff.dest : '')}"
+      placeholder="${S.lang==='en'?'Enter destination...':'Ingresá el destino...'}"
+      style="width:100%;padding:11px 14px;background:var(--white);border:1.5px solid var(--line2);border-radius:var(--r2);font-family:var(--fb);font-size:14px;font-weight:${rawSeg?'600':'400'};color:var(--ink);outline:none;-webkit-appearance:none;transition:border-color .18s"
+      onfocus="this.style.borderColor='var(--blue)'"
+      onblur="this.style.borderColor='var(--line2)'"
+      oninput="updSegDest(${i}, this.value)"
+    />
+    ${rawSeg ? `<div style="font-size:10px;color:var(--ink3);margin-top:4px">✏️ ${S.lang==='en'?'Editing updates the whole range':'Editar actualiza todo el rango'}</div>` : `<div style="font-size:10px;color:var(--ink3);margin-top:4px">${S.lang==='en'?'Assign a range in the Itinerary tab to set the destination':'Asigná un rango en el tab Itinerario para definir el destino'}</div>`}
+  </div>`;
 
   // ── Vuelos (array, max 3) ──
   const flights = Array.isArray(d.flights) ? d.flights : (d.flight ? [d.flight] : []);
@@ -2495,7 +2844,7 @@ function rDay() {
   h+=`<div class="act-sec"><div class="act-hdr"><div class="act-lbl">${L('activities')}</div><button class="add-act-btn" onclick="openAddActivity(${i})">${L('addActivity')}</button></div>`;
   if(acts.length){
     acts.forEach(a=>{
-      h+=`<div class="act-row"><div class="act-ico">${a.icon}</div><div class="act-name">${esc(a.name)}</div><button class="act-del" onclick="delActivity(${i},${a.id})">✕</button></div>`;
+      h+=`<div class="act-row"><div class="act-ico">${a.icon}</div><div class="act-name">${esc(a.name)}</div><a href="${gcalUrl(i,a.name,a.icon)}" target="_blank" rel="noopener" class="gcal-act" title="${S.lang==='en'?'Add to Calendar':'Al Calendario'}">📅</a><button class="act-del" onclick="delActivity(${i},${a.id})">✕</button></div>`;
     });
   } else {
     h+=`<div style="font-size:12px;color:var(--ink3);padding:6px 2px">${L('noActivities')}</div>`;
@@ -2511,7 +2860,7 @@ function rDay() {
   // Affiliate links
   const [bYear,bMonth,bDay]=(d.date.split('T')[0]).split('-');
   const dest_name = eff?.dest||'';
-  const skySrc    = dest_name ? affSkyscanner(dest_name) : null;
+  const skySrc    = dest_name ? affSkyscanner(dest_name, d.date.split('T')[0], d.date.split('T')[0]) : null;
   const bookingSrc= dest_name ? affBooking(dest_name,bYear,bMonth,bDay) : null;
   const gygSrc    = dest_name ? affGYG(dest_name) : null;
   const rentalSrc = dest_name ? affRentalcars(dest_name, d.date.split('T')[0]) : null;
@@ -2522,6 +2871,12 @@ function rDay() {
     <a href="${flH||skySrc||'#'}" target="_blank" rel="noopener nofollow" class="ql sk"><span class="qi">✈</span>${L('vuelo')}</a>
     <a href="${htH||bookingSrc||'#'}" target="_blank" rel="noopener nofollow" class="ql ${htH||bookingSrc?'':'disabled'}"><span class="qi">🏨</span>${L('hotel')}</a>
   </div>`;
+  // Google Calendar button — full day
+  h+=`<a href="${gcalUrl(i)}" target="_blank" rel="noopener" class="gcal-btn">
+    <span style="font-size:15px">📅</span>
+    ${S.lang==='en'?'Add to Google Calendar':'Agregar al Calendario'}
+  </a>`;
+
   if(dest_name){
     const btnS='flex:1;display:flex;align-items:center;justify-content:center;gap:5px;padding:9px 8px;background:white;border:1.5px solid var(--blue-bd);border-radius:var(--r2);text-decoration:none;font-size:11px;font-weight:700;color:var(--blue)';
     h+=`<div style="margin:0 18px 8px;padding:12px 14px;background:var(--blue-bg);border:1.5px solid var(--blue-bd);border-radius:var(--r2)">
@@ -2862,6 +3217,71 @@ function segStripClick(ds) {
   }
   const strip = document.getElementById('seg-day-strip');
   if (strip?._renderFn) strip._renderFn();
+}
+
+// ─── UPDATE SEGMENT DEST FROM DAY — smart split ─────────────────────────────
+let _segDestTimer = null;
+function updSegDest(dayIdx, val) {
+  const t = trip(); if(!t) return;
+  const rawSeg = segForDay(t, dayIdx);
+
+  // No existing segment — just update the input, no split needed
+  if(!rawSeg){
+    clearTimeout(_segDestTimer);
+    _segDestTimer = setTimeout(()=>{ save(); }, 600);
+    return;
+  }
+
+  const newDest = val.trim();
+  if(!newDest || newDest === rawSeg.dest) return; // nothing changed
+
+  // ── Split logic ──────────────────────────────────────────────────────────
+  // Remove original segment
+  const origIdx = t.segments.indexOf(rawSeg);
+  if(origIdx < 0) return;
+  t.segments.splice(origIdx, 1);
+
+  const from = rawSeg.fromIdx;
+  const to   = rawSeg.toIdx;
+
+  // Segment BEFORE this day (if any)
+  if(dayIdx > from){
+    t.segments.push({
+      dest:rawSeg.dest, destFull:rawSeg.destFull||rawSeg.dest,
+      destLat:rawSeg.destLat, destLon:rawSeg.destLon,
+      hotel:rawSeg.hotel||'', flight:rawSeg.flight||'', mapUrl:rawSeg.mapUrl||'',
+      fromIdx:from, toIdx:dayIdx-1,
+    });
+  }
+
+  // The changed day — new destination
+  // Try to find coords from CITIES_LOCAL
+  const local = CITIES_LOCAL.find(ci =>
+    ci.name.toLowerCase() === newDest.toLowerCase() ||
+    newDest.toLowerCase().includes(ci.name.toLowerCase())
+  );
+  t.segments.push({
+    dest:newDest, destFull:newDest,
+    destLat:local?String(local.lat):'', destLon:local?String(local.lon):'',
+    hotel:'', flight:'', mapUrl:'',
+    fromIdx:dayIdx, toIdx:dayIdx,
+  });
+
+  // Segment AFTER this day (if any)
+  if(dayIdx < to){
+    t.segments.push({
+      dest:rawSeg.dest, destFull:rawSeg.destFull||rawSeg.dest,
+      destLat:rawSeg.destLat, destLon:rawSeg.destLon,
+      hotel:rawSeg.hotel||'', flight:rawSeg.flight||'', mapUrl:rawSeg.mapUrl||'',
+      fromIdx:dayIdx+1, toIdx:to,
+    });
+  }
+
+  // Sort by fromIdx
+  t.segments.sort((a,b) => a.fromIdx - b.fromIdx);
+
+  clearTimeout(_segDestTimer);
+  _segDestTimer = setTimeout(()=>{ save(); render(); }, 400);
 }
 
 // ─── DATE HELPERS ───

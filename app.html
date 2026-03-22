@@ -1633,9 +1633,52 @@ function createTrip(name,start,end) {
 }
 function editTrip(name,start,end) {
   if(!name||!start||!end){toast(L('toastFields'));return;}
+  if(new Date(end+'T12:00')<new Date(start+'T12:00')){toast(L('toastDate'));return;}
   const t=trip(); if(!t) return;
+
+  // ── Save old days indexed by date string ──────────────────────────────────
+  const oldDays=t.days||[];
+  const oldByDate={};
+  oldDays.forEach(d=>{ oldByDate[d.date.split('T')[0]]=d; });
+
+  // ── Save old dates array so we can map segment indices → dates ────────────
+  const oldDateStrs=oldDays.map(d=>d.date.split('T')[0]);
+
+  // ── Build new days list (don't assign yet) ──────────────────────────────
+  const newDays=mkDays(start,end);
+  const newDateStrs=newDays.map(d=>d.date.split('T')[0]);
+
+  // ── Safety check BEFORE modifying anything ───────────────────────────────
+  const hasOverlap = newDateStrs.some(ds => oldByDate[ds]);
+  if(!hasOverlap && oldDays.length > 0) {
+    const msg = S.lang==='en'
+      ? "The new dates don't overlap with the old ones. All day data will be lost. Continue?"
+      : 'Las fechas nuevas no coinciden con las anteriores. Se perderán todos los datos de los días. ¿Continuás?';
+    if(!confirm(msg)) return;
+  }
+
+  // ── Assign new days, preserving data for dates that still exist ───────────
+  t.days=newDays.map(nd=>{
+    const ds=nd.date.split('T')[0];
+    return oldByDate[ds] ? {...oldByDate[ds], date:nd.date} : nd;
+  });
+
+  // ── Remap segments: idx → old date → new idx ─────────────────────────────
+  t.segments=(t.segments||[]).map(seg=>{
+    const fromDate=oldDateStrs[seg.fromIdx];
+    const toDate  =oldDateStrs[seg.toIdx];
+    if(!fromDate||!toDate) return null;
+    const newFrom=newDateStrs.indexOf(fromDate);
+    const newTo  =newDateStrs.indexOf(toDate);
+    if(newFrom<0 && newTo<0) return null;
+    // Extend segment to cover new days at start/end if trip was expanded
+    return {...seg,
+      fromIdx: newFrom>=0 ? newFrom : 0,
+      toIdx:   newTo>=0   ? newTo   : t.days.length-1,
+    };
+  }).filter(Boolean);
+
   t.name=name; t.startDate=start; t.endDate=end;
-  t.days=mkDays(start,end); t.segments=[];
   S.sheet=null; save(); render();
 }
 function delTrip() {
@@ -2040,6 +2083,31 @@ function rTrip() {
       h+=`<div class="cal-legend"><div class="cal-li"><div class="cal-sw" style="background:#2563EB26;border:1.5px solid #2563EB55"></div>${L('legDest')}</div><div class="cal-li"><div class="cal-sw" style="background:var(--bg2)"></div>${L('legNone')}</div><div class="cal-li"><div class="cal-sw" style="box-shadow:inset 0 0 0 2px var(--ink)"></div>${L('legToday')}</div></div>`;
       h+=`<button class="add-seg-btn" onclick="openNewSeg()" style="margin-top:8px">${L('addDestBtn')}</button>`;
       h+='</div>';
+
+      // ── PACKING CHECKLIST below calendar ──
+      if(!S._readOnly){
+        ensurePack(t);
+        const packDone=t.packList.filter(x=>x.done).length;
+        const packTotal=t.packList.length;
+        const packOpen=!!S.notesOpen['pack_'+t.id];
+        h+=`<div class="pack-card">
+          <div class="pack-hdr ${packOpen?'open':''}" onclick="S.notesOpen['pack_${t.id}']=!S.notesOpen['pack_${t.id}'];render()">
+            <span style="font-size:15px">🎒</span>
+            <span class="pack-lbl">${S.lang==='en'?'Packing checklist':'Checklist de equipaje'}</span>
+            <span id="pack-prog-${t.id}" class="pack-progress">${packDone>0?packDone+'/'+packTotal+' ✓':''}</span>
+            <span class="pack-chev">▼</span>
+          </div>
+          ${packOpen?`<div class="pack-body">
+            <div id="pack-list-${t.id}"></div>
+            <div class="pack-add-row">
+              <input class="pack-inp" id="pack-inp-${t.id}" type="text" placeholder="${S.lang==='en'?'Add item...':'Agregar ítem...'}"
+                onkeydown="if(event.key==='Enter')addPackItem(${t.id})"/>
+              <button class="pack-add-btn" onclick="addPackItem(${t.id})">＋</button>
+            </div>
+          </div>`:''}
+        </div>`;
+        if(packOpen) setTimeout(()=>renderPackSection(t.id),30);
+      }
     }
   }
 
@@ -2754,7 +2822,7 @@ function rDay() {
       autocomplete="off" autocorrect="off" spellcheck="false"
       style="width:100%;padding:11px 14px;background:var(--white);border:1.5px solid var(--line2);border-radius:var(--r2);font-family:var(--fb);font-size:14px;font-weight:${rawSeg?'600':'400'};color:var(--ink);outline:none;-webkit-appearance:none;transition:border-color .18s"
       onfocus="this.style.borderColor='var(--blue)'"
-      oninput="onDayDestSegInput(${i},this.value)"
+      onblur="this.style.borderColor='var(--line2)'"
     />
     ${rawSeg ? `<div style="font-size:10px;color:var(--ink3);margin-top:4px">✏️ ${S.lang==='en'?'Editing updates the whole range':'Editar actualiza todo el rango'}</div>` : `<div style="font-size:10px;color:var(--ink3);margin-top:4px">${S.lang==='en'?'Assign a range in the Itinerary tab to set the destination':'Asigná un rango en el tab Itinerario para definir el destino'}</div>`}
   </div>`;
@@ -3254,7 +3322,6 @@ function updSegDest(dayIdx, val) {
   if(!newDest || newDest === rawSeg.dest) return; // nothing changed
 
   // ── Split logic ──────────────────────────────────────────────────────────
-  // Remove original segment
   const origIdx = t.segments.indexOf(rawSeg);
   if(origIdx < 0) return;
   t.segments.splice(origIdx, 1);
@@ -3262,7 +3329,6 @@ function updSegDest(dayIdx, val) {
   const from = rawSeg.fromIdx;
   const to   = rawSeg.toIdx;
 
-  // Segment BEFORE this day (if any)
   if(dayIdx > from){
     t.segments.push({
       dest:rawSeg.dest, destFull:rawSeg.destFull||rawSeg.dest,
@@ -3272,8 +3338,6 @@ function updSegDest(dayIdx, val) {
     });
   }
 
-  // The changed day — new destination
-  // Try to find coords from CITIES_LOCAL
   const local = CITIES_LOCAL.find(ci =>
     ci.name.toLowerCase() === newDest.toLowerCase() ||
     newDest.toLowerCase().includes(ci.name.toLowerCase())
@@ -3285,7 +3349,6 @@ function updSegDest(dayIdx, val) {
     fromIdx:dayIdx, toIdx:dayIdx,
   });
 
-  // Segment AFTER this day (if any)
   if(dayIdx < to){
     t.segments.push({
       dest:rawSeg.dest, destFull:rawSeg.destFull||rawSeg.dest,
@@ -3295,11 +3358,12 @@ function updSegDest(dayIdx, val) {
     });
   }
 
-  // Sort by fromIdx
   t.segments.sort((a,b) => a.fromIdx - b.fromIdx);
 
+  // Save immediately but DON'T render() — let the autocomplete callback handle that
+  // so typing isn't interrupted
   clearTimeout(_segDestTimer);
-  _segDestTimer = setTimeout(()=>{ save(); render(); }, 400);
+  _segDestTimer = setTimeout(()=>{ save(); }, 300);
 }
 
 // ─── DATE HELPERS ───
@@ -3647,7 +3711,7 @@ function render() {
         <button class="tbk" onclick="S.scr='home';S.tid=null;render()">‹</button>
         <div class="tbt">${esc(t?.name||'')}</div>
         ${S._readOnly?`<button class="tbb" style="background:var(--green-bg);color:var(--green);border-color:#6EE7B7" onclick="importSharedTrip()">⬇️ ${S.lang==='en'?'Import':'Importar'}</button>`:`
-        <button class="tbb" onclick="S.sheet='edit';render()">${L('edit')}</button>
+        <button class="tbb" onclick="delete _rdpOffsets['edit-rdp'];S.sheet='edit';render()">${L('edit')}</button>
         <button class="tbi tbi-share" onclick="S.sheet='share';render()" title="${L('share')}">📤</button>
         <button class="tbi" onclick="S.sheet='del';render()">🗑️</button>`}
       </div>
@@ -3676,22 +3740,70 @@ function render() {
   if(S.scr==='day') {
     setTimeout(()=>{
       const inp=document.getElementById('day-dest-inp');
-      if(inp) {
-        // Wire autocomplete: when user picks a city, update segment dest
-        const dayIdx=S.didx;
-        showCityDrop(inp, (city)=>{
-          inp.value=city.name;
-          updSegDest(dayIdx, city.name);
-          // Also store coords on the segment directly
-          const t=trip();
-          if(t){
-            const seg=segForDay(t,dayIdx);
-            if(seg){ seg.destLat=String(city.lat||''); seg.destLon=String(city.lon||''); seg.destFull=[city.name,city.admin,city.country].filter(Boolean).join(', '); save(); }
+      if(!inp) return;
+      const dayIdx=S.didx;
+
+      // Typing → show autocomplete suggestions
+      inp.addEventListener('input', ()=>{
+        inp.style.borderColor='var(--blue)';
+        const q=inp.value.trim();
+        if(q.length>=2) doSearch(q, inp);
+        else hideCityDrop();
+      }, {once:false, capture:false});
+      // Use replaceWith trick to clear old listeners before adding new ones
+      // (render() re-creates the DOM so listeners reset naturally — no dup issue)
+
+      inp.addEventListener('keydown', onCityKeydown);
+      inp.addEventListener('blur', ()=>setTimeout(hideCityDrop, 150));
+
+      // City selected from dropdown → split segment and re-render
+      _acInput=inp;
+      _acCallback=(city)=>{
+        clearTimeout(_segDestTimer); // cancel any pending debounce
+        const t=trip(); if(!t) return;
+        inp.value=city.name;
+        inp.style.borderColor='var(--line2)';
+
+        // Smart split or new segment
+        const rawSeg=segForDay(t,dayIdx);
+        if(rawSeg){
+          // Day belongs to an existing range — split it
+          const origIdx=t.segments.indexOf(rawSeg);
+          if(origIdx>=0){
+            t.segments.splice(origIdx,1);
+            const from=rawSeg.fromIdx, to=rawSeg.toIdx;
+            if(dayIdx>from) t.segments.push({
+              dest:rawSeg.dest,destFull:rawSeg.destFull||rawSeg.dest,
+              destLat:rawSeg.destLat,destLon:rawSeg.destLon,
+              hotel:rawSeg.hotel||'',flight:rawSeg.flight||'',mapUrl:rawSeg.mapUrl||'',
+              fromIdx:from,toIdx:dayIdx-1
+            });
+            t.segments.push({
+              dest:city.name,destFull:[city.name,city.admin,city.country].filter(Boolean).join(', '),
+              destLat:String(city.lat||''),destLon:String(city.lon||''),
+              hotel:'',flight:'',mapUrl:'',
+              fromIdx:dayIdx,toIdx:dayIdx
+            });
+            if(dayIdx<to) t.segments.push({
+              dest:rawSeg.dest,destFull:rawSeg.destFull||rawSeg.dest,
+              destLat:rawSeg.destLat,destLon:rawSeg.destLon,
+              hotel:rawSeg.hotel||'',flight:rawSeg.flight||'',mapUrl:rawSeg.mapUrl||'',
+              fromIdx:dayIdx+1,toIdx:to
+            });
+            t.segments.sort((a,b)=>a.fromIdx-b.fromIdx);
           }
-        });
-        inp.addEventListener('blur',()=>setTimeout(hideCityDrop,150));
-        inp.addEventListener('keydown',onCityKeydown);
-      }
+        } else {
+          // No existing segment — create a new one just for this day
+          t.segments.push({
+            dest:city.name,destFull:[city.name,city.admin,city.country].filter(Boolean).join(', '),
+            destLat:String(city.lat||''),destLon:String(city.lon||''),
+            hotel:'',flight:'',mapUrl:'',
+            fromIdx:dayIdx,toIdx:dayIdx
+          });
+          t.segments.sort((a,b)=>a.fromIdx-b.fromIdx);
+        }
+        save(); render();
+      };
     },50);
   }
 }

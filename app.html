@@ -2505,19 +2505,6 @@ function rTrip() {
           </div>
           <a href="${mapsUrl}" target="_blank" rel="noopener" class="map-open-btn">🗺 Maps</a>
         </div>`;
-        // Custom map embed if segment has mapUrl
-        const segForEntry = t.segments.find(s=>s.dest===entry.dest);
-        const segMapUrl = segForEntry?.mapUrl||'';
-        const segEmbedUrl = segMapUrl ? getMapEmbedUrl(segMapUrl) : null;
-        if(segEmbedUrl){
-          h+=`<div class="map-embed" style="margin:8px 0 4px">
-            <div class="map-embed-label">📍 ${S.lang==='en'?'Custom map':'Mapa personalizado'}</div>
-            <iframe src="${esc(segEmbedUrl)}" allowfullscreen loading="lazy"></iframe>
-          </div>`;
-        } else if(segMapUrl){
-          h+=`<a href="${esc(segMapUrl)}" target="_blank" rel="noopener" style="display:flex;align-items:center;gap:8px;padding:10px 12px;background:var(--blue-bg);border-radius:var(--r2);margin:6px 0;text-decoration:none;font-size:12px;font-weight:700;color:var(--blue)">🗺️ ${S.lang==='en'?'Open custom map':'Abrir mapa personalizado'} ↗</a>`;
-        }
-
         // Hotels
         entry.hotels.forEach(hotel=>{
           const hotelUrl=`https://www.google.com/maps/search/${encodeURIComponent(hotel+' '+entry.dest)}`;
@@ -3453,10 +3440,6 @@ function rSheets() {
       <div id="seg-day-strip" style="background:var(--card2);border-radius:var(--r);padding:10px;border:1.5px solid var(--line2)"></div>
       <div id="seg-date-prev" style="font-size:11px;color:var(--ink2);margin-top:8px;font-weight:500;min-height:16px;text-align:center"></div>
       <div class="sf"><label>${L('hotelLabel')}</label><input class="si" id="seg-hotel" type="text" placeholder="${L('hotelPh')}" value="${esc(seg?.hotel||'')}"/></div>
-      <div class="sf"><label>🗺️ ${S.lang==='en'?'Custom map (My Maps link)':'Mapa personalizado (link de My Maps)'}</label>
-        <input class="si" id="seg-mapurl" type="url" placeholder="https://www.google.com/maps/d/..." value="${esc(seg?.mapUrl||'')}"/>
-        <div style="font-size:10px;color:var(--ink3);margin-top:4px">${S.lang==='en'?'Paste a My Maps link to show it in the Map tab':'Pegá un link de My Maps para mostrarlo en el tab Mapa'}</div>
-      </div>
       <div class="sf"><label>${L('flightLabel')}</label><input class="si" id="seg-flight" type="text" placeholder="${L('flightPh')}" value="${esc(seg?.flight||'')}"/></div>
     </div>
     <div class="sh-btns" style="${editing?'grid-template-columns:1fr 1fr 1fr':''}">${editing?`<button class="btn-del" onclick="delSeg(${S.editSegIdx})">${L('delete')}</button>`:''}<button class="btn-can" onclick="S.sheet=null;render()">${L('cancel')}</button><button class="btn-ok" onclick="submitSeg()">${L('save')}</button></div>
@@ -3572,8 +3555,7 @@ function submitSeg() {
   const to=document.getElementById('seg-to')?.value;
   const hotel=document.getElementById('seg-hotel')?.value||'';
   const flight=document.getElementById('seg-flight')?.value||'';
-  const mapUrl=document.getElementById('seg-mapurl')?.value||'';
-  saveSeg(cityObj,from,to,hotel,flight,mapUrl);
+  saveSeg(cityObj,from,to,hotel,flight,'');
 }
 
 // Wire up city autocomplete after render

@@ -219,6 +219,11 @@ body{font-family:var(--fb);background:var(--bg);color:var(--ink);height:100dvh;o
 .tl-day-info{flex:1;min-width:0}
 .tl-day-date{font-size:11px;font-weight:700;letter-spacing:.3px;text-transform:uppercase;color:var(--ink2)}
 .tl-day-chips{display:flex;gap:4px;flex-wrap:wrap;margin-top:3px}
+.dest-list-toggle{display:flex;align-items:center;gap:6px;padding:6px 2px;cursor:pointer;user-select:none}
+.dest-list-toggle-label{font-size:11px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.8px;flex:1}
+.dest-list-toggle-chev{font-size:11px;color:var(--ink3);transition:transform .2s}
+.dest-list-toggle-chev.open{transform:rotate(180deg)}
+.tl-map-btn{flex-shrink:0;width:24px;height:24px;border-radius:6px;background:var(--blue-bg);border:1px solid var(--blue-bd);display:inline-flex;align-items:center;justify-content:center;font-size:13px;text-decoration:none;margin-left:2px;cursor:pointer;vertical-align:middle}
 .tl-ungrouped{display:flex;flex-direction:column;gap:6px;padding:0 18px;margin-bottom:10px}
 .tl-plain-row{background:var(--white);border-radius:var(--r2);display:flex;align-items:center;gap:10px;padding:10px 12px;cursor:pointer;box-shadow:var(--sh);transition:background .12s}
 .tl-plain-row:active{background:var(--bg2)}
@@ -2120,18 +2125,34 @@ function rTrip() {
     const is2=itemStats(t);
     const totalShow=is2.spent>0?is2.spent:bs.e;
     h+=`<div class="trip-sum-header"><div><div class="trip-sum-title">${esc(t.name)}</div><div class="trip-sum-meta">${t.days.length} días${nDests?` · ${nDests} ${nDests>1?L('destinos_pl'):L('destinos')}`:''}${totalShow>0?` · ${sym} ${totalShow.toLocaleString(loc(),{maximumFractionDigits:0})} ${L('spent')}`:''}</div></div>${totalShow>0?`<div class="trip-sum-total"><div class="trip-sum-total-v">${sym} ${totalShow.toLocaleString(loc(),{maximumFractionDigits:0})}</div><div class="trip-sum-total-l">${L('total')}</div></div>`:''}</div>`;
-    // Sort segments by fromIdx for display (already sorted on save, but be safe)
+    // Sort segments by fromIdx
     const sortedSegs=[...segs].sort((a,b)=>a.fromIdx-b.fromIdx);
     if(sortedSegs.length){
       const byDest=budStatsByDest(t);
-      h+=`<div class="dest-list">`;
-      sortedSegs.forEach((seg,si)=>{
-        const origSi=t.segments.indexOf(seg);
-        const destE=byDest[origSi]?.e||0;
-        const nDays=seg.toIdx-seg.fromIdx+1;
-        h+=`<div class="dest-item"><div class="dest-item-dot" style="background:${destColor(origSi)}"></div><div class="dest-item-info"><div class="dest-item-name">${esc(seg.dest)}</div><div class="dest-item-dates">${fmtShort(t.days[seg.fromIdx]?.date)} – ${fmtShort(t.days[seg.toIdx]?.date)} · ${nDays} día${nDays!==1?'s':''}${seg.hotel?' · 🏨 '+esc(seg.hotel.split(' ').slice(0,2).join(' ')):''}${seg.flight?' · ✈ '+esc(seg.flight):''}</div></div>${destE>0?`<div class="dest-item-bud">${sym} ${destE.toLocaleString(loc(),{maximumFractionDigits:0})}</div>`:''}</div>`;
-      });
-      h+=`</div>`;
+      const destsOpen=!!S.notesOpen['dests_'+t.id];
+      // Toggle header
+      h+=`<div class="dest-list-toggle" onclick="S.notesOpen['dests_${t.id}']=!S.notesOpen['dests_${t.id}'];render()">
+        <div class="dest-list-toggle-label">${nDests} ${nDests>1?L('destinos_pl'):L('destinos')}</div>
+        <div class="dest-list-toggle-chev ${destsOpen?'open':''}">▼</div>
+      </div>`;
+      // Collapsible list
+      if(destsOpen){
+        h+=`<div class="dest-list">`;
+        sortedSegs.forEach((seg,si)=>{
+          const origSi=t.segments.indexOf(seg);
+          const destE=byDest[origSi]?.e||0;
+          const nDays=seg.toIdx-seg.fromIdx+1;
+          h+=`<div class="dest-item" onclick="openEditSeg(${origSi})" style="cursor:pointer">
+            <div class="dest-item-dot" style="background:${destColor(origSi)}"></div>
+            <div class="dest-item-info">
+              <div class="dest-item-name">${esc(seg.dest)}</div>
+              <div class="dest-item-dates">${fmtShort(t.days[seg.fromIdx]?.date)} – ${fmtShort(t.days[seg.toIdx]?.date)} · ${nDays} día${nDays!==1?'s':''}${seg.hotel?' · 🏨 '+esc(seg.hotel.split(' ').slice(0,2).join(' ')):''}${seg.flight?' · ✈ '+esc(seg.flight):''}</div>
+            </div>
+            <div style="font-size:10px;color:var(--blue);font-weight:700;flex-shrink:0">${destE>0?sym+' '+destE.toLocaleString(loc(),{maximumFractionDigits:0})+' · ':''} ✏️</div>
+          </div>`;
+        });
+        h+=`</div>`;
+      }
     } else {
       h+=`<div style="font-size:12px;color:var(--ink3);margin-top:4px">${L('noDestHint')}</div>`;
     }
@@ -2207,12 +2228,14 @@ function rTrip() {
           if(ev>0){chips+=`<span class="tl-chip expense">💰 ${sym} ${ev.toLocaleString(loc(),{maximumFractionDigits:0})}</span>`;}
           // Notes
           if(d.notes?.trim()) chips+=`<span class="tl-chip note">📝 ${esc(d.notes.slice(0,18))}${d.notes.length>18?'…':''}</span>`;
+          const dayMapUrl=d.mapUrl||'';
           h+=`<div class="tl-day-row" onclick="S.didx=${i};S.scr='day';render()">
             <div class="tl-day-num ${iT?'today':''}">${i+1}</div>
             <div class="tl-day-info">
               <div class="tl-day-date">${dow.toUpperCase()} ${dateStr}${iT?` · ${L('today')}`:''}</div>
               ${chips?`<div class="tl-day-chips">${chips}</div>`:''}
             </div>
+            ${dayMapUrl?`<a href="${esc(dayMapUrl)}" target="_blank" rel="noopener" class="tl-map-btn" onclick="event.stopPropagation()" title="${S.lang==='en'?'Open day map':'Abrir mapa del día'}">🗺️</a>`:''}
             <div class="day-chev">›</div>
           </div>`;
         });
@@ -2237,12 +2260,14 @@ function rTrip() {
           else { uActs.slice(0,2).forEach(a=>{ chips+=`<span class="tl-chip activity">${a.icon} ${esc(a.name.slice(0,14))}${a.name.length>14?'…':''}</span>`; }); chips+=`<span class="tl-chip multi">+${uActs.length-2}</span>`; }
           if(ev>0){chips+=`<span class="tl-chip expense">💰 ${sym} ${ev.toLocaleString(loc(),{maximumFractionDigits:0})}</span>`;}
           if(d.notes?.trim()) chips+=`<span class="tl-chip note">📝 ${esc(d.notes.slice(0,18))}${d.notes.length>18?'…':''}</span>`;
+          const plainMapUrl=d.mapUrl||'';
           h+=`<div class="tl-plain-row" onclick="S.didx=${i};S.scr='day';render()">
             <div class="tl-day-num ${iT?'today':''}">${i+1}</div>
             <div class="tl-day-info">
               <div class="tl-day-date" style="color:var(--ink3)">${dow.toUpperCase()} ${dateStr}${iT?` · ${L('today')}`:''}</div>
               ${chips?`<div class="tl-day-chips">${chips}</div>`:`<div style="font-size:10px;color:var(--ink3);margin-top:2px">${L('noDestAssigned')}</div>`}
             </div>
+            ${plainMapUrl?`<a href="${esc(plainMapUrl)}" target="_blank" rel="noopener" class="tl-map-btn" onclick="event.stopPropagation()" title="${S.lang==='en'?'Open day map':'Abrir mapa del día'}">🗺️</a>`:''}
             <div class="day-chev">›</div>
           </div>`;
         });

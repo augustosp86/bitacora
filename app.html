@@ -2840,7 +2840,8 @@ function rDay() {
   </div>`;
 
   // ── Vuelos (array, max 3) ──
-  const flights = Array.isArray(d.flights) ? d.flights : (d.flight ? [d.flight] : []);
+  // Show seg hotel/flight if day has nothing — read-only hint, don't mutate d
+  const flights = (Array.isArray(d.flights)?d.flights.filter(Boolean):(d.flight?[d.flight]:[]));
   h+=`<div class="field"><label>✈ ${S.lang==='en'?'Flights':'Vuelos'}</label>`;
   flights.forEach((fl,fi)=>{
     h+=`<div style="display:flex;gap:6px;margin-bottom:6px">
@@ -2850,11 +2851,22 @@ function rDay() {
       <button onclick="delDayArrItem(${i},'flights',${fi})" style="width:36px;height:42px;border-radius:var(--r2);border:1px solid var(--line2);background:var(--white);cursor:pointer;font-size:16px;color:var(--ink3)">✕</button>
     </div>`;
   });
+  const segFlightHint = rawSeg?.flight||'';
   if(flights.length===0){
-    h+='<div style="display:flex;gap:7px;align-items:center">';
-    h+=`<button onclick="addDayArrItem(${i},'flights')" style="flex:1;padding:9px;border:1.5px dashed var(--line2);border-radius:var(--r2);background:transparent;font-family:var(--fb);font-size:12px;font-weight:600;color:var(--ink3);cursor:pointer">＋ ${S.lang==='en'?'Add flight':'Agregar vuelo'}</button>`;
-    if(eff?.dest) h+=`<button onclick="S.tab='search';S._srchDestIdx=0;S.scr='trip';render()" style="flex-shrink:0;padding:9px 12px;border:1.5px solid var(--blue-bd);border-radius:var(--r2);background:var(--blue-bg);font-family:var(--fb);font-size:11px;font-weight:700;color:var(--blue);cursor:pointer">🔍 ${S.lang==='en'?'Search':'Buscar'}</button>`;
-    h+='</div>';
+    // If segment has a flight, show it pre-filled in the input
+    if(segFlightHint){
+      h+=`<div style="display:flex;gap:6px;margin-bottom:6px">
+        <input type="text" value="${esc(segFlightHint)}"
+          style="flex:1;padding:10px 13px;background:var(--white);border:1.5px solid var(--line2);border-radius:var(--r2);font-family:var(--fb);font-size:14px;outline:none;-webkit-appearance:none;color:var(--ink)"
+          oninput="if(!t.days[${i}].flights)t.days[${i}].flights=[];t.days[${i}].flights[0]=this.value;save()"/>
+        <button onclick="const d2=trip()?.days[${i}];if(d2){d2.flights=[];save();render();}" style="width:36px;height:42px;border-radius:var(--r2);border:1px solid var(--line2);background:var(--white);cursor:pointer;font-size:16px;color:var(--ink3)">✕</button>
+      </div>`;
+    } else {
+      h+='<div style="display:flex;gap:7px;align-items:center">';
+      h+=`<button onclick="addDayArrItem(${i},'flights')" style="flex:1;padding:9px;border:1.5px dashed var(--line2);border-radius:var(--r2);background:transparent;font-family:var(--fb);font-size:12px;font-weight:600;color:var(--ink3);cursor:pointer">＋ ${S.lang==='en'?'Add flight':'Agregar vuelo'}</button>`;
+      if(eff?.dest) h+=`<button onclick="S.tab='search';S._srchDestIdx=0;S.scr='trip';render()" style="flex-shrink:0;padding:9px 12px;border:1.5px solid var(--blue-bd);border-radius:var(--r2);background:var(--blue-bg);font-family:var(--fb);font-size:11px;font-weight:700;color:var(--blue);cursor:pointer">🔍 ${S.lang==='en'?'Search':'Buscar'}</button>`;
+      h+='</div>';
+    }
   } else {
     h+='<div style="display:flex;gap:6px;align-items:center;margin-top:2px">';
     if(flights.length<3) h+=`<button onclick="addDayArrItem(${i},'flights')" style="padding:5px 10px;border:1px dashed var(--line2);border-radius:20px;background:transparent;font-family:var(--fb);font-size:10px;font-weight:600;color:var(--ink3);cursor:pointer">＋ ${S.lang==='en'?'Add another':'Agregar otro'}</button>`;
@@ -2864,7 +2876,7 @@ function rDay() {
   h+=`</div>`;
 
   // ── Hoteles (array, max 3) ──
-  const hotels = Array.isArray(d.hotels) ? d.hotels : (d.hotel ? [d.hotel] : []);
+  const hotels = (Array.isArray(d.hotels)?d.hotels.filter(Boolean):(d.hotel?[d.hotel]:[]));
   h+=`<div class="field"><label>🏨 ${S.lang==='en'?'Hotels':'Hoteles'}</label>`;
   hotels.forEach((ht,hi)=>{
     h+=`<div style="display:flex;gap:6px;margin-bottom:6px">
@@ -2875,11 +2887,21 @@ function rDay() {
     </div>`;
   });
   // If hotel already loaded: show add & search smaller/subtle; if empty: show normal
+  const segHotelHint = rawSeg?.hotel||'';
   if(hotels.length===0){
-    h+='<div style="display:flex;gap:7px;align-items:center">';
-    h+=`<button onclick="addDayArrItem(${i},'hotels')" style="flex:1;padding:9px;border:1.5px dashed var(--line2);border-radius:var(--r2);background:transparent;font-family:var(--fb);font-size:12px;font-weight:600;color:var(--ink3);cursor:pointer">＋ ${S.lang==='en'?'Add hotel':'Agregar hotel'}</button>`;
-    if(eff?.dest) h+=`<button onclick="S.tab='search';S._srchDestIdx=0;S.scr='trip';render()" style="flex-shrink:0;padding:9px 12px;border:1.5px solid var(--blue-bd);border-radius:var(--r2);background:var(--blue-bg);font-family:var(--fb);font-size:11px;font-weight:700;color:var(--blue);cursor:pointer">🔍 ${S.lang==='en'?'Search':'Buscar'}</button>`;
-    h+='</div>';
+    if(segHotelHint){
+      h+=`<div style="display:flex;gap:6px;margin-bottom:6px">
+        <input type="text" value="${esc(segHotelHint)}"
+          style="flex:1;padding:10px 13px;background:var(--white);border:1.5px solid var(--line2);border-radius:var(--r2);font-family:var(--fb);font-size:14px;outline:none;-webkit-appearance:none;color:var(--ink)"
+          oninput="if(!t.days[${i}].hotels)t.days[${i}].hotels=[];t.days[${i}].hotels[0]=this.value;save()"/>
+        <button onclick="const d2=trip()?.days[${i}];if(d2){d2.hotels=[];save();render();}" style="width:36px;height:42px;border-radius:var(--r2);border:1px solid var(--line2);background:var(--white);cursor:pointer;font-size:16px;color:var(--ink3)">✕</button>
+      </div>`;
+    } else {
+      h+='<div style="display:flex;gap:7px;align-items:center">';
+      h+=`<button onclick="addDayArrItem(${i},'hotels')" style="flex:1;padding:9px;border:1.5px dashed var(--line2);border-radius:var(--r2);background:transparent;font-family:var(--fb);font-size:12px;font-weight:600;color:var(--ink3);cursor:pointer">＋ ${S.lang==='en'?'Add hotel':'Agregar hotel'}</button>`;
+      if(eff?.dest) h+=`<button onclick="S.tab='search';S._srchDestIdx=0;S.scr='trip';render()" style="flex-shrink:0;padding:9px 12px;border:1.5px solid var(--blue-bd);border-radius:var(--r2);background:var(--blue-bg);font-family:var(--fb);font-size:11px;font-weight:700;color:var(--blue);cursor:pointer">🔍 ${S.lang==='en'?'Search':'Buscar'}</button>`;
+      h+='</div>';
+    }
   } else {
     // Hotel loaded — show extra options small and subtle
     h+='<div style="display:flex;gap:6px;align-items:center;margin-top:2px">';
@@ -3372,10 +3394,44 @@ function updSegDest(dayIdx, val) {
 
   t.segments.sort((a,b) => a.fromIdx - b.fromIdx);
 
+  // ── Merge adjacent segments with same dest ───────────────────────────────
+  mergeAdjacentSegs(t);
+
   // Save immediately but DON'T render() — let the autocomplete callback handle that
-  // so typing isn't interrupted
   clearTimeout(_segDestTimer);
   _segDestTimer = setTimeout(()=>{ save(); }, 300);
+}
+
+// ─── MERGE ADJACENT SAME-DEST SEGMENTS ──────────────────────────────────────
+function mergeAdjacentSegs(t) {
+  if(!t.segments || t.segments.length < 2) return;
+  t.segments.sort((a,b) => a.fromIdx - b.fromIdx);
+  let merged = true;
+  while(merged) {
+    merged = false;
+    for(let i = 0; i < t.segments.length - 1; i++) {
+      const a = t.segments[i];
+      const b = t.segments[i+1];
+      // Same dest AND contiguous (b starts exactly where a ends +1)
+      if(a.dest.trim().toLowerCase() === b.dest.trim().toLowerCase() &&
+         b.fromIdx === a.toIdx + 1) {
+        // Merge b into a — keep a's hotel/flight if set, else use b's
+        t.segments[i] = {
+          ...a,
+          toIdx: b.toIdx,
+          hotel: a.hotel||b.hotel||'',
+          flight: a.flight||b.flight||'',
+          mapUrl: a.mapUrl||b.mapUrl||'',
+          destFull: a.destFull||b.destFull||a.dest,
+          destLat: a.destLat||b.destLat||'',
+          destLon: a.destLon||b.destLon||'',
+        };
+        t.segments.splice(i+1, 1);
+        merged = true;
+        break;
+      }
+    }
+  }
 }
 
 // ─── DATE HELPERS ───
@@ -3809,6 +3865,7 @@ function render() {
           });
           t.segments.sort((a,b)=>a.fromIdx-b.fromIdx);
         }
+        mergeAdjacentSegs(t2);
         save(); render();
       };
     },50);

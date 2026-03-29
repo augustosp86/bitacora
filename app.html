@@ -1911,8 +1911,9 @@ function saveSeg(city, fromDate, toDate, hotel, flight, mapUrl) {
   } else {
     t.segments.push(seg);
   }
-  // Sort by fromIdx
+  // Sort and merge adjacent same-dest segments
   t.segments.sort((a,b)=>a.fromIdx-b.fromIdx);
+  mergeAdjacentSegs(t);
   S.sheet=null; save(); render();
 }
 

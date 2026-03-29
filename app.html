@@ -2852,22 +2852,11 @@ function rDay() {
       <button onclick="delDayArrItem(${i},'flights',${fi})" style="width:36px;height:42px;border-radius:var(--r2);border:1px solid var(--line2);background:var(--white);cursor:pointer;font-size:16px;color:var(--ink3)">✕</button>
     </div>`;
   });
-  const segFlightHint = rawSeg?.flight||'';
   if(flights.length===0){
-    // If segment has a flight, show it pre-filled in the input
-    if(segFlightHint){
-      h+=`<div style="display:flex;gap:6px;margin-bottom:6px">
-        <input type="text" value="${esc(segFlightHint)}"
-          style="flex:1;padding:10px 13px;background:var(--white);border:1.5px solid var(--line2);border-radius:var(--r2);font-family:var(--fb);font-size:14px;outline:none;-webkit-appearance:none;color:var(--ink)"
-          oninput="if(!t.days[${i}].flights)t.days[${i}].flights=[];t.days[${i}].flights[0]=this.value;save()"/>
-        <button onclick="const d2=trip()?.days[${i}];if(d2){d2.flights=[];save();render();}" style="width:36px;height:42px;border-radius:var(--r2);border:1px solid var(--line2);background:var(--white);cursor:pointer;font-size:16px;color:var(--ink3)">✕</button>
-      </div>`;
-    } else {
-      h+='<div style="display:flex;gap:7px;align-items:center">';
-      h+=`<button onclick="addDayArrItem(${i},'flights')" style="flex:1;padding:9px;border:1.5px dashed var(--line2);border-radius:var(--r2);background:transparent;font-family:var(--fb);font-size:12px;font-weight:600;color:var(--ink3);cursor:pointer">＋ ${S.lang==='en'?'Add flight':'Agregar vuelo'}</button>`;
-      if(eff?.dest) h+=`<button onclick="S.tab='search';S._srchDestIdx=0;S.scr='trip';render()" style="flex-shrink:0;padding:9px 12px;border:1.5px solid var(--blue-bd);border-radius:var(--r2);background:var(--blue-bg);font-family:var(--fb);font-size:11px;font-weight:700;color:var(--blue);cursor:pointer">🔍 ${S.lang==='en'?'Search':'Buscar'}</button>`;
-      h+='</div>';
-    }
+    h+='<div style="display:flex;gap:7px;align-items:center">';
+    h+=`<button onclick="addDayArrItem(${i},'flights')" style="flex:1;padding:9px;border:1.5px dashed var(--line2);border-radius:var(--r2);background:transparent;font-family:var(--fb);font-size:12px;font-weight:600;color:var(--ink3);cursor:pointer">＋ ${S.lang==='en'?'Add flight':'Agregar vuelo'}</button>`;
+    if(eff?.dest) h+=`<button onclick="S.tab='search';S._srchDestIdx=0;S.scr='trip';render()" style="flex-shrink:0;padding:9px 12px;border:1.5px solid var(--blue-bd);border-radius:var(--r2);background:var(--blue-bg);font-family:var(--fb);font-size:11px;font-weight:700;color:var(--blue);cursor:pointer">🔍 ${S.lang==='en'?'Search':'Buscar'}</button>`;
+    h+='</div>';
   } else {
     h+='<div style="display:flex;gap:6px;align-items:center;margin-top:2px">';
     if(flights.length<3) h+=`<button onclick="addDayArrItem(${i},'flights')" style="padding:5px 10px;border:1px dashed var(--line2);border-radius:20px;background:transparent;font-family:var(--fb);font-size:10px;font-weight:600;color:var(--ink3);cursor:pointer">＋ ${S.lang==='en'?'Add another':'Agregar otro'}</button>`;
@@ -2888,21 +2877,11 @@ function rDay() {
     </div>`;
   });
   // If hotel already loaded: show add & search smaller/subtle; if empty: show normal
-  const segHotelHint = rawSeg?.hotel||'';
   if(hotels.length===0){
-    if(segHotelHint){
-      h+=`<div style="display:flex;gap:6px;margin-bottom:6px">
-        <input type="text" value="${esc(segHotelHint)}"
-          style="flex:1;padding:10px 13px;background:var(--white);border:1.5px solid var(--line2);border-radius:var(--r2);font-family:var(--fb);font-size:14px;outline:none;-webkit-appearance:none;color:var(--ink)"
-          oninput="if(!t.days[${i}].hotels)t.days[${i}].hotels=[];t.days[${i}].hotels[0]=this.value;save()"/>
-        <button onclick="const d2=trip()?.days[${i}];if(d2){d2.hotels=[];save();render();}" style="width:36px;height:42px;border-radius:var(--r2);border:1px solid var(--line2);background:var(--white);cursor:pointer;font-size:16px;color:var(--ink3)">✕</button>
-      </div>`;
-    } else {
-      h+='<div style="display:flex;gap:7px;align-items:center">';
-      h+=`<button onclick="addDayArrItem(${i},'hotels')" style="flex:1;padding:9px;border:1.5px dashed var(--line2);border-radius:var(--r2);background:transparent;font-family:var(--fb);font-size:12px;font-weight:600;color:var(--ink3);cursor:pointer">＋ ${S.lang==='en'?'Add hotel':'Agregar hotel'}</button>`;
-      if(eff?.dest) h+=`<button onclick="S.tab='search';S._srchDestIdx=0;S.scr='trip';render()" style="flex-shrink:0;padding:9px 12px;border:1.5px solid var(--blue-bd);border-radius:var(--r2);background:var(--blue-bg);font-family:var(--fb);font-size:11px;font-weight:700;color:var(--blue);cursor:pointer">🔍 ${S.lang==='en'?'Search':'Buscar'}</button>`;
-      h+='</div>';
-    }
+    h+='<div style="display:flex;gap:7px;align-items:center">';
+    h+=`<button onclick="addDayArrItem(${i},'hotels')" style="flex:1;padding:9px;border:1.5px dashed var(--line2);border-radius:var(--r2);background:transparent;font-family:var(--fb);font-size:12px;font-weight:600;color:var(--ink3);cursor:pointer">＋ ${S.lang==='en'?'Add hotel':'Agregar hotel'}</button>`;
+    if(eff?.dest) h+=`<button onclick="S.tab='search';S._srchDestIdx=0;S.scr='trip';render()" style="flex-shrink:0;padding:9px 12px;border:1.5px solid var(--blue-bd);border-radius:var(--r2);background:var(--blue-bg);font-family:var(--fb);font-size:11px;font-weight:700;color:var(--blue);cursor:pointer">🔍 ${S.lang==='en'?'Search':'Buscar'}</button>`;
+    h+='</div>';
   } else {
     // Hotel loaded — show extra options small and subtle
     h+='<div style="display:flex;gap:6px;align-items:center;margin-top:2px">';
@@ -3224,7 +3203,14 @@ function addDayArrItem(dayIdx, field) {
   const d=t.days[dayIdx]; if(!d) return;
   if(!Array.isArray(d[field])) d[field]=[];
   if(d[field].length>=3) return;
-  d[field].push('');
+  // Pre-fill with segment value on first add
+  const seg=segForDay(t,dayIdx);
+  let prefill='';
+  if(d[field].filter(Boolean).length===0 && seg){
+    if(field==='hotels' && seg.hotel) prefill=seg.hotel;
+    if(field==='flights' && seg.flight) prefill=seg.flight;
+  }
+  d[field].push(prefill);
   save(); render();
 }
 function delDayArrItem(dayIdx, field, arrIdx) {
@@ -3866,7 +3852,7 @@ function render() {
           });
           t.segments.sort((a,b)=>a.fromIdx-b.fromIdx);
         }
-        mergeAdjacentSegs(t2);
+        mergeAdjacentSegs(t);
         save(); render();
       };
     },50);

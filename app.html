@@ -745,7 +745,7 @@ const I18N={
     name:'Nombre', namePh:'Ej: Europa 2026', start:'Inicio', end:'Fin',
     save:'Guardar', cancel:'Cancelar', create:'Crear viaje', delete:'Eliminar', edit:'✏️ Editar',
     // Tabs
-    tabCal:'Calendario', tabItin:'Itinerario', tabBudget:'Gastos', tabWeather:'Clima',
+    tabCal:'Calendario', tabItin:'Itinerario', tabBudget:'Gastos', tabPack:'Equipaje', tabWeather:'Clima',
     // Calendar
     calDays:['Do','Lu','Ma','Mi','Ju','Vi','Sa'],
     legDest:'Destino', legExc:'Excepción', legNone:'Sin destino', legToday:'Hoy',
@@ -870,7 +870,7 @@ const I18N={
     hfMa:'📍 Map', hfMaSub:'All your places',
     name:'Name', namePh:'E.g. Europe 2026', start:'Start', end:'End',
     save:'Save', cancel:'Cancel', create:'Create trip', delete:'Delete', edit:'✏️ Edit',
-    tabCal:'Calendar', tabItin:'Itinerary', tabBudget:'Expenses', tabWeather:'Weather',
+    tabCal:'Calendar', tabItin:'Itinerary', tabBudget:'Expenses', tabPack:'Packing', tabWeather:'Weather',
     calDays:['Su','Mo','Tu','We','Th','Fr','Sa'],
     legDest:'Destination', legExc:'Exception', legNone:'No destination', legToday:'Today',
     progress:'Progress',
@@ -1747,16 +1747,22 @@ function clearPackDone(tripId){
 }
 
 function renderPackSection(tripId){
-  // Direct DOM update — no full render needed
   const container=document.getElementById('pack-list-'+tripId);
   if(!container) return;
   const t=S.trips.find(x=>x.id===tripId); if(!t) return;
   ensurePack(t);
   const done=t.packList.filter(x=>x.done).length;
   const total=t.packList.length;
-  // Update progress badge
+  const pct=total>0?Math.round(done/total*100):0;
+  // Update progress elements if present
   const prog=document.getElementById('pack-prog-'+tripId);
   if(prog) prog.textContent=done>0?done+'/'+total+' ✓':'';
+  const bar=document.getElementById('pack-bar-'+tripId);
+  if(bar) bar.style.width=pct+'%';
+  const pctEl=document.getElementById('pack-pct-'+tripId);
+  if(pctEl) pctEl.textContent=pct+'%';
+  const doneEl=document.getElementById('pack-done-'+tripId);
+  if(doneEl) doneEl.textContent=done+' / '+total;
   // Rebuild list
   let h='';
   t.packList.forEach(item=>{
@@ -1766,9 +1772,6 @@ function renderPackSection(tripId){
       <button class="pack-del" onclick="delPackItem(${tripId},${item.id})">✕</button>
     </div>`;
   });
-  if(done>0){
-    h+=`<button class="pack-clear" onclick="clearPackDone(${tripId})">${S.lang==='en'?'Clear completed ('+done+')':'Limpiar completados ('+done+')'}</button>`;
-  }
   container.innerHTML=h;
 }
 
@@ -2029,6 +2032,7 @@ function rTrip() {
     <button class="tab ${S.tab==='itin'?'on':''}" onclick="S.tab='itin';render()"><span class="ti">🗺️</span>${L('tabItin')}</button>
     <button class="tab ${S.tab==='map'?'on':''}" onclick="S.tab='map';render()"><span class="ti">📍</span>${L('tabMap')}</button>
     <button class="tab ${S.tab==='budget'?'on':''}" onclick="S.tab='budget';render()"><span class="ti">💰</span>${L('tabBudget')}</button>
+    <button class="tab ${S.tab==='pack'?'on':''}" onclick="S.tab='pack';render()"><span class="ti">🎒</span>${L('tabPack')}</button>
     <button class="tab ${S.tab==='weather'?'on':''}" onclick="S.tab='weather';render()"><span class="ti">🌡️</span>${L('tabWeather')}</button>
     <button class="tab ${S.tab==='search'?'on':''}" onclick="S.tab='search';render()" style="position:relative"><span class="ti">🔍</span>${L('tabSearch')}${S.tab!=='search'?'<span style="position:absolute;top:6px;right:6px;width:6px;height:6px;border-radius:50%;background:var(--blue)"></span>':''}</button>
   </div>`;
@@ -2091,29 +2095,6 @@ function rTrip() {
       h+='</div>';
 
       // ── PACKING CHECKLIST below calendar ──
-      if(!S._readOnly){
-        ensurePack(t);
-        const packDone=t.packList.filter(x=>x.done).length;
-        const packTotal=t.packList.length;
-        const packOpen=!!S.notesOpen['pack_'+t.id];
-        h+=`<div class="pack-card">
-          <div class="pack-hdr ${packOpen?'open':''}" onclick="S.notesOpen['pack_${t.id}']=!S.notesOpen['pack_${t.id}'];render()">
-            <span style="font-size:15px">🎒</span>
-            <span class="pack-lbl">${S.lang==='en'?'Packing checklist':'Checklist de equipaje'}</span>
-            <span id="pack-prog-${t.id}" class="pack-progress">${packDone>0?packDone+'/'+packTotal+' ✓':''}</span>
-            <span class="pack-chev">▼</span>
-          </div>
-          ${packOpen?`<div class="pack-body">
-            <div id="pack-list-${t.id}"></div>
-            <div class="pack-add-row">
-              <input class="pack-inp" id="pack-inp-${t.id}" type="text" placeholder="${S.lang==='en'?'Add item...':'Agregar ítem...'}"
-                onkeydown="if(event.key==='Enter')addPackItem(${t.id})"/>
-              <button class="pack-add-btn" onclick="addPackItem(${t.id})">＋</button>
-            </div>
-          </div>`:''}
-        </div>`;
-        if(packOpen) setTimeout(()=>renderPackSection(t.id),30);
-      }
     }
   }
 
@@ -2277,28 +2258,6 @@ function rTrip() {
     });
     h+='</div>';
 
-    // ── PACKING CHECKLIST (collapsible, in itin tab) ──────────────────────
-    ensurePack(t);
-    const packDone=t.packList.filter(x=>x.done).length;
-    const packTotal=t.packList.length;
-    const packOpen=!!S.notesOpen['pack_'+t.id];
-    h+=`<div class="pack-card">
-      <div class="pack-hdr ${packOpen?'open':''}" onclick="S.notesOpen['pack_${t.id}']=!S.notesOpen['pack_${t.id}'];render()">
-        <span style="font-size:15px">🎒</span>
-        <span class="pack-lbl">${S.lang==='en'?'Packing checklist':'Checklist de equipaje'}</span>
-        <span id="pack-prog-${t.id}" class="pack-progress">${packDone>0?packDone+'/'+packTotal+' ✓':''}</span>
-        <span class="pack-chev">▼</span>
-      </div>
-      ${packOpen?`<div class="pack-body">
-        <div id="pack-list-${t.id}"></div>
-        <div class="pack-add-row">
-          <input class="pack-inp" id="pack-inp-${t.id}" type="text" placeholder="${S.lang==='en'?'Add item...':'Agregar ítem...'}"
-            onkeydown="if(event.key==='Enter')addPackItem(${t.id})"/>
-          <button class="pack-add-btn" onclick="addPackItem(${t.id})">＋</button>
-        </div>
-      </div>`:''}
-    </div>`;
-    if(packOpen) setTimeout(()=>renderPackSection(t.id),30);
   }
 
   // ── BUDGET ──
@@ -2576,6 +2535,43 @@ function rTrip() {
       });
     }
     h+='</div>';
+  }
+
+  // ── PACK TAB ──
+  if(S.tab==='pack') {
+    ensurePack(t);
+    const packDone=t.packList.filter(x=>x.done).length;
+    const packTotal=t.packList.length;
+    const pct=packTotal>0?Math.round(packDone/packTotal*100):0;
+    h+=`<div style="padding:0 18px 24px">
+      <!-- Progress header -->
+      <div style="background:var(--ink);border-radius:var(--r);padding:16px 18px;margin-bottom:14px;color:white">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+          <div>
+            <div style="font-size:11px;font-weight:700;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:1px;margin-bottom:3px">🎒 ${S.lang==='en'?'Packing':'Equipaje'}</div>
+            <div id="pack-done-${t.id}" style="font-family:var(--fd);font-size:26px;font-weight:500">${packDone} / ${packTotal}</div>
+          </div>
+          <div id="pack-pct-${t.id}" style="font-size:32px;font-weight:700;font-family:var(--fd);color:${pct===100?'#6EE7B7':'rgba(255,255,255,.5)'}">${pct}%</div>
+        </div>
+        <div style="height:4px;background:rgba(255,255,255,.15);border-radius:4px;overflow:hidden">
+          <div id="pack-bar-${t.id}" style="height:100%;width:${pct}%;background:${pct===100?'#6EE7B7':'#93C5FD'};border-radius:4px;transition:width .6s ease"></div>
+        </div>
+        ${pct===100?`<div style="font-size:11px;color:#6EE7B7;margin-top:8px;font-weight:600">✓ ${S.lang==='en'?'All packed!':'¡Todo listo!'}</div>`:''}
+      </div>
+      <!-- Checklist -->
+      <div id="pack-list-${t.id}" style="margin-bottom:10px"></div>
+      <!-- Add item -->
+      <div style="display:flex;gap:8px">
+        <input class="pack-inp" id="pack-inp-${t.id}" type="text"
+          placeholder="${S.lang==='en'?'Add item...':'Agregar ítem...'}"
+          style="flex:1"
+          onkeydown="if(event.key==='Enter')addPackItem(${t.id})"/>
+        <button class="pack-add-btn" onclick="addPackItem(${t.id})">＋</button>
+      </div>
+      <!-- Clear done -->
+      ${packDone>0?`<button onclick="clearDonePack(${t.id})" style="margin-top:10px;width:100%;padding:8px;border:1px solid var(--line2);border-radius:var(--r2);background:transparent;font-family:var(--fb);font-size:11px;font-weight:600;color:var(--ink3);cursor:pointer">🗑 ${S.lang==='en'?'Remove checked items':'Eliminar tildados'}</button>`:''}
+    </div>`;
+    setTimeout(()=>renderPackSection(t.id), 30);
   }
 
   // ── WEATHER ──

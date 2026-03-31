@@ -2302,69 +2302,83 @@ function rTrip() {
   }
 
   // ── BUDGET ──
-  if(S.tab==='budget') {
+ if(S.tab==='budget') {
   const iSt = itemStats(t);
   const sym = t.currency || 'USD';
   const over = iSt.budget > 0 && iSt.rem < 0;
   const pctTotal = iSt.budget > 0 ? Math.min(100, Math.round(iSt.spent / iSt.budget * 100)) : 0;
 
-  h += `<div style="padding:0 18px 20px">`;
+  h += `<div style="padding:0 18px 24px">`;
 
-  // ── Presupuesto Total Grande ──
-  h += `<div style="background:var(--white);border-radius:var(--r3);padding:20px 18px;box-shadow:var(--sh);margin-bottom:20px">`;
-  h += `<div style="font-size:11px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">Presupuesto total del viaje</div>`;
+  // ── Tarjeta Presupuesto Total (más bonita) ──
+  h += `<div style="background:var(--white);border-radius:var(--r3);padding:22px 20px;box-shadow:var(--sh);margin-bottom:22px">`;
+  h += `<div style="font-size:11px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:1.2px;margin-bottom:6px">Presupuesto total del viaje</div>`;
   
-  h += `<div style="display:flex;align-items:center;gap:12px">`;
-  h += `<span style="font-size:32px;color:var(--ink)">${sym}</span>`;
+  h += `<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">`;
+  h += `<div style="font-family:var(--fd);font-size:38px;font-weight:600;color:var(--ink)">${sym}</div>`;
   h += `<input type="number" id="total-budget-inp" 
-         value="${esc(iSt.budget || '')}" placeholder="0" 
+         value="${iSt.budget || ''}" placeholder="0" 
          oninput="updTripBudget(this.value)"
-         style="flex:1;font-family:var(--fd);font-size:32px;font-weight:600;background:transparent;border:none;outline:none;text-align:right">`;
+         style="font-family:var(--fd);font-size:38px;font-weight:600;background:transparent;border:none;outline:none;text-align:right;width:180px">`;
   h += `</div>`;
 
-  // Barra de progreso total
+  // Barra de progreso grande
   if(iSt.budget > 0){
-    h += `<div style="margin-top:16px;height:10px;background:var(--bg2);border-radius:999px;overflow:hidden">`;
-    h += `<div style="height:100%;width:${pctTotal}%;background:${over ? 'var(--red)' : 'var(--green)'};transition:width .5s ease"></div>`;
+    h += `<div style="height:9px;background:var(--bg2);border-radius:999px;overflow:hidden;margin-bottom:8px">`;
+    h += `<div style="height:100%;width:${pctTotal}%;background:${over ? 'var(--red)' : 'linear-gradient(90deg, var(--green), #34d399)'};transition:width .6s ease"></div>`;
     h += `</div>`;
-    h += `<div style="display:flex;justify-content:space-between;margin-top:6px;font-size:12px">`;
-    h += `<span style="color:${over ? 'var(--red)' : 'var(--green)'}">${pctTotal}% usado</span>`;
-    h += `<span>${sym} ${iSt.spent.toLocaleString(loc())} gastado de ${sym} ${iSt.budget.toLocaleString(loc())}</span>`;
+    
+    h += `<div style="display:flex;justify-content:space-between;font-size:13px">`;
+    h += `<span style="color:${over ? 'var(--red)' : 'var(--green)'};font-weight:600">${pctTotal}% usado</span>`;
+    h += `<span style="color:var(--ink3)">${sym} ${iSt.spent.toLocaleString(loc())} gastado de ${sym} ${iSt.budget.toLocaleString(loc())}</span>`;
     h += `</div>`;
+  } else {
+    h += `<div style="color:var(--ink3);font-size:13px;padding:10px 0">Ingresá el presupuesto total arriba</div>`;
   }
   h += `</div>`;
 
-  // ── Gastos por categoría (solo desglose real) ──
-  h += `<div class="items-hdr" style="margin-bottom:12px"><div class="items-lbl">Gastos por categoría</div></div>`;
+  // ── Gastos por categoría ──
+  h += `<div style="margin-bottom:12px"><div class="items-lbl">GASTOS POR CATEGORÍA</div></div>`;
 
   const hasExpenses = iSt.spent > 0;
 
   if(hasExpenses){
     ITEM_CATS.forEach(cat => {
       const spentVal = iSt.spentByCat[cat.key] || 0;
-      if(spentVal === 0) return;
+      if(spentVal <= 0) return;
 
       const catPct = iSt.budget > 0 ? Math.round((spentVal / iSt.budget) * 100) : 0;
 
-      h += `<div class="item-row" style="padding:13px 14px">`;
-      h += `<div class="item-ico" style="font-size:21px">${cat.icon}</div>`;
-      h += `<div class="item-info">`;
-      h += `<div class="item-name">${cat[S.lang] || cat.key}</div>`;
-      h += `<div style="height:4px;background:var(--bg2);border-radius:4px;margin-top:6px;overflow:hidden">`;
+      h += `<div class="item-row" style="padding:14px 16px;margin-bottom:8px">`;
+      h += `<div class="item-ico" style="font-size:22px">${cat.icon}</div>`;
+      h += `<div class="item-info" style="flex:1">`;
+      h += `<div class="item-name" style="font-size:14px">${cat[S.lang] || cat.key}</div>`;
+      h += `<div style="height:5px;background:var(--bg2);border-radius:999px;margin-top:7px;overflow:hidden">`;
       h += `<div style="height:100%;width:${catPct}%;background:var(--blue);transition:width .4s"></div>`;
       h += `</div>`;
       h += `</div>`;
-      h += `<div style="text-align:right;font-family:var(--fd);font-size:17px;font-weight:600">${sym} ${spentVal.toLocaleString(loc())}</div>`;
+      h += `<div style="text-align:right">`;
+      h += `<div style="font-family:var(--fd);font-size:17px;font-weight:600;color:var(--ink)">${sym} ${spentVal.toLocaleString(loc())}</div>`;
+      h += `<div style="font-size:11px;color:var(--ink3);margin-top:2px">${catPct}% del total</div>`;
+      h += `</div>`;
       h += `</div>`;
     });
   } else {
-    h += `<div class="no-items" style="padding:40px 20px">Todavía no hay gastos cargados.<br>Tocá "+ Agregar gasto" abajo</div>`;
+    h += `<div class="no-items" style="text-align:center;padding:50px 20px;color:var(--ink3)">
+      Aún no hay gastos registrados.<br><br>
+      Tocá el botón de abajo para agregar el primero.
+    </div>`;
   }
 
   h += `</div>`;
 
-  // Botón Agregar gasto
-  h += `<div style="padding:0 18px"><button class="add-item-btn" onclick="openNewItem()" style="width:100%;justify-content:center">＋ Agregar gasto</button></div>`;
+  // Botón Agregar gasto (estilo más moderno)
+  h += `<div style="padding:0 18px">
+    <button class="add-item-btn" onclick="openNewItem()" 
+            style="width:100%;padding:14px;font-size:15px">
+      ＋ Agregar gasto
+    </button>
+  </div>`;
 }
   // ── MAP ──
   if(S.tab==='map') {

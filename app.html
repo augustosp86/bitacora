@@ -995,28 +995,49 @@ function icatIcon(key){return ITEM_CATS.find(c=>c.key===key)?.icon||'📦';}
 // ── Activity category icons ──
 const ACT_ICONS=['🎟️','🏛️','🍽️','🚶','🏖️','🛒','📸','🎭','⛵','🚲','🎵','🌄'];
 
-// ── Item stats (trip-level expenses) ──
-function itemStats(t){
-  const items=Array.isArray(t.items)?t.items:[];
-  const spent=items.reduce((s,itm)=>s+(parseFloat(itm.price)||0),0);
-  // Budget = sum of category budgets if any set, else totalBudget field
-  const bbc=t.budgetByCat||{};
-  const catTotal=Object.values(bbc).reduce((s,v)=>s+(parseFloat(v)||0),0);
-  const budget=catTotal>0?catTotal:(parseFloat(t.totalBudget)||0);
-  // Per-category spent
-  const spentByCat={};
-  items.forEach(itm=>{
-    const k=itm.category||'other';
-    spentByCat[k]=(spentByCat[k]||0)+(parseFloat(itm.price)||0);
+// ── Item stats MEJORADO ──
+function itemStats(t) {
+  if (!t) return { budget: 0, spent: 0, rem: 0, catTotal: 0, spentByCat: {}, bbc: {}, pctByCat: {} };
+
+  const items = Array.isArray(t.items) ? t.items : [];
+  
+  // Gasto real total
+  const spent = items.reduce((sum, itm) => sum + (parseFloat(itm.price) || 0), 0);
+
+  // Presupuesto por categoría
+  const bbc = t.budgetByCat || {};
+  
+  // Gasto por categoría
+  const spentByCat = {};
+  items.forEach(itm => {
+    const k = itm.category || 'other';
+    spentByCat[k] = (spentByCat[k] || 0) + (parseFloat(itm.price) || 0);
   });
-  return{budget,spent,rem:budget-spent,catTotal,spentByCat,bbc};
-}
-function updBudgetCat(cat,val){
-  const t=trip(); if(!t) return;
-  if(!t.budgetByCat) t.budgetByCat={};
-  t.budgetByCat[cat]=val;
-  clearTimeout(updBudgetCat._t);
-  updBudgetCat._t=setTimeout(()=>{save();render();},400);
+
+  // Calcular porcentaje por categoría
+  const pctByCat = {};
+  let catTotal = 0;
+
+  Object.keys(bbc).forEach(cat => {
+    const bud = parseFloat(bbc[cat]) || 0;
+    const sp = spentByCat[cat] || 0;
+    pctByCat[cat] = bud > 0 ? Math.min(100, Math.round((sp / bud) * 100)) : 0;
+    catTotal += bud;
+  });
+
+  // Presupuesto total = suma de categorías (prioridad)
+  const budget = catTotal > 0 ? catTotal : (parseFloat(t.totalBudget) || 0);
+  const rem = budget - spent;
+
+  return {
+    budget,
+    spent,
+    rem,
+    catTotal,
+    spentByCat,
+    bbc,
+    pctByCat
+  };
 }
 
 // ── SVG Donut Pie chart ──
@@ -2303,25 +2324,25 @@ function rTrip() {
     if(over) h+=`<div class="bud-alert">⚠️ ${L('budgetOver')} — ${sym} ${Math.abs(iSt.rem).toLocaleString(loc(),{maximumFractionDigits:0})} extra</div>`;
 
     // ── Budget breakdown by category ──
-    h+=`<div class="items-sec" style="margin-bottom:4px">`;
-    h+=`<div class="items-hdr"><div class="items-lbl">${L('budgetBreakdown')}</div><div style="font-size:10px;color:var(--ink3)">${sym}</div></div>`;
-    ITEM_CATS.forEach(cat=>{
-      const budVal=iSt.bbc[cat.key]||'';
-      const spentVal=iSt.spentByCat[cat.key]||0;
-      const catBudget=parseFloat(budVal)||0;
-      const diff=catBudget-spentVal;
-      const catOver=catBudget>0&&diff<0;
-      h+=`<div class="item-row" style="padding:8px 11px">
-        <div class="item-ico" style="font-size:18px">${cat.icon}</div>
-        <div class="item-info"><div class="item-name" style="font-size:12px">${cat[S.lang]}</div>
-          ${spentVal>0?`<div class="item-cat" style="color:${catOver?'var(--red)':'var(--ink3)'}">${L('spentCat')}: ${sym} ${spentVal.toLocaleString(loc(),{maximumFractionDigits:0})}</div>`:''}
-        </div>
-        <input type="number" min="0" step="any" placeholder="0"
-          style="width:88px;padding:5px 8px;text-align:right;background:var(--bg2);border:1.5px solid ${catOver?'var(--red)':'transparent'};border-radius:8px;font-family:var(--fd);font-size:15px;font-weight:500;outline:none;-webkit-appearance:none"
-          value="${esc(budVal!==''?String(budVal):'')}"
-          oninput="updBudgetCat('${cat.key}',this.value)"/>
-      </div>`;
-    });
+   h+=`<div class="items-sec" style="margin-bottom:4px">`;
+h+=`<div class="items-hdr"><div class="items-lbl">${L('budgetBreakdown')}</div><div style="font-size:10px;color:var(--ink3)">${sym}</div></div>`;
+ITEM_CATS.forEach(cat=>{
+  const budVal=iSt.bbc[cat.key]||'';
+  const spentVal=iSt.spentByCat[cat.key]||0;
+  const catBudget=parseFloat(budVal)||0;
+  const diff=catBudget-spentVal;
+  const catOver=catBudget>0&&diff<0;
+  h+=`<div class="item-row" style="padding:8px 11px">
+    <div class="item-ico" style="font-size:18px">${cat.icon}</div>
+    <div class="item-info"><div class="item-name" style="font-size:12px">${cat[S.lang]}</div>
+      ${spentVal>0?`<div class="item-cat" style="color:${catOver?'var(--red)':'var(--ink3)'}">${L('spentCat')}: ${sym} ${spentVal.toLocaleString(loc(),{maximumFractionDigits:0})}</div>`:''}
+    </div>
+    <input type="number" min="0" step="any" placeholder="0"
+      style="width:88px;padding:5px 8px;text-align:right;background:var(--bg2);border:1.5px solid ${catOver?'var(--red)':'transparent'};border-radius:8px;font-family:var(--fd);font-size:15px;font-weight:500;outline:none;-webkit-appearance:none"
+      value="${esc(budVal!==''?String(budVal):'')}"
+      oninput="updBudgetCat('${cat.key}',this.value)"/>
+  </div>`;
+});
     // Currency + total budget fallback
     h+=`<div style="display:flex;align-items:center;gap:9px;margin-top:7px"><div style="font-size:11px;font-weight:600;color:var(--ink3)">${L('currency')}</div><select class="cur-sel" onchange="updCur(${t.id},this.value)">${['USD','EUR','ARS','BRL','CLP','UYU'].map(c=>`<option ${t.currency===c?'selected':''}>${c}</option>`).join('')}</select></div>`;
     if(iSt.catTotal===0){

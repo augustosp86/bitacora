@@ -1815,13 +1815,17 @@ function itemsForDay(t, dayIdx) {
 }
 
 // ─── TRIP BUDGET ───
-function updTripBudget(val){
-  const t=trip(); if(!t) return;
-  t.totalBudget=val;
-  // Re-render only the summary card (budget bar), not the whole input
-  // Use a small debounce so typing feels instant
+function updTripBudget(val) {
+  const t = trip();
+  if (!t) return;
+  
+  t.totalBudget = val === '' ? '' : parseFloat(val) || 0;
+  
   clearTimeout(updTripBudget._t);
-  updTripBudget._t=setTimeout(()=>{ save(); render(); },400);
+  updTripBudget._t = setTimeout(() => {
+    save();
+    render();
+  }, 300);
 }
 
 // ─── DRAFT ───
@@ -2299,201 +2303,69 @@ function rTrip() {
 
   // ── BUDGET ──
   if(S.tab==='budget') {
-    const iSt=itemStats(t);
-    const over=iSt.budget>0&&iSt.rem<0;
-    const pct=iSt.budget>0?Math.min(100,Math.round(iSt.spent/iSt.budget*100)):0;
+  const iSt = itemStats(t);
+  const sym = t.currency || 'USD';
+  const over = iSt.budget > 0 && iSt.rem < 0;
+  const pctTotal = iSt.budget > 0 ? Math.min(100, Math.round(iSt.spent / iSt.budget * 100)) : 0;
 
-    // Currency selector
-    h+=`<div style="padding:0 18px 8px;display:flex;align-items:center;gap:9px"><div style="font-size:11px;font-weight:600;color:var(--ink3)">${L('currency')}</div><select class="cur-sel" onchange="updCur(${t.id},this.value)">${['USD','EUR','ARS','BRL','CLP','UYU'].map(c=>`<option ${t.currency===c?'selected':''}>${c}</option>`).join('')}</select></div>`;
+  h += `<div style="padding:0 18px 20px">`;
 
-    // ── Summary card ──
-    if(iSt.budget>0){
-      h+=`<div style="margin:0 18px 11px;background:var(--ink);border-radius:var(--r);padding:16px 17px;box-shadow:var(--sh)">`;
-      h+=`<div style="display:flex;justify-content:space-between;margin-bottom:10px">`;
-      h+=`<div><div style="font-size:28px;font-family:var(--fd);font-weight:600;color:${over?'#FCA5A5':'#6EE7B7'}">${sym} ${Math.abs(iSt.rem).toLocaleString(loc(),{maximumFractionDigits:0})}</div><div style="font-size:10px;font-weight:600;color:rgba(255,255,255,.5);margin-top:2px;text-transform:uppercase;letter-spacing:.8px">${over?L('exceeded'):L('available')}</div></div>`;
-      h+=`<div style="text-align:right"><div style="font-size:10px;color:rgba(255,255,255,.5);margin-bottom:3px;text-transform:uppercase;letter-spacing:.8px">${L('spent2')}</div><div style="font-family:var(--fd);font-size:22px;font-weight:500;color:rgba(255,255,255,.9)">${sym} ${iSt.spent.toLocaleString(loc(),{maximumFractionDigits:0})}</div></div>`;
-      h+=`</div><div style="height:5px;background:rgba(255,255,255,.15);border-radius:5px;overflow:hidden"><div style="height:100%;width:${pct}%;background:${over?'#F87171':'#34D399'};border-radius:5px;transition:width .6s"></div></div>`;
-      h+=`<div style="display:flex;justify-content:space-between;font-size:10px;font-weight:600;color:rgba(255,255,255,.4);margin-top:6px"><span>0</span><span>${pct}% de ${sym} ${iSt.budget.toLocaleString(loc(),{maximumFractionDigits:0})}</span></div>`;
-      h+=`</div>`;
-    }
+  // ── Presupuesto Total Grande ──
+  h += `<div style="background:var(--white);border-radius:var(--r3);padding:20px 18px;box-shadow:var(--sh);margin-bottom:20px">`;
+  h += `<div style="font-size:11px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">Presupuesto total del viaje</div>`;
+  
+  h += `<div style="display:flex;align-items:center;gap:12px">`;
+  h += `<span style="font-size:32px;color:var(--ink)">${sym}</span>`;
+  h += `<input type="number" id="total-budget-inp" 
+         value="${esc(iSt.budget || '')}" placeholder="0" 
+         oninput="updTripBudget(this.value)"
+         style="flex:1;font-family:var(--fd);font-size:32px;font-weight:600;background:transparent;border:none;outline:none;text-align:right">`;
+  h += `</div>`;
 
-    // Over-budget alert
-    if(over) h+=`<div class="bud-alert">⚠️ ${L('budgetOver')} — ${sym} ${Math.abs(iSt.rem).toLocaleString(loc(),{maximumFractionDigits:0})} extra</div>`;
+  // Barra de progreso total
+  if(iSt.budget > 0){
+    h += `<div style="margin-top:16px;height:10px;background:var(--bg2);border-radius:999px;overflow:hidden">`;
+    h += `<div style="height:100%;width:${pctTotal}%;background:${over ? 'var(--red)' : 'var(--green)'};transition:width .5s ease"></div>`;
+    h += `</div>`;
+    h += `<div style="display:flex;justify-content:space-between;margin-top:6px;font-size:12px">`;
+    h += `<span style="color:${over ? 'var(--red)' : 'var(--green)'}">${pctTotal}% usado</span>`;
+    h += `<span>${sym} ${iSt.spent.toLocaleString(loc())} gastado de ${sym} ${iSt.budget.toLocaleString(loc())}</span>`;
+    h += `</div>`;
+  }
+  h += `</div>`;
 
-    // ── Budget breakdown by category ──
-h += `<div class="items-sec" style="margin-bottom:4px">`;
-h += `<div class="items-hdr"><div class="items-lbl">${L('budgetBreakdown')}</div><div style="font-size:10px;color:var(--ink3)">${sym}</div></div>`;
+  // ── Gastos por categoría (solo desglose real) ──
+  h += `<div class="items-hdr" style="margin-bottom:12px"><div class="items-lbl">Gastos por categoría</div></div>`;
 
-ITEM_CATS.forEach(cat => {
-  const budVal = iSt.bbc[cat.key] || '';
-  const spentVal = iSt.spentByCat[cat.key] || 0;
-  const pct = iSt.pctByCat && iSt.pctByCat[cat.key] !== undefined ? iSt.pctByCat[cat.key] : 0;
-  const isOver = parseFloat(budVal) > 0 && spentVal > parseFloat(budVal);
+  const hasExpenses = iSt.spent > 0;
 
-  h += `<div class="item-row" style="padding:12px 14px">
-    <div class="item-ico" style="font-size:20px">${cat.icon}</div>
-    <div class="item-info" style="flex:1;min-width:0">
-      <div class="item-name" style="font-size:13px">${cat[S.lang] || cat.key}</div>
-      
-      <div style="display:flex;align-items:center;gap:8px;margin-top:6px">
-        <div style="flex:1;height:5px;background:var(--bg2);border-radius:4px;overflow:hidden">
-          <div style="height:100%;width:${pct}%;background:${isOver ? 'var(--red)' : 'var(--green)'};transition:width .4s ease"></div>
-        </div>
-        <div style="font-size:13px;font-weight:700;min-width:38px;text-align:right;color:${isOver ? 'var(--red)' : 'var(--green)'}">
-          ${pct}%
-        </div>
-      </div>
-    </div>
-    
-    <div style="text-align:right">
-      <input type="number" min="0" step="any" placeholder="0"
-        class="bcat-inp"
-        value="${esc(budVal)}"
-        oninput="updBudgetCat('${cat.key}',this.value)"/>
-      ${spentVal > 0 ? `<div style="font-size:11px;color:var(--ink3);margin-top:3px">${sym} ${spentVal.toLocaleString(loc(),{maximumFractionDigits:0})} gastado</div>` : ''}
-    </div>
-  </div>`;
-});
+  if(hasExpenses){
+    ITEM_CATS.forEach(cat => {
+      const spentVal = iSt.spentByCat[cat.key] || 0;
+      if(spentVal === 0) return;
 
-h += `</div>`;
-    // Currency + total budget fallback
-    h+=`<div style="display:flex;align-items:center;gap:9px;margin-top:7px"><div style="font-size:11px;font-weight:600;color:var(--ink3)">${L('currency')}</div><select class="cur-sel" onchange="updCur(${t.id},this.value)">${['USD','EUR','ARS','BRL','CLP','UYU'].map(c=>`<option ${t.currency===c?'selected':''}>${c}</option>`).join('')}</select></div>`;
-    if(iSt.catTotal===0){
-      h+=`<div class="trip-bud-bar" style="margin-top:8px"><div class="tbb-label">${L('tripBudget')}</div><div class="tbb-sym">${sym}</div><input class="tbb-inp" type="number" min="0" value="${esc(String(t.totalBudget||''))}" placeholder="0" oninput="updTripBudget(this.value)"/></div>`;
-    }
-    h+=`</div>`;
+      const catPct = iSt.budget > 0 ? Math.round((spentVal / iSt.budget) * 100) : 0;
 
-    // Items section
-    h+=`<div class="items-sec">`;
-    h+=`<div class="items-hdr"><div class="items-lbl">${L('itemsTitle')}</div><button class="add-item-btn" onclick="openNewItem()">${L('addItem')}</button></div>`;
-    const items=t.items||[];
-    if(items.length){
-      // ── Group items by date ──────────────────────────────────────────────
-      const byDate={};
-      const noDate=[];
-      items.forEach((it,ii)=>{
-        if(it.date) {
-          if(!byDate[it.date]) byDate[it.date]=[];
-          byDate[it.date].push({it,ii});
-        } else {
-          noDate.push({it,ii});
-        }
-      });
-      // Sort dates ascending
-      const sortedDates=Object.keys(byDate).sort();
-      // Render each day group
-      sortedDates.forEach(dateKey=>{
-        const group=byDate[dateKey];
-        const dayTotal=group.reduce((s,{it})=>s+(parseFloat(it.price)||0),0);
-        // Find destination for this date
-        const dayIdx=t.days.findIndex(d=>d.date.split('T')[0]===dateKey);
-        const dayDest=dayIdx>=0?effectiveSeg(t,dayIdx)?.dest:'';
-        const si=dayIdx>=0?segIdx(t,dayIdx):-1;
-        const col=si>=0?destColor(si):'var(--ink3)';
-        const dateLabel=new Date(dateKey+'T12:00').toLocaleDateString(loc(),{day:'numeric',month:'short'});
-        const destLabel=dayDest?' · '+esc(dayDest):'';
-        h+=`<div class="items-day-hdr" style="border-left-color:${col}">
-          <div class="items-day-label">
-            <div class="items-day-dot" style="background:${col}"></div>
-            <span>${dateLabel}${destLabel}</span>
-          </div>
-          <div class="items-day-total" style="color:${col}">${sym} ${dayTotal.toLocaleString(loc(),{maximumFractionDigits:0})}</div>
-        </div>`;
-        group.forEach(({it,ii})=>{
-          h+=`<div class="item-row">
-            <div class="item-ico">${it.icon||icatIcon(it.category)}</div>
-            <div class="item-info"><div class="item-name">${esc(it.name)}</div><div class="item-cat">${icatLabel(it.category)}</div></div>
-            <div class="item-price">${sym} ${(parseFloat(it.price)||0).toLocaleString(loc(),{maximumFractionDigits:0})}</div>
-            <div class="item-acts">
-              <button class="item-btn e" onclick="openEditItem(${ii})">✏️</button>
-              <button class="item-btn d" onclick="delItem(${ii})">🗑</button>
-            </div>
-          </div>`;
-        });
-      });
-      // Items without date (ungrouped)
-      if(noDate.length){
-        h+=`<div class="items-day-hdr">
-          <div class="items-day-label"><span style="color:var(--ink3)">${S.lang==='en'?'No date':'Sin fecha'}</span></div>
-        </div>`;
-        noDate.forEach(({it,ii})=>{
-          h+=`<div class="item-row">
-            <div class="item-ico">${it.icon||icatIcon(it.category)}</div>
-            <div class="item-info"><div class="item-name">${esc(it.name)}</div><div class="item-cat">${icatLabel(it.category)}</div></div>
-            <div class="item-price">${sym} ${(parseFloat(it.price)||0).toLocaleString(loc(),{maximumFractionDigits:0})}</div>
-            <div class="item-acts">
-              <button class="item-btn e" onclick="openEditItem(${ii})">✏️</button>
-              <button class="item-btn d" onclick="delItem(${ii})">🗑</button>
-            </div>
-          </div>`;
-        });
-      }
-      // Total row
-      h+=`<div style="display:flex;justify-content:space-between;padding:10px 4px;border-top:1.5px solid var(--line2);margin-top:4px"><div style="font-size:12px;font-weight:700;color:var(--ink2)">${L('total')}</div><div style="font-family:var(--fd);font-size:16px;font-weight:600">${sym} ${iSt.spent.toLocaleString(loc(),{maximumFractionDigits:0})}</div></div>`;
-    } else {
-      h+=`<div class="no-items">${L('noItems')}</div>`;
-    }
-    h+=`</div>`;
-
-    // Charts section (only if items exist)
-    if(items.length>0){
-      const pie=renderPie(items,sym);
-      const bars=renderBars(items,sym);
-      if(pie){
-        h+=`<div class="charts-sec">`;
-        h+=`<div class="chart-card"><div class="chart-hdr">${L('chartsTitle')}</div>${pie}</div>`;
-        h+=`<div class="chart-card"><div class="chart-hdr">${L('barTitle')}</div>${bars}</div>`;
-        h+=`</div>`;
-      }
-    }
-
-    // Daily detail (collapsible)
-    h+=`<div class="daily-tog ${S.showDailyDetail?'open':''}" onclick="S.showDailyDetail=!S.showDailyDetail;render()">
-      <div class="daily-tog-lbl">${S.showDailyDetail?L('dailyHide'):L('dailyDetail')}</div>
-      <svg width="14" height="14" viewBox="0 0 12 12" fill="none" stroke="var(--ink3)" stroke-width="2"><polyline points="2 4 6 8 10 4"/></svg>
-    </div>`;
-    if(S.showDailyDetail){
-      h+=`<div class="brows">`;
-      t.days.forEach((d,i)=>{
-        const seg=effectiveSeg(t,i);
-        const si=seg?t.segments.indexOf(seg):-1;
-        const ifd_b=itemsForDay(t,i); const ev=ifd_b.total>0?ifd_b.total:(parseFloat(d.expense)||0);
-        const dc=!ev?'ne':'ok', ds=ev>0?`${t.currency||'USD'} ${ev.toLocaleString(loc(),{maximumFractionDigits:0})}`:'—';
-        const dt=new Date(d.date.split('T')[0]+'T12:00').toLocaleDateString(loc(),{weekday:'short',day:'numeric',month:'short'});
-        const catEmoji=CAT_EMOJI[d.category]||'';
-        h+=`<div class="brow">
-          <div class="brow-head">
-            <div class="bnum" style="${si>=0?'background:'+destColor(si)+'22;color:'+destColor(si):''}">${i+1}</div>
-            <div class="brow-i">
-              <h5>${seg?`<span style="color:${destColor(si)}">${esc(seg.dest)}</span>`:L('noDest')}</h5>
-              <p>${dt}</p>
-            </div>
-            <div class="bdiff ${dc}">${ds}</div>
-          </div>
-          <div class="cat-row">${cats().map(c=>`<button class="cat-btn ${d.category===c.key?'on':''}" data-cat="${c.key}" onclick="setCat(${i},'${c.key}',this)">${c.emoji} ${c.label}</button>`).join('')}</div>
-          ${(()=>{
-            const ifd=itemsForDay(t,i);
-            const autoExp=ifd.total;
-            if(autoExp>0){
-              // Auto mode: show total + item pills, no editable fields
-              return `<div style="margin-top:6px">
-                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
-                  <span style="font-size:10px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px">💰 ${S.lang==='en'?'Expenses':'Gastos'}</span>
-                  <span style="font-family:var(--fd);font-size:18px;font-weight:500;color:var(--green)">${t.currency||'USD'} ${autoExp.toLocaleString(loc(),{minimumFractionDigits:2,maximumFractionDigits:2})}</span>
-                </div>
-                <div style="display:flex;flex-wrap:wrap;gap:4px">${ifd.items.map(itm=>`<div style="font-size:9px;padding:3px 8px;border-radius:6px;background:var(--bg2);color:var(--ink2);display:flex;align-items:center;gap:3px"><span>${icatIcon(itm.category)}</span><span>${esc(itm.name||'')}</span><span style="font-weight:700">${(t.currency||'USD')} ${parseFloat(itm.price).toLocaleString(loc(),{maximumFractionDigits:0})}</span></div>`).join('')}</div>
-              </div>`;
-            } else {
-              // No items: show empty state, no input needed
-              return `<div style="margin-top:4px;font-size:10px;color:var(--ink3);padding:6px 2px">${S.lang==='en'?'No expenses for this day yet. Add them in the Expenses tab.':'Sin gastos para este día. Agregálos en el tab Gastos.'}</div>`;
-            }
-          })()}
-        </div>`;
-      });
-      h+=`</div>`;
-    }
+      h += `<div class="item-row" style="padding:13px 14px">`;
+      h += `<div class="item-ico" style="font-size:21px">${cat.icon}</div>`;
+      h += `<div class="item-info">`;
+      h += `<div class="item-name">${cat[S.lang] || cat.key}</div>`;
+      h += `<div style="height:4px;background:var(--bg2);border-radius:4px;margin-top:6px;overflow:hidden">`;
+      h += `<div style="height:100%;width:${catPct}%;background:var(--blue);transition:width .4s"></div>`;
+      h += `</div>`;
+      h += `</div>`;
+      h += `<div style="text-align:right;font-family:var(--fd);font-size:17px;font-weight:600">${sym} ${spentVal.toLocaleString(loc())}</div>`;
+      h += `</div>`;
+    });
+  } else {
+    h += `<div class="no-items" style="padding:40px 20px">Todavía no hay gastos cargados.<br>Tocá "+ Agregar gasto" abajo</div>`;
   }
 
+  h += `</div>`;
+
+  // Botón Agregar gasto
+  h += `<div style="padding:0 18px"><button class="add-item-btn" onclick="openNewItem()" style="width:100%;justify-content:center">＋ Agregar gasto</button></div>`;
+}
   // ── MAP ──
   if(S.tab==='map') {
     h+='<div class="map-wrap">';

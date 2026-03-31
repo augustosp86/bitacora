@@ -1000,13 +1000,13 @@ function itemStats(t) {
   if (!t) return { budget: 0, spent: 0, rem: 0, catTotal: 0, spentByCat: {}, bbc: {}, pctByCat: {} };
 
   const items = Array.isArray(t.items) ? t.items : [];
-  
+
   // Gasto real total
   const spent = items.reduce((sum, itm) => sum + (parseFloat(itm.price) || 0), 0);
 
   // Presupuesto por categoría
   const bbc = t.budgetByCat || {};
-  
+
   // Gasto por categoría
   const spentByCat = {};
   items.forEach(itm => {
@@ -1014,9 +1014,9 @@ function itemStats(t) {
     spentByCat[k] = (spentByCat[k] || 0) + (parseFloat(itm.price) || 0);
   });
 
-  // Calcular porcentaje por categoría
-  const pctByCat = {};
+  // Calcular total de presupuesto desde categorías
   let catTotal = 0;
+  const pctByCat = {};
 
   Object.keys(bbc).forEach(cat => {
     const bud = parseFloat(bbc[cat]) || 0;
@@ -1025,7 +1025,7 @@ function itemStats(t) {
     catTotal += bud;
   });
 
-  // Presupuesto total = suma de categorías (prioridad)
+  // Presupuesto total = suma de todas las categorías
   const budget = catTotal > 0 ? catTotal : (parseFloat(t.totalBudget) || 0);
   const rem = budget - spent;
 

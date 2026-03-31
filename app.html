@@ -1707,7 +1707,18 @@ function updTripNotes(id, val) {
 
 
 // ─── PACKING CHECKLIST ───────────────────────────────────────────────────────
-const DEFAULT_PACK_ITEMS = ['Pasaporte / DNI','Ticket de avión','Reserva de hotel','Cargador de celular','Adaptador de enchufe','Dinero en efectivo','Tarjeta de crédito','Seguro de viaje','Botiquín básico','Ropa (7 días)','Zapatillas cómodas','Abrigo','Protector solar','Auriculares'];
+const DEFAULT_PACK_ITEMS = [
+  {id:1, name:'Pasaporte / DNI / Documentos', done:false, cat:'documentos'},
+  {id:2, name:'Tickets de avión / reservas', done:false, cat:'documentos'},
+  {id:3, name:'Cargador + adaptador universal', done:false, cat:'electronico'},
+  {id:4, name:'Ropa interior (7 días)', done:false, cat:'ropa'},
+  {id:5, name:'Ropa cómoda para caminar', done:false, cat:'ropa'},
+  {id:6, name:'Abrigo / campera', done:false, cat:'ropa'},
+  {id:7, name:'Botiquín básico', done:false, cat:'higiene'},
+  {id:8, name:'Protector solar', done:false, cat:'higiene'},
+  {id:9, name:'Cepillo y pasta dental', done:false, cat:'higiene'},
+  {id:10, name:'Zapatillas / calzado cómodo', done:false, cat:'ropa'}
+];
 
 function ensurePack(t){
   if(!t.packList) t.packList=DEFAULT_PACK_ITEMS.map((name,i)=>({id:i+1,name,done:false}));
@@ -2028,14 +2039,22 @@ function rTrip() {
   }
 
   h+=`<div class="tabs">
-    <button class="tab ${S.tab==='cal'?'on':''}" onclick="S.tab='cal';render()"><span class="ti">📅</span>${L('tabCal')}</button>
-    <button class="tab ${S.tab==='itin'?'on':''}" onclick="S.tab='itin';render()"><span class="ti">🗺️</span>${L('tabItin')}</button>
-    <button class="tab ${S.tab==='map'?'on':''}" onclick="S.tab='map';render()"><span class="ti">📍</span>${L('tabMap')}</button>
-    <button class="tab ${S.tab==='budget'?'on':''}" onclick="S.tab='budget';render()"><span class="ti">💰</span>${L('tabBudget')}</button>
-    <button class="tab ${S.tab==='pack'?'on':''}" onclick="S.tab='pack';render()"><span class="ti">🎒</span>${L('tabPack')}</button>
-    <button class="tab ${S.tab==='weather'?'on':''}" onclick="S.tab='weather';render()"><span class="ti">🌡️</span>${L('tabWeather')}</button>
-    <button class="tab ${S.tab==='search'?'on':''}" onclick="S.tab='search';render()" style="position:relative"><span class="ti">🔍</span>${L('tabSearch')}${S.tab!=='search'?'<span style="position:absolute;top:6px;right:6px;width:6px;height:6px;border-radius:50%;background:var(--blue)"></span>':''}</button>
-  </div>`;
+  <button class="tab ${S.tab==='cal'?'on':''}" onclick="S.tab='cal';render()"><span class="ti">📅</span>${L('tabCal')}</button>
+  <button class="tab ${S.tab==='itin'?'on':''}" onclick="S.tab='itin';render()"><span class="ti">🗺️</span>${L('tabItin')}</button>
+  <button class="tab ${S.tab==='map'?'on':''}" onclick="S.tab='map';render()"><span class="ti">📍</span>${L('tabMap')}</button>
+  <button class="tab ${S.tab==='budget'?'on':''}" onclick="S.tab='budget';render()"><span class="ti">💰</span>${L('tabBudget')}</button>
+  
+  <!-- TAB DE EQUIPAJE MEJORADO -->
+  <button class="tab ${S.tab==='pack'?'on':''}" onclick="S.tab='pack';render()">
+    <span class="ti">🎒</span>${L('tabPack')}
+  </button>
+  
+  <button class="tab ${S.tab==='weather'?'on':''}" onclick="S.tab='weather';render()"><span class="ti">🌡️</span>${L('tabWeather')}</button>
+  <button class="tab ${S.tab==='search'?'on':''}" onclick="S.tab='search';render()" style="position:relative">
+    <span class="ti">🔍</span>${L('tabSearch')}
+    ${S.tab!=='search' ? '<span style="position:absolute;top:6px;right:6px;width:6px;height:6px;border-radius:50%;background:var(--blue)"></span>' : ''}
+  </button>
+</div>`;
 
   // ── TRIP NOTES (visible on cal + itin tabs) ──
   if(S.tab==='cal'||S.tab==='itin'){
@@ -2539,40 +2558,52 @@ function rTrip() {
 
   // ── PACK TAB ──
   if(S.tab==='pack') {
-    ensurePack(t);
-    const packDone=t.packList.filter(x=>x.done).length;
-    const packTotal=t.packList.length;
-    const pct=packTotal>0?Math.round(packDone/packTotal*100):0;
-    h+=`<div style="padding:0 18px 24px">
-      <!-- Progress header -->
-      <div style="background:var(--ink);border-radius:var(--r);padding:16px 18px;margin-bottom:14px;color:white">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-          <div>
-            <div style="font-size:11px;font-weight:700;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:1px;margin-bottom:3px">🎒 ${S.lang==='en'?'Packing':'Equipaje'}</div>
-            <div id="pack-done-${t.id}" style="font-family:var(--fd);font-size:26px;font-weight:500">${packDone} / ${packTotal}</div>
+  ensurePack(t);
+  const packDone = t.packList.filter(x => x.done).length;
+  const packTotal = t.packList.length;
+  const pct = packTotal > 0 ? Math.round(packDone / packTotal * 100) : 0;
+
+  h += `<div style="padding:0 18px 24px">
+    <div style="background:var(--ink);border-radius:var(--r3);padding:20px 18px;margin-bottom:16px;color:white;position:relative;overflow:hidden">
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <div>
+          <div style="font-size:13px;opacity:0.7;font-weight:600">🎒 EQUIPAJE</div>
+          <div id="pack-done-${t.id}" style="font-family:var(--fd);font-size:32px;font-weight:600;margin-top:4px">
+            ${packDone} <span style="font-size:18px;opacity:0.6">/${packTotal}</span>
           </div>
-          <div id="pack-pct-${t.id}" style="font-size:32px;font-weight:700;font-family:var(--fd);color:${pct===100?'#6EE7B7':'rgba(255,255,255,.5)'}">${pct}%</div>
         </div>
-        <div style="height:4px;background:rgba(255,255,255,.15);border-radius:4px;overflow:hidden">
-          <div id="pack-bar-${t.id}" style="height:100%;width:${pct}%;background:${pct===100?'#6EE7B7':'#93C5FD'};border-radius:4px;transition:width .6s ease"></div>
+        <div style="text-align:right">
+          <div id="pack-pct-${t.id}" style="font-size:42px;font-weight:700;font-family:var(--fd);color:${pct===100?'#6EE7B7':'#93C5FD'}">
+            ${pct}%
+          </div>
+          <div style="font-size:11px;opacity:0.6">listo</div>
         </div>
-        ${pct===100?`<div style="font-size:11px;color:#6EE7B7;margin-top:8px;font-weight:600">✓ ${S.lang==='en'?'All packed!':'¡Todo listo!'}</div>`:''}
       </div>
-      <!-- Checklist -->
-      <div id="pack-list-${t.id}" style="margin-bottom:10px"></div>
-      <!-- Add item -->
-      <div style="display:flex;gap:8px">
-        <input class="pack-inp" id="pack-inp-${t.id}" type="text"
-          placeholder="${S.lang==='en'?'Add item...':'Agregar ítem...'}"
-          style="flex:1"
-          onkeydown="if(event.key==='Enter')addPackItem(${t.id})"/>
-        <button class="pack-add-btn" onclick="addPackItem(${t.id})">＋</button>
+      
+      <div style="height:6px;background:rgba(255,255,255,0.15);border-radius:9999px;margin-top:14px;overflow:hidden">
+        <div id="pack-bar-${t.id}" style="height:100%;width:${pct}%;background:linear-gradient(90deg,#6EE7B7,#34D399);border-radius:9999px;transition:width .4s ease"></div>
       </div>
-      <!-- Clear done -->
-      ${packDone>0?`<button onclick="clearDonePack(${t.id})" style="margin-top:10px;width:100%;padding:8px;border:1px solid var(--line2);border-radius:var(--r2);background:transparent;font-family:var(--fb);font-size:11px;font-weight:600;color:var(--ink3);cursor:pointer">🗑 ${S.lang==='en'?'Remove checked items':'Eliminar tildados'}</button>`:''}
-    </div>`;
-    setTimeout(()=>renderPackSection(t.id), 30);
-  }
+    </div>
+
+    <div id="pack-list-${t.id}" style="margin-bottom:16px"></div>
+
+    <div style="display:flex;gap:8px">
+      <input class="pack-inp" id="pack-inp-${t.id}" type="text" 
+        placeholder="${S.lang==='en'?'Agregar ítem...':'Agregar ítem...'}" 
+        onkeydown="if(event.key==='Enter')addPackItem(${t.id})"/>
+      <button class="pack-add-btn" onclick="addPackItem(${t.id})">＋ Agregar</button>
+    </div>
+
+    ${packDone > 0 ? `
+    <button onclick="clearPackDone(${t.id})" 
+      style="margin-top:12px;width:100%;padding:10px;border:1.5px solid var(--line2);border-radius:var(--r2);background:transparent;color:var(--ink3);font-weight:600;cursor:pointer">
+      🗑 Eliminar marcados
+    </button>` : ''}
+  </div>`;
+
+  // Renderizar la lista después de inyectar el HTML
+  setTimeout(() => renderPackSection(t.id), 10);
+}
 
   // ── WEATHER ──
   if(S.tab==='weather') {

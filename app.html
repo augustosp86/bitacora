@@ -575,13 +575,68 @@ body{font-family:var(--fb);background:var(--bg);color:var(--ink);height:100dvh;o
 .items-day-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
 .items-day-total{font-size:12px;font-weight:700;color:var(--ink);font-family:var(--fd)}
 .pack-progress{font-size:10px;color:var(--green);font-weight:700;margin-left:auto;margin-right:4px}
+.pack-progress{font-size:10px;color:var(--green);font-weight:700;margin-left:auto;margin-right:4px}
+
+/* ==================== TAB BAR MEJORADO ==================== */
+.tabs {
+  display: flex;
+  background: var(--white);
+  border-radius: var(--r);
+  overflow: hidden;
+  box-shadow: var(--sh);
+  border: 1px solid var(--line);
+  padding: 4px;
+  gap: 4px;
+}
+
+.tab {
+  flex: 1;
+  padding: 10px 6px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: var(--fb);
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--ink3);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  border-radius: var(--r2);
+  transition: all 0.2s var(--ease);
+  position: relative;
+}
+
+.tab .ti {
+  font-size: 19px;
+  margin-bottom: 1px;
+}
+
+.tab-label {
+  font-size: 9.5px;
+  letter-spacing: 0.2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+.tab.on {
+  background: var(--blue-bg);
+  color: var(--blue);
+  box-shadow: 0 2px 6px rgba(37,99,235,0.12);
+}
+
+.tab.on .ti {
+  transform: scale(1.08);
+}
+
+.tab:active {
+  transform: scale(0.94);
+  background: var(--blue-bg);
+}
 </style>
-</head>
-<body>
-<div id="app"></div>
-<div id="city-drop"></div>
-<div id="toast"></div>
-<input type="file" id="backup-file-input" accept=".json" onchange="importBackup(this)">
 
 <script>
 // ─── POPULAR CITIES fallback list ───
@@ -2060,21 +2115,41 @@ function rTrip() {
     </div>`;
   }
 
-  h+=`<div class="tabs">
-  <button class="tab ${S.tab==='cal'?'on':''}" onclick="S.tab='cal';render()"><span class="ti">📅</span>${L('tabCal')}</button>
-  <button class="tab ${S.tab==='itin'?'on':''}" onclick="S.tab='itin';render()"><span class="ti">🗺️</span>${L('tabItin')}</button>
-  <button class="tab ${S.tab==='map'?'on':''}" onclick="S.tab='map';render()"><span class="ti">📍</span>${L('tabMap')}</button>
-  <button class="tab ${S.tab==='budget'?'on':''}" onclick="S.tab='budget';render()"><span class="ti">💰</span>${L('tabBudget')}</button>
-  
-  <!-- TAB DE EQUIPAJE MEJORADO -->
-  <button class="tab ${S.tab==='pack'?'on':''}" onclick="S.tab='pack';render()">
-    <span class="ti">🎒</span>${L('tabPack')}
+  h+=`<div class="tabs" style="margin:0 18px 16px;background:var(--white);border-radius:var(--r);overflow:hidden;box-shadow:var(--sh);border:1px solid var(--line);padding:4px">
+  <button class="tab ${S.tab==='cal'?'on':''}" onclick="S.tab='cal';render()">
+    <span class="ti">📅</span>
+    <span class="tab-label">Calendario</span>
   </button>
   
-  <button class="tab ${S.tab==='weather'?'on':''}" onclick="S.tab='weather';render()"><span class="ti">🌡️</span>${L('tabWeather')}</button>
+  <button class="tab ${S.tab==='itin'?'on':''}" onclick="S.tab='itin';render()">
+    <span class="ti">🗺️</span>
+    <span class="tab-label">Itinerario</span>
+  </button>
+  
+  <button class="tab ${S.tab==='map'?'on':''}" onclick="S.tab='map';render()">
+    <span class="ti">📍</span>
+    <span class="tab-label">Mapa</span>
+  </button>
+  
+  <button class="tab ${S.tab==='budget'?'on':''}" onclick="S.tab='budget';render()">
+    <span class="ti">💰</span>
+    <span class="tab-label">Gastos</span>
+  </button>
+  
+  <button class="tab ${S.tab==='pack'?'on':''}" onclick="S.tab='pack';render()">
+    <span class="ti">🧳</span>
+    <span class="tab-label">Equipaje</span>
+  </button>
+  
+  <button class="tab ${S.tab==='weather'?'on':''}" onclick="S.tab='weather';render()">
+    <span class="ti">🌡️</span>
+    <span class="tab-label">Clima</span>
+  </button>
+  
   <button class="tab ${S.tab==='search'?'on':''}" onclick="S.tab='search';render()" style="position:relative">
-    <span class="ti">🔍</span>${L('tabSearch')}
-    ${S.tab!=='search' ? '<span style="position:absolute;top:6px;right:6px;width:6px;height:6px;border-radius:50%;background:var(--blue)"></span>' : ''}
+    <span class="ti">🔍</span>
+    <span class="tab-label">Buscar</span>
+    ${S.tab!=='search' ? '<span style="position:absolute;top:8px;right:8px;width:6px;height:6px;border-radius:50%;background:var(--blue)"></span>' : ''}
   </button>
 </div>`;
 

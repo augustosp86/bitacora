@@ -1434,6 +1434,13 @@ function budStatsByEffDest(t) {
 // Dest colors — cycles through a palette
 const DEST_COLORS=['#2563EB','#059669','#D97706','#7C3AED','#DC2626','#0EA5E9','#65A30D'];
 function destColor(i){return DEST_COLORS[i%DEST_COLORS.length];}
+// Color by destination name — always same color for same dest regardless of array position
+function destColorByName(name){
+  if(!name) return DEST_COLORS[0];
+  let h=0;
+  for(let i=0;i<name.length;i++) h=(h*31+name.charCodeAt(i))&0xffff;
+  return DEST_COLORS[h%DEST_COLORS.length];
+}
 // Get segment for a day index (raw, from segments array)
 function segForDay(t, idx) {
   if(!t.segments) return null;
@@ -2039,6 +2046,7 @@ function rTrip() {
     <button class="tab ${S.tab==='itin'?'on':''}" onclick="S.tab='itin';render()"><span class="ti">🗺️</span>${L('tabItin')}</button>
     <button class="tab ${S.tab==='map'?'on':''}" onclick="S.tab='map';render()"><span class="ti">📍</span>${L('tabMap')}</button>
     <button class="tab ${S.tab==='budget'?'on':''}" onclick="S.tab='budget';render()"><span class="ti">💰</span>${L('tabBudget')}</button>
+    <button class="tab ${S.tab==='pack'?'on':''}" onclick="S.tab='pack';render()"><span class="ti">🎒</span>${S.lang==='en'?'Packing':'Equipaje'}</button>
     <button class="tab ${S.tab==='weather'?'on':''}" onclick="S.tab='weather';render()"><span class="ti">🌡️</span>${L('tabWeather')}</button>
     <button class="tab ${S.tab==='search'?'on':''}" onclick="S.tab='search';render()" style="position:relative"><span class="ti">🔍</span>${L('tabSearch')}${S.tab!=='search'?'<span style="position:absolute;top:6px;right:6px;width:6px;height:6px;border-radius:50%;background:var(--blue)"></span>':''}</button>
   </div>`;
@@ -2081,7 +2089,7 @@ function rTrip() {
             else if(hasDest){
               cls+=' trip';
               // Per-segment saturated pastel using DEST_COLORS
-              const col=rawSi>=0?destColor(rawSi):'#2563EB';
+              const col=hasDest?destColorByName(eff.dest):'#2563EB';
               inlineStyle=`background:${col}26;color:${col};border:1.5px solid ${col}55;`;
             } else { cls+=' trip'; }
             if(iT&&cell.inTrip) cls+=' now';
@@ -2100,30 +2108,6 @@ function rTrip() {
       h+=`<button class="add-seg-btn" onclick="openNewSeg()" style="margin-top:8px">${L('addDestBtn')}</button>`;
       h+='</div>';
 
-      // ── PACKING CHECKLIST below calendar ──
-      if(!S._readOnly){
-        ensurePack(t);
-        const packDone=t.packList.filter(x=>x.done).length;
-        const packTotal=t.packList.length;
-        const packOpen=!!S.notesOpen['pack_'+t.id];
-        h+=`<div class="pack-card">
-          <div class="pack-hdr ${packOpen?'open':''}" onclick="S.notesOpen['pack_${t.id}']=!S.notesOpen['pack_${t.id}'];render()">
-            <span style="font-size:15px">🎒</span>
-            <span class="pack-lbl">${S.lang==='en'?'Packing checklist':'Checklist de equipaje'}</span>
-            <span id="pack-prog-${t.id}" class="pack-progress">${packDone>0?packDone+'/'+packTotal+' ✓':''}</span>
-            <span class="pack-chev">▼</span>
-          </div>
-          ${packOpen?`<div class="pack-body">
-            <div id="pack-list-${t.id}"></div>
-            <div class="pack-add-row">
-              <input class="pack-inp" id="pack-inp-${t.id}" type="text" placeholder="${S.lang==='en'?'Add item...':'Agregar ítem...'}"
-                onkeydown="if(event.key==='Enter')addPackItem(${t.id})"/>
-              <button class="pack-add-btn" onclick="addPackItem(${t.id})">＋</button>
-            </div>
-          </div>`:''}
-        </div>`;
-        if(packOpen) setTimeout(()=>renderPackSection(t.id),30);
-      }
     }
   }
 
@@ -2154,7 +2138,7 @@ function rTrip() {
           const destE=byDest[origSi]?.e||0;
           const nDays=seg.toIdx-seg.fromIdx+1;
           h+=`<div class="dest-item" onclick="openEditSeg(${origSi})" style="cursor:pointer">
-            <div class="dest-item-dot" style="background:${destColor(origSi)}"></div>
+            <div class="dest-item-dot" style="background:${destColorByName(seg.dest)}"></div>
             <div class="dest-item-info">
               <div class="dest-item-name">${esc(seg.dest)}</div>
               <div class="dest-item-dates">${fmtShort(t.days[seg.fromIdx]?.date)} – ${fmtShort(t.days[seg.toIdx]?.date)} · ${nDays} día${nDays!==1?'s':''}${seg.hotel?' · 🏨 '+esc(seg.hotel.split(' ').slice(0,2).join(' ')):''}${seg.flight?' · ✈ '+esc(seg.flight):''}</div>
@@ -2193,9 +2177,9 @@ function rTrip() {
     groups.forEach(grp=>{
       const {eff,rawSi,days}=grp;
       const hasDest=eff?.dest?.trim();
-      const color=rawSi>=0?destColor(rawSi):'var(--ink3)';
-      const bgColor=rawSi>=0?destColor(rawSi)+'20':'var(--bg2)';
-      const bdColor=rawSi>=0?destColor(rawSi)+'55':'var(--line2)';
+      const color=hasDest?destColorByName(eff.dest):'var(--ink3)';
+      const bgColor=hasDest?destColorByName(eff.dest)+'20':'var(--bg2)';
+      const bdColor=hasDest?destColorByName(eff.dest)+'55':'var(--line2)';
 
       if(hasDest){
         // Grouped header
@@ -2287,28 +2271,6 @@ function rTrip() {
     });
     h+='</div>';
 
-    // ── PACKING CHECKLIST (collapsible, in itin tab) ──────────────────────
-    ensurePack(t);
-    const packDone=t.packList.filter(x=>x.done).length;
-    const packTotal=t.packList.length;
-    const packOpen=!!S.notesOpen['pack_'+t.id];
-    h+=`<div class="pack-card">
-      <div class="pack-hdr ${packOpen?'open':''}" onclick="S.notesOpen['pack_${t.id}']=!S.notesOpen['pack_${t.id}'];render()">
-        <span style="font-size:15px">🎒</span>
-        <span class="pack-lbl">${S.lang==='en'?'Packing checklist':'Checklist de equipaje'}</span>
-        <span id="pack-prog-${t.id}" class="pack-progress">${packDone>0?packDone+'/'+packTotal+' ✓':''}</span>
-        <span class="pack-chev">▼</span>
-      </div>
-      ${packOpen?`<div class="pack-body">
-        <div id="pack-list-${t.id}"></div>
-        <div class="pack-add-row">
-          <input class="pack-inp" id="pack-inp-${t.id}" type="text" placeholder="${S.lang==='en'?'Add item...':'Agregar ítem...'}"
-            onkeydown="if(event.key==='Enter')addPackItem(${t.id})"/>
-          <button class="pack-add-btn" onclick="addPackItem(${t.id})">＋</button>
-        </div>
-      </div>`:''}
-    </div>`;
-    if(packOpen) setTimeout(()=>renderPackSection(t.id),30);
   }
 
   // ── BUDGET ──
@@ -2364,8 +2326,8 @@ function rTrip() {
         const dayTotal=group.reduce((s,{it})=>s+(parseFloat(it.price)||0),0);
         const dayIdx=t.days.findIndex(d=>d.date.split('T')[0]===dateKey);
         const dayDest=dayIdx>=0?effectiveSeg(t,dayIdx)?.dest:'';
-        const si=dayIdx>=0?segIdx(t,dayIdx):-1;
-        const col=si>=0?destColor(si):'var(--ink3)';
+        const _seg=dayIdx>=0?segForDay(t,dayIdx):null;
+        const col=_seg?destColorByName(_seg.dest):'var(--ink3)';
         const dateLabel=new Date(dateKey+'T12:00').toLocaleDateString(loc(),{day:'numeric',month:'short'});
         const destLabel=dayDest?' · '+esc(dayDest):'';
         h+=`<div class="items-day-hdr" style="border-left-color:${col}">
@@ -2413,6 +2375,35 @@ function rTrip() {
     h+=`</div>`;
   }
 
+  // ── PACK TAB ──
+  if(S.tab==='pack') {
+    ensurePack(t);
+    const packDone=t.packList.filter(x=>x.done).length;
+    const packTotal=t.packList.length;
+    const pct=packTotal>0?Math.round(packDone/packTotal*100):0;
+    h+=`<div style="padding:0 18px 24px">
+      <div style="background:var(--ink);border-radius:var(--r3);padding:20px 18px;margin-bottom:16px;color:white">
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <div>
+            <div style="font-size:12px;opacity:0.6;font-weight:600;text-transform:uppercase;letter-spacing:1px">🎒 ${S.lang==='en'?'Packing':'Equipaje'}</div>
+            <div id="pack-done-${t.id}" style="font-family:var(--fd);font-size:32px;font-weight:600;margin-top:4px">${packDone} <span style="font-size:18px;opacity:0.5">/ ${packTotal}</span></div>
+          </div>
+          <div id="pack-pct-${t.id}" style="font-size:42px;font-weight:700;font-family:var(--fd);color:${pct===100?'#6EE7B7':'#93C5FD'}">${pct}%</div>
+        </div>
+        <div style="height:6px;background:rgba(255,255,255,.15);border-radius:9999px;margin-top:14px;overflow:hidden">
+          <div id="pack-bar-${t.id}" style="height:100%;width:${pct}%;background:linear-gradient(90deg,#6EE7B7,#34D399);border-radius:9999px;transition:width .4s ease"></div>
+        </div>
+      </div>
+      <div id="pack-list-${t.id}" style="margin-bottom:16px"></div>
+      <div style="display:flex;gap:8px">
+        <input class="pack-inp" id="pack-inp-${t.id}" type="text" placeholder="${S.lang==='en'?'Add item...':'Agregar ítem...'}" onkeydown="if(event.key==='Enter')addPackItem(${t.id})"/>
+        <button class="pack-add-btn" onclick="addPackItem(${t.id})">＋ ${S.lang==='en'?'Add':'Agregar'}</button>
+      </div>
+      ${packDone>0?`<button onclick="clearPackDone(${t.id})" style="margin-top:10px;width:100%;padding:9px;border:1.5px solid var(--line2);border-radius:var(--r2);background:transparent;font-family:var(--fb);font-size:11px;font-weight:600;color:var(--ink3);cursor:pointer">🗑 ${S.lang==='en'?'Remove checked':'Eliminar marcados'}</button>`:''}
+    </div>`;
+    setTimeout(()=>renderPackSection(t.id), 20);
+  }
+
   // ── MAP ──
   if(S.tab==='map') {
     h+='<div class="map-wrap">';
@@ -2427,7 +2418,7 @@ function rTrip() {
         destMap.set(key,{
           dest:eff.dest, destFull:eff.destFull||eff.dest,
           lat:eff.destLat, lon:eff.destLon,
-          color:si>=0?destColor(si):'#C2410C',
+          color:destColorByName(eff.dest),
           days:[], hotels:new Set(), flights:new Set(), activities:[],
           firstIdx:i, lastIdx:i,
         });
@@ -3796,7 +3787,7 @@ function render() {
           });
           t.segments.sort((a,b)=>a.fromIdx-b.fromIdx);
         }
-        mergeAdjacentSegs(t2);
+        mergeAdjacentSegs(t);
         save(); render();
       };
     },50);

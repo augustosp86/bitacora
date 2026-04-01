@@ -574,68 +574,18 @@ body{font-family:var(--fb);background:var(--bg);color:var(--ink);height:100dvh;o
 .items-day-label{display:flex;align-items:center;gap:7px;font-size:11px;font-weight:700;color:var(--ink2)}
 .items-day-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
 .items-day-total{font-size:12px;font-weight:700;color:var(--ink);font-family:var(--fd)}
-.pack-progress{font-size:10px;color:var(--green);font-weight:700;margin-left:auto;margin-right:4px}}
+.pack-progress{font-size:10px;color:var(--green);font-weight:700;margin-left:auto;margin-right:4px}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="city-drop"></div>
+<div id="toast"></div>
+<input type="file" id="backup-file-input" accept=".json" onchange="importBackup(this)">
 
-/* ==================== TAB BAR MEJORADO ==================== */
-/* ==================== TAB BAR MEJORADO ==================== */
-.tabs {
-  display: flex;
-  background: var(--white);
-  border-radius: var(--r);
-  overflow: hidden;
-  box-shadow: var(--sh);
-  border: 1px solid var(--line);
-  padding: 4px;
-  gap: 4px;
-}
+<script>
 
-.tab {
-  flex: 1;
-  padding: 10px 6px;
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-family: var(--fb);
-  font-size: 10px;
-  font-weight: 600;
-  color: var(--ink3);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 3px;
-  border-radius: var(--r2);
-  transition: all 0.2s var(--ease);
-  position: relative;
-}
 
-.tab .ti {
-  font-size: 19px;
-  margin-bottom: 1px;
-}
-
-.tab-label {
-  font-size: 9.5px;
-  letter-spacing: 0.2px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 100%;
-}
-
-.tab.on {
-  background: var(--blue-bg);
-  color: var(--blue);
-  box-shadow: 0 2px 6px rgba(37,99,235,0.12);
-}
-
-.tab.on .ti {
-  transform: scale(1.08);
-}
-
-.tab:active {
-  transform: scale(0.94);
-  background: var(--blue-bg);
-}
 // ─── POPULAR CITIES fallback list ───
 const CITIES_LOCAL = [
   {name:'Buenos Aires',country:'Argentina',admin:'CABA',lat:-34.6037,lon:-58.3816},
@@ -797,7 +747,7 @@ const I18N={
     name:'Nombre', namePh:'Ej: Europa 2026', start:'Inicio', end:'Fin',
     save:'Guardar', cancel:'Cancelar', create:'Crear viaje', delete:'Eliminar', edit:'✏️ Editar',
     // Tabs
-    tabCal:'Calendario', tabItin:'Itinerario', tabBudget:'Gastos', tabPack:'Equipaje', tabWeather:'Clima',
+    tabCal:'Calendario', tabItin:'Itinerario', tabBudget:'Gastos', tabWeather:'Clima',
     // Calendar
     calDays:['Do','Lu','Ma','Mi','Ju','Vi','Sa'],
     legDest:'Destino', legExc:'Excepción', legNone:'Sin destino', legToday:'Hoy',
@@ -922,7 +872,7 @@ const I18N={
     hfMa:'📍 Map', hfMaSub:'All your places',
     name:'Name', namePh:'E.g. Europe 2026', start:'Start', end:'End',
     save:'Save', cancel:'Cancel', create:'Create trip', delete:'Delete', edit:'✏️ Edit',
-    tabCal:'Calendar', tabItin:'Itinerary', tabBudget:'Expenses', tabPack:'Packing', tabWeather:'Weather',
+    tabCal:'Calendar', tabItin:'Itinerary', tabBudget:'Expenses', tabWeather:'Weather',
     calDays:['Su','Mo','Tu','We','Th','Fr','Sa'],
     legDest:'Destination', legExc:'Exception', legNone:'No destination', legToday:'Today',
     progress:'Progress',
@@ -1047,46 +997,36 @@ function icatIcon(key){return ITEM_CATS.find(c=>c.key===key)?.icon||'📦';}
 // ── Activity category icons ──
 const ACT_ICONS=['🎟️','🏛️','🍽️','🚶','🏖️','🛒','📸','🎭','⛵','🚲','🎵','🌄'];
 
-// ── Item stats MEJORADO ──
-function itemStats(t) {
-  if (!t) return { budget: 0, spent: 0, rem: 0, catTotal: 0, spentByCat: {}, bbc: {}, pctByCat: {} };
-
-  const items = Array.isArray(t.items) ? t.items : [];
-
-  // Gasto real total
-  const spent = items.reduce((sum, itm) => sum + (parseFloat(itm.price) || 0), 0);
-
-  const bbc = t.budgetByCat || {};
-  const spentByCat = {};
-  const pctByCat = {};
-
-  // Calcular gasto y % por categoría
-  items.forEach(itm => {
-    const k = itm.category || 'other';
-    spentByCat[k] = (spentByCat[k] || 0) + (parseFloat(itm.price) || 0);
+// ── Item stats (trip-level expenses) ──
+function itemStats(t){
+  if(!t) return{budget:0,spent:0,rem:0,catTotal:0,totalBudget:0,spentByCat:{},bbc:{},pctByCat:{}};
+  const items=Array.isArray(t.items)?t.items:[];
+  const spent=items.reduce((s,itm)=>s+(parseFloat(itm.price)||0),0);
+  const bbc=t.budgetByCat||{};
+  const spentByCat={};
+  const pctByCat={};
+  items.forEach(itm=>{
+    const k=itm.category||'other';
+    spentByCat[k]=(spentByCat[k]||0)+(parseFloat(itm.price)||0);
   });
-
-  let catTotal = 0;
-  Object.keys(bbc).forEach(cat => {
-    const bud = parseFloat(bbc[cat]) || 0;
-    const sp = spentByCat[cat] || 0;
-    pctByCat[cat] = bud > 0 ? Math.min(100, Math.round((sp / bud) * 100)) : 0;
-    catTotal += bud;
+  let catTotal=0;
+  Object.keys(bbc).forEach(cat=>{
+    const bud=parseFloat(bbc[cat])||0;
+    const sp=spentByCat[cat]||0;
+    pctByCat[cat]=bud>0?Math.min(100,Math.round(sp/bud*100)):0;
+    catTotal+=bud;
   });
-
-  // ← CLAVE: El presupuesto total es la suma de las categorías
-  const budget = catTotal > 0 ? catTotal : (parseFloat(t.totalBudget) || 0);
-  const rem = budget - spent;
-
-  return {
-    budget,
-    spent,
-    rem,
-    catTotal,
-    spentByCat,
-    bbc,
-    pctByCat
-  };
+  const totalBudget=parseFloat(t.totalBudget)||0;
+  // totalBudget wins if set; otherwise use category sum
+  const budget=totalBudget>0?totalBudget:catTotal;
+  return{budget,spent,rem:budget-spent,catTotal,totalBudget,spentByCat,bbc,pctByCat};
+}
+function updBudgetCat(cat,val){
+  const t=trip(); if(!t) return;
+  if(!t.budgetByCat) t.budgetByCat={};
+  t.budgetByCat[cat]=val;
+  clearTimeout(updBudgetCat._t);
+  updBudgetCat._t=setTimeout(()=>{save();render();},400);
 }
 
 // ── SVG Donut Pie chart ──
@@ -1777,18 +1717,7 @@ function updTripNotes(id, val) {
 
 
 // ─── PACKING CHECKLIST ───────────────────────────────────────────────────────
-const DEFAULT_PACK_ITEMS = [
-  {id:1, name:'Pasaporte / DNI / Documentos', done:false, cat:'documentos'},
-  {id:2, name:'Tickets de avión / reservas', done:false, cat:'documentos'},
-  {id:3, name:'Cargador + adaptador universal', done:false, cat:'electronico'},
-  {id:4, name:'Ropa interior (7 días)', done:false, cat:'ropa'},
-  {id:5, name:'Ropa cómoda para caminar', done:false, cat:'ropa'},
-  {id:6, name:'Abrigo / campera', done:false, cat:'ropa'},
-  {id:7, name:'Botiquín básico', done:false, cat:'higiene'},
-  {id:8, name:'Protector solar', done:false, cat:'higiene'},
-  {id:9, name:'Cepillo y pasta dental', done:false, cat:'higiene'},
-  {id:10, name:'Zapatillas / calzado cómodo', done:false, cat:'ropa'}
-];
+const DEFAULT_PACK_ITEMS = ['Pasaporte / DNI','Ticket de avión','Reserva de hotel','Cargador de celular','Adaptador de enchufe','Dinero en efectivo','Tarjeta de crédito','Seguro de viaje','Botiquín básico','Ropa (7 días)','Zapatillas cómodas','Abrigo','Protector solar','Auriculares'];
 
 function ensurePack(t){
   if(!t.packList) t.packList=DEFAULT_PACK_ITEMS.map((name,i)=>({id:i+1,name,done:false}));
@@ -1828,22 +1757,16 @@ function clearPackDone(tripId){
 }
 
 function renderPackSection(tripId){
+  // Direct DOM update — no full render needed
   const container=document.getElementById('pack-list-'+tripId);
   if(!container) return;
   const t=S.trips.find(x=>x.id===tripId); if(!t) return;
   ensurePack(t);
   const done=t.packList.filter(x=>x.done).length;
   const total=t.packList.length;
-  const pct=total>0?Math.round(done/total*100):0;
-  // Update progress elements if present
+  // Update progress badge
   const prog=document.getElementById('pack-prog-'+tripId);
   if(prog) prog.textContent=done>0?done+'/'+total+' ✓':'';
-  const bar=document.getElementById('pack-bar-'+tripId);
-  if(bar) bar.style.width=pct+'%';
-  const pctEl=document.getElementById('pack-pct-'+tripId);
-  if(pctEl) pctEl.textContent=pct+'%';
-  const doneEl=document.getElementById('pack-done-'+tripId);
-  if(doneEl) doneEl.textContent=done+' / '+total;
   // Rebuild list
   let h='';
   t.packList.forEach(item=>{
@@ -1853,6 +1776,9 @@ function renderPackSection(tripId){
       <button class="pack-del" onclick="delPackItem(${tripId},${item.id})">✕</button>
     </div>`;
   });
+  if(done>0){
+    h+=`<button class="pack-clear" onclick="clearPackDone(${tripId})">${S.lang==='en'?'Clear completed ('+done+')':'Limpiar completados ('+done+')'}</button>`;
+  }
   container.innerHTML=h;
 }
 
@@ -1867,17 +1793,13 @@ function itemsForDay(t, dayIdx) {
 }
 
 // ─── TRIP BUDGET ───
-function updTripBudget(val) {
-  const t = trip();
-  if (!t) return;
-  
-  t.totalBudget = val === '' ? '' : parseFloat(val) || 0;
-  
+function updTripBudget(val){
+  const t=trip(); if(!t) return;
+  t.totalBudget=val;
+  // Re-render only the summary card (budget bar), not the whole input
+  // Use a small debounce so typing feels instant
   clearTimeout(updTripBudget._t);
-  updTripBudget._t = setTimeout(() => {
-    save();
-    render();
-  }, 300);
+  updTripBudget._t=setTimeout(()=>{ save(); render(); },400);
 }
 
 // ─── DRAFT ───
@@ -2112,43 +2034,14 @@ function rTrip() {
     </div>`;
   }
 
-  h+=`<div class="tabs" style="margin:0 18px 16px;background:var(--white);border-radius:var(--r);overflow:hidden;box-shadow:var(--sh);border:1px solid var(--line);padding:4px">
-  <button class="tab ${S.tab==='cal'?'on':''}" onclick="S.tab='cal';render()">
-    <span class="ti">📅</span>
-    <span class="tab-label">Calendario</span>
-  </button>
-  
-  <button class="tab ${S.tab==='itin'?'on':''}" onclick="S.tab='itin';render()">
-    <span class="ti">🗺️</span>
-    <span class="tab-label">Itinerario</span>
-  </button>
-  
-  <button class="tab ${S.tab==='map'?'on':''}" onclick="S.tab='map';render()">
-    <span class="ti">📍</span>
-    <span class="tab-label">Mapa</span>
-  </button>
-  
-  <button class="tab ${S.tab==='budget'?'on':''}" onclick="S.tab='budget';render()">
-    <span class="ti">💰</span>
-    <span class="tab-label">Gastos</span>
-  </button>
-  
-  <button class="tab ${S.tab==='pack'?'on':''}" onclick="S.tab='pack';render()">
-    <span class="ti">🧳</span>
-    <span class="tab-label">Equipaje</span>
-  </button>
-  
-  <button class="tab ${S.tab==='weather'?'on':''}" onclick="S.tab='weather';render()">
-    <span class="ti">🌡️</span>
-    <span class="tab-label">Clima</span>
-  </button>
-  
-  <button class="tab ${S.tab==='search'?'on':''}" onclick="S.tab='search';render()" style="position:relative">
-    <span class="ti">🔍</span>
-    <span class="tab-label">Buscar</span>
-    ${S.tab!=='search' ? '<span style="position:absolute;top:8px;right:8px;width:6px;height:6px;border-radius:50%;background:var(--blue)"></span>' : ''}
-  </button>
-</div>`;
+  h+=`<div class="tabs">
+    <button class="tab ${S.tab==='cal'?'on':''}" onclick="S.tab='cal';render()"><span class="ti">📅</span>${L('tabCal')}</button>
+    <button class="tab ${S.tab==='itin'?'on':''}" onclick="S.tab='itin';render()"><span class="ti">🗺️</span>${L('tabItin')}</button>
+    <button class="tab ${S.tab==='map'?'on':''}" onclick="S.tab='map';render()"><span class="ti">📍</span>${L('tabMap')}</button>
+    <button class="tab ${S.tab==='budget'?'on':''}" onclick="S.tab='budget';render()"><span class="ti">💰</span>${L('tabBudget')}</button>
+    <button class="tab ${S.tab==='weather'?'on':''}" onclick="S.tab='weather';render()"><span class="ti">🌡️</span>${L('tabWeather')}</button>
+    <button class="tab ${S.tab==='search'?'on':''}" onclick="S.tab='search';render()" style="position:relative"><span class="ti">🔍</span>${L('tabSearch')}${S.tab!=='search'?'<span style="position:absolute;top:6px;right:6px;width:6px;height:6px;border-radius:50%;background:var(--blue)"></span>':''}</button>
+  </div>`;
 
   // ── TRIP NOTES (visible on cal + itin tabs) ──
   if(S.tab==='cal'||S.tab==='itin'){
@@ -2208,6 +2101,29 @@ function rTrip() {
       h+='</div>';
 
       // ── PACKING CHECKLIST below calendar ──
+      if(!S._readOnly){
+        ensurePack(t);
+        const packDone=t.packList.filter(x=>x.done).length;
+        const packTotal=t.packList.length;
+        const packOpen=!!S.notesOpen['pack_'+t.id];
+        h+=`<div class="pack-card">
+          <div class="pack-hdr ${packOpen?'open':''}" onclick="S.notesOpen['pack_${t.id}']=!S.notesOpen['pack_${t.id}'];render()">
+            <span style="font-size:15px">🎒</span>
+            <span class="pack-lbl">${S.lang==='en'?'Packing checklist':'Checklist de equipaje'}</span>
+            <span id="pack-prog-${t.id}" class="pack-progress">${packDone>0?packDone+'/'+packTotal+' ✓':''}</span>
+            <span class="pack-chev">▼</span>
+          </div>
+          ${packOpen?`<div class="pack-body">
+            <div id="pack-list-${t.id}"></div>
+            <div class="pack-add-row">
+              <input class="pack-inp" id="pack-inp-${t.id}" type="text" placeholder="${S.lang==='en'?'Add item...':'Agregar ítem...'}"
+                onkeydown="if(event.key==='Enter')addPackItem(${t.id})"/>
+              <button class="pack-add-btn" onclick="addPackItem(${t.id})">＋</button>
+            </div>
+          </div>`:''}
+        </div>`;
+        if(packOpen) setTimeout(()=>renderPackSection(t.id),30);
+      }
     }
   }
 
@@ -2371,87 +2287,132 @@ function rTrip() {
     });
     h+='</div>';
 
+    // ── PACKING CHECKLIST (collapsible, in itin tab) ──────────────────────
+    ensurePack(t);
+    const packDone=t.packList.filter(x=>x.done).length;
+    const packTotal=t.packList.length;
+    const packOpen=!!S.notesOpen['pack_'+t.id];
+    h+=`<div class="pack-card">
+      <div class="pack-hdr ${packOpen?'open':''}" onclick="S.notesOpen['pack_${t.id}']=!S.notesOpen['pack_${t.id}'];render()">
+        <span style="font-size:15px">🎒</span>
+        <span class="pack-lbl">${S.lang==='en'?'Packing checklist':'Checklist de equipaje'}</span>
+        <span id="pack-prog-${t.id}" class="pack-progress">${packDone>0?packDone+'/'+packTotal+' ✓':''}</span>
+        <span class="pack-chev">▼</span>
+      </div>
+      ${packOpen?`<div class="pack-body">
+        <div id="pack-list-${t.id}"></div>
+        <div class="pack-add-row">
+          <input class="pack-inp" id="pack-inp-${t.id}" type="text" placeholder="${S.lang==='en'?'Add item...':'Agregar ítem...'}"
+            onkeydown="if(event.key==='Enter')addPackItem(${t.id})"/>
+          <button class="pack-add-btn" onclick="addPackItem(${t.id})">＋</button>
+        </div>
+      </div>`:''}
+    </div>`;
+    if(packOpen) setTimeout(()=>renderPackSection(t.id),30);
   }
 
   // ── BUDGET ──
- if(S.tab==='budget') {
-  const iSt = itemStats(t);
-  const sym = t.currency || 'USD';
-  const over = iSt.budget > 0 && iSt.rem < 0;
-  const pctTotal = iSt.budget > 0 ? Math.min(100, Math.round(iSt.spent / iSt.budget * 100)) : 0;
+  if(S.tab==='budget') {
+    const iSt=itemStats(t);
+    const over=iSt.budget>0&&iSt.rem<0;
+    const pctTotal=iSt.budget>0?Math.min(100,Math.round(iSt.spent/iSt.budget*100)):0;
 
-  h += `<div style="padding:0 18px 24px">`;
+    h+=`<div style="padding:0 18px 24px">`;
 
-  // ── Tarjeta Presupuesto Total (más bonita) ──
-  h += `<div style="background:var(--white);border-radius:var(--r3);padding:22px 20px;box-shadow:var(--sh);margin-bottom:22px">`;
-  h += `<div style="font-size:11px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:1.2px;margin-bottom:6px">Presupuesto total del viaje</div>`;
-  
-  h += `<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">`;
-  h += `<div style="font-family:var(--fd);font-size:38px;font-weight:600;color:var(--ink)">${sym}</div>`;
-  h += `<input type="number" id="total-budget-inp" 
-         value="${iSt.budget || ''}" placeholder="0" 
-         oninput="updTripBudget(this.value)"
-         style="font-family:var(--fd);font-size:38px;font-weight:600;background:transparent;border:none;outline:none;text-align:right;width:180px">`;
-  h += `</div>`;
+    // ── Presupuesto total ─────────────────────────────────────────────────────
+    h+=`<div style="background:var(--white);border-radius:var(--r3);padding:22px 20px;box-shadow:var(--sh);margin-bottom:16px">`;
+    h+=`<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">`;
+    h+=`<div style="font-size:11px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:1.2px">${S.lang==='en'?'Total trip budget':'Presupuesto total del viaje'}</div>`;
+    h+=`<select class="cur-sel" onchange="updCur(${t.id},this.value)">${['USD','EUR','ARS','BRL','CLP','UYU'].map(c=>`<option ${t.currency===c?'selected':''}>${c}</option>`).join('')}</select>`;
+    h+=`</div>`;
+    h+=`<div style="display:flex;align-items:center;gap:6px;margin-bottom:14px">`;
+    h+=`<div style="font-family:var(--fd);font-size:32px;font-weight:600;color:var(--ink)">${sym}</div>`;
+    h+=`<input type="number" value="${esc(String(t.totalBudget||''))}" placeholder="0" oninput="updTripBudget(this.value)"
+      style="font-family:var(--fd);font-size:32px;font-weight:600;background:transparent;border:none;outline:none;flex:1;min-width:0;color:var(--ink);-webkit-appearance:none;text-align:right"/>`;
+    h+=`</div>`;
+    if(iSt.budget>0){
+      h+=`<div style="height:8px;background:var(--bg2);border-radius:999px;overflow:hidden;margin-bottom:8px">`;
+      h+=`<div style="height:100%;width:${pctTotal}%;background:${over?'var(--red)':'linear-gradient(90deg,var(--green),#34d399)'};transition:width .6s ease"></div>`;
+      h+=`</div>`;
+      h+=`<div style="display:flex;justify-content:space-between;font-size:12px">`;
+      h+=`<span style="color:${over?'var(--red)':'var(--green)'};font-weight:600">${pctTotal}% ${S.lang==='en'?'used':'usado'}</span>`;
+      h+=`<span style="color:var(--ink3)">${sym} ${iSt.spent.toLocaleString(loc())} ${S.lang==='en'?'of':'de'} ${sym} ${iSt.budget.toLocaleString(loc())}</span>`;
+      h+=`</div>`;
+    } else {
+      h+=`<div style="color:var(--ink3);font-size:12px">💡 ${S.lang==='en'?'Enter your total budget above':'Ingresá el presupuesto total arriba'}</div>`;
+    }
+    h+=`</div>`;
 
-  // Barra de progreso grande
-  if(iSt.budget > 0){
-    h += `<div style="height:9px;background:var(--bg2);border-radius:999px;overflow:hidden;margin-bottom:8px">`;
-    h += `<div style="height:100%;width:${pctTotal}%;background:${over ? 'var(--red)' : 'linear-gradient(90deg, var(--green), #34d399)'};transition:width .6s ease"></div>`;
-    h += `</div>`;
-    
-    h += `<div style="display:flex;justify-content:space-between;font-size:13px">`;
-    h += `<span style="color:${over ? 'var(--red)' : 'var(--green)'};font-weight:600">${pctTotal}% usado</span>`;
-    h += `<span style="color:var(--ink3)">${sym} ${iSt.spent.toLocaleString(loc())} gastado de ${sym} ${iSt.budget.toLocaleString(loc())}</span>`;
-    h += `</div>`;
-  } else {
-    h += `<div style="color:var(--ink3);font-size:13px;padding:10px 0">Ingresá el presupuesto total arriba</div>`;
+    if(over) h+=`<div class="bud-alert">⚠️ ${L('budgetOver')} — ${sym} ${Math.abs(iSt.rem).toLocaleString(loc(),{maximumFractionDigits:0})} extra</div>`;
+
+    h+=`</div>`;
+
+    // ── Items section ─────────────────────────────────────────────────────────
+    h+=`<div class="items-sec">`;
+    h+=`<div class="items-hdr"><div class="items-lbl">${L('itemsTitle')}</div><button class="add-item-btn" onclick="openNewItem()">${L('addItem')}</button></div>`;
+    const items=t.items||[];
+    if(items.length){
+      const byDate={};
+      const noDate=[];
+      items.forEach((it,ii)=>{
+        if(it.date){ if(!byDate[it.date]) byDate[it.date]=[]; byDate[it.date].push({it,ii}); }
+        else noDate.push({it,ii});
+      });
+      const sortedDates=Object.keys(byDate).sort();
+      sortedDates.forEach(dateKey=>{
+        const group=byDate[dateKey];
+        const dayTotal=group.reduce((s,{it})=>s+(parseFloat(it.price)||0),0);
+        const dayIdx=t.days.findIndex(d=>d.date.split('T')[0]===dateKey);
+        const dayDest=dayIdx>=0?effectiveSeg(t,dayIdx)?.dest:'';
+        const si=dayIdx>=0?segIdx(t,dayIdx):-1;
+        const col=si>=0?destColor(si):'var(--ink3)';
+        const dateLabel=new Date(dateKey+'T12:00').toLocaleDateString(loc(),{day:'numeric',month:'short'});
+        const destLabel=dayDest?' · '+esc(dayDest):'';
+        h+=`<div class="items-day-hdr" style="border-left-color:${col}">
+          <div class="items-day-label"><div class="items-day-dot" style="background:${col}"></div><span>${dateLabel}${destLabel}</span></div>
+          <div class="items-day-total" style="color:${col}">${sym} ${dayTotal.toLocaleString(loc(),{maximumFractionDigits:0})}</div>
+        </div>`;
+        group.forEach(({it,ii})=>{
+          h+=`<div class="item-row">
+            <div class="item-ico">${it.icon||icatIcon(it.category)}</div>
+            <div class="item-info"><div class="item-name">${esc(it.name)}</div><div class="item-cat">${icatLabel(it.category)}</div></div>
+            <div class="item-price">${sym} ${(parseFloat(it.price)||0).toLocaleString(loc(),{maximumFractionDigits:0})}</div>
+            <div class="item-acts">
+              <button class="item-btn e" onclick="openEditItem(${ii})">✏️</button>
+              <button class="item-btn d" onclick="delItem(${ii})">🗑</button>
+            </div>
+          </div>`;
+        });
+      });
+      if(noDate.length){
+        h+=`<div class="items-day-hdr"><div class="items-day-label"><span style="color:var(--ink3)">${S.lang==='en'?'No date':'Sin fecha'}</span></div></div>`;
+        noDate.forEach(({it,ii})=>{
+          h+=`<div class="item-row">
+            <div class="item-ico">${it.icon||icatIcon(it.category)}</div>
+            <div class="item-info"><div class="item-name">${esc(it.name)}</div><div class="item-cat">${icatLabel(it.category)}</div></div>
+            <div class="item-price">${sym} ${(parseFloat(it.price)||0).toLocaleString(loc(),{maximumFractionDigits:0})}</div>
+            <div class="item-acts">
+              <button class="item-btn e" onclick="openEditItem(${ii})">✏️</button>
+              <button class="item-btn d" onclick="delItem(${ii})">🗑</button>
+            </div>
+          </div>`;
+        });
+      }
+      h+=`<div style="display:flex;justify-content:space-between;padding:10px 4px;border-top:1.5px solid var(--line2);margin-top:4px"><div style="font-size:12px;font-weight:700;color:var(--ink2)">${L('total')}</div><div style="font-family:var(--fd);font-size:16px;font-weight:600">${sym} ${iSt.spent.toLocaleString(loc(),{maximumFractionDigits:0})}</div></div>`;
+      // Charts
+      const pie=renderPie(items,sym);
+      if(pie){
+        h+=`<div class="charts-sec" style="padding:0">`;
+        h+=`<div class="chart-card"><div class="chart-hdr">${L('chartsTitle')}</div>${pie}</div>`;
+        h+=`<div class="chart-card"><div class="chart-hdr">${L('barTitle')}</div>${renderBars(items,sym)}</div>`;
+        h+=`</div>`;
+      }
+    } else {
+      h+=`<div class="no-items">${L('noItems')}</div>`;
+    }
+    h+=`</div>`;
   }
-  h += `</div>`;
 
-  // ── Gastos por categoría ──
-  h += `<div style="margin-bottom:12px"><div class="items-lbl">GASTOS POR CATEGORÍA</div></div>`;
-
-  const hasExpenses = iSt.spent > 0;
-
-  if(hasExpenses){
-    ITEM_CATS.forEach(cat => {
-      const spentVal = iSt.spentByCat[cat.key] || 0;
-      if(spentVal <= 0) return;
-
-      const catPct = iSt.budget > 0 ? Math.round((spentVal / iSt.budget) * 100) : 0;
-
-      h += `<div class="item-row" style="padding:14px 16px;margin-bottom:8px">`;
-      h += `<div class="item-ico" style="font-size:22px">${cat.icon}</div>`;
-      h += `<div class="item-info" style="flex:1">`;
-      h += `<div class="item-name" style="font-size:14px">${cat[S.lang] || cat.key}</div>`;
-      h += `<div style="height:5px;background:var(--bg2);border-radius:999px;margin-top:7px;overflow:hidden">`;
-      h += `<div style="height:100%;width:${catPct}%;background:var(--blue);transition:width .4s"></div>`;
-      h += `</div>`;
-      h += `</div>`;
-      h += `<div style="text-align:right">`;
-      h += `<div style="font-family:var(--fd);font-size:17px;font-weight:600;color:var(--ink)">${sym} ${spentVal.toLocaleString(loc())}</div>`;
-      h += `<div style="font-size:11px;color:var(--ink3);margin-top:2px">${catPct}% del total</div>`;
-      h += `</div>`;
-      h += `</div>`;
-    });
-  } else {
-    h += `<div class="no-items" style="text-align:center;padding:50px 20px;color:var(--ink3)">
-      Aún no hay gastos registrados.<br><br>
-      Tocá el botón de abajo para agregar el primero.
-    </div>`;
-  }
-
-  h += `</div>`;
-
-  // Botón Agregar gasto (estilo más moderno)
-  h += `<div style="padding:0 18px">
-    <button class="add-item-btn" onclick="openNewItem()" 
-            style="width:100%;padding:14px;font-size:15px">
-      ＋ Agregar gasto
-    </button>
-  </div>`;
-}
   // ── MAP ──
   if(S.tab==='map') {
     h+='<div class="map-wrap">';
@@ -2547,56 +2508,6 @@ function rTrip() {
     }
     h+='</div>';
   }
-
-  // ── PACK TAB ──
-  if(S.tab==='pack') {
-  ensurePack(t);
-  const packDone = t.packList.filter(x => x.done).length;
-  const packTotal = t.packList.length;
-  const pct = packTotal > 0 ? Math.round(packDone / packTotal * 100) : 0;
-
-  h += `<div style="padding:0 18px 24px">
-    <div style="background:var(--ink);border-radius:var(--r3);padding:20px 18px;margin-bottom:16px;color:white;position:relative;overflow:hidden">
-      <div style="display:flex;align-items:center;justify-content:space-between">
-        <div>
-          <div style="font-size:13px;opacity:0.7;font-weight:600">🎒 EQUIPAJE</div>
-          <div id="pack-done-${t.id}" style="font-family:var(--fd);font-size:32px;font-weight:600;margin-top:4px">
-            ${packDone} <span style="font-size:18px;opacity:0.6">/${packTotal}</span>
-          </div>
-        </div>
-        <div style="text-align:right">
-          <div id="pack-pct-${t.id}" style="font-size:42px;font-weight:700;font-family:var(--fd);color:${pct===100?'#6EE7B7':'#93C5FD'}">
-            ${pct}%
-          </div>
-          <div style="font-size:11px;opacity:0.6">listo</div>
-        </div>
-      </div>
-      
-      <div style="height:6px;background:rgba(255,255,255,0.15);border-radius:9999px;margin-top:14px;overflow:hidden">
-        <div id="pack-bar-${t.id}" style="height:100%;width:${pct}%;background:linear-gradient(90deg,#6EE7B7,#34D399);border-radius:9999px;transition:width .4s ease"></div>
-      </div>
-    </div>
-
-    <div id="pack-list-${t.id}" style="margin-bottom:16px"></div>
-
-    <div style="display:flex;gap:8px">
-      <input class="pack-inp" id="pack-inp-${t.id}" type="text" 
-        placeholder="${S.lang==='en'?'Agregar ítem...':'Agregar ítem...'}" 
-        onkeydown="if(event.key==='Enter')addPackItem(${t.id})"/>
-      <button class="pack-add-btn" onclick="addPackItem(${t.id})">＋ Agregar</button>
-    </div>
-
-    ${packDone > 0 ? `
-    <button onclick="clearPackDone(${t.id})" 
-      style="margin-top:12px;width:100%;padding:10px;border:1.5px solid var(--line2);border-radius:var(--r2);background:transparent;color:var(--ink3);font-weight:600;cursor:pointer">
-      🗑 Eliminar marcados
-    </button>` : ''}
-  </div>`;
-
-  // Renderizar la lista después de inyectar el HTML
-  setTimeout(() => renderPackSection(t.id), 10);
-}
-
   // ── WEATHER ──
   if(S.tab==='weather') {
     const withDest=t.days.map((d,i)=>({d,i,seg:effectiveSeg(t,i)})).filter(x=>x.seg?.dest?.trim());
@@ -2871,11 +2782,22 @@ function rDay() {
       <button onclick="delDayArrItem(${i},'flights',${fi})" style="width:36px;height:42px;border-radius:var(--r2);border:1px solid var(--line2);background:var(--white);cursor:pointer;font-size:16px;color:var(--ink3)">✕</button>
     </div>`;
   });
+  const segFlightHint = rawSeg?.flight||'';
   if(flights.length===0){
-    h+='<div style="display:flex;gap:7px;align-items:center">';
-    h+=`<button onclick="addDayArrItem(${i},'flights')" style="flex:1;padding:9px;border:1.5px dashed var(--line2);border-radius:var(--r2);background:transparent;font-family:var(--fb);font-size:12px;font-weight:600;color:var(--ink3);cursor:pointer">＋ ${S.lang==='en'?'Add flight':'Agregar vuelo'}</button>`;
-    if(eff?.dest) h+=`<button onclick="S.tab='search';S._srchDestIdx=0;S.scr='trip';render()" style="flex-shrink:0;padding:9px 12px;border:1.5px solid var(--blue-bd);border-radius:var(--r2);background:var(--blue-bg);font-family:var(--fb);font-size:11px;font-weight:700;color:var(--blue);cursor:pointer">🔍 ${S.lang==='en'?'Search':'Buscar'}</button>`;
-    h+='</div>';
+    // If segment has a flight, show it pre-filled in the input
+    if(segFlightHint){
+      h+=`<div style="display:flex;gap:6px;margin-bottom:6px">
+        <input type="text" value="${esc(segFlightHint)}"
+          style="flex:1;padding:10px 13px;background:var(--white);border:1.5px solid var(--line2);border-radius:var(--r2);font-family:var(--fb);font-size:14px;outline:none;-webkit-appearance:none;color:var(--ink)"
+          oninput="if(!t.days[${i}].flights)t.days[${i}].flights=[];t.days[${i}].flights[0]=this.value;save()"/>
+        <button onclick="const d2=trip()?.days[${i}];if(d2){d2.flights=[];save();render();}" style="width:36px;height:42px;border-radius:var(--r2);border:1px solid var(--line2);background:var(--white);cursor:pointer;font-size:16px;color:var(--ink3)">✕</button>
+      </div>`;
+    } else {
+      h+='<div style="display:flex;gap:7px;align-items:center">';
+      h+=`<button onclick="addDayArrItem(${i},'flights')" style="flex:1;padding:9px;border:1.5px dashed var(--line2);border-radius:var(--r2);background:transparent;font-family:var(--fb);font-size:12px;font-weight:600;color:var(--ink3);cursor:pointer">＋ ${S.lang==='en'?'Add flight':'Agregar vuelo'}</button>`;
+      if(eff?.dest) h+=`<button onclick="S.tab='search';S._srchDestIdx=0;S.scr='trip';render()" style="flex-shrink:0;padding:9px 12px;border:1.5px solid var(--blue-bd);border-radius:var(--r2);background:var(--blue-bg);font-family:var(--fb);font-size:11px;font-weight:700;color:var(--blue);cursor:pointer">🔍 ${S.lang==='en'?'Search':'Buscar'}</button>`;
+      h+='</div>';
+    }
   } else {
     h+='<div style="display:flex;gap:6px;align-items:center;margin-top:2px">';
     if(flights.length<3) h+=`<button onclick="addDayArrItem(${i},'flights')" style="padding:5px 10px;border:1px dashed var(--line2);border-radius:20px;background:transparent;font-family:var(--fb);font-size:10px;font-weight:600;color:var(--ink3);cursor:pointer">＋ ${S.lang==='en'?'Add another':'Agregar otro'}</button>`;
@@ -2896,11 +2818,21 @@ function rDay() {
     </div>`;
   });
   // If hotel already loaded: show add & search smaller/subtle; if empty: show normal
+  const segHotelHint = rawSeg?.hotel||'';
   if(hotels.length===0){
-    h+='<div style="display:flex;gap:7px;align-items:center">';
-    h+=`<button onclick="addDayArrItem(${i},'hotels')" style="flex:1;padding:9px;border:1.5px dashed var(--line2);border-radius:var(--r2);background:transparent;font-family:var(--fb);font-size:12px;font-weight:600;color:var(--ink3);cursor:pointer">＋ ${S.lang==='en'?'Add hotel':'Agregar hotel'}</button>`;
-    if(eff?.dest) h+=`<button onclick="S.tab='search';S._srchDestIdx=0;S.scr='trip';render()" style="flex-shrink:0;padding:9px 12px;border:1.5px solid var(--blue-bd);border-radius:var(--r2);background:var(--blue-bg);font-family:var(--fb);font-size:11px;font-weight:700;color:var(--blue);cursor:pointer">🔍 ${S.lang==='en'?'Search':'Buscar'}</button>`;
-    h+='</div>';
+    if(segHotelHint){
+      h+=`<div style="display:flex;gap:6px;margin-bottom:6px">
+        <input type="text" value="${esc(segHotelHint)}"
+          style="flex:1;padding:10px 13px;background:var(--white);border:1.5px solid var(--line2);border-radius:var(--r2);font-family:var(--fb);font-size:14px;outline:none;-webkit-appearance:none;color:var(--ink)"
+          oninput="if(!t.days[${i}].hotels)t.days[${i}].hotels=[];t.days[${i}].hotels[0]=this.value;save()"/>
+        <button onclick="const d2=trip()?.days[${i}];if(d2){d2.hotels=[];save();render();}" style="width:36px;height:42px;border-radius:var(--r2);border:1px solid var(--line2);background:var(--white);cursor:pointer;font-size:16px;color:var(--ink3)">✕</button>
+      </div>`;
+    } else {
+      h+='<div style="display:flex;gap:7px;align-items:center">';
+      h+=`<button onclick="addDayArrItem(${i},'hotels')" style="flex:1;padding:9px;border:1.5px dashed var(--line2);border-radius:var(--r2);background:transparent;font-family:var(--fb);font-size:12px;font-weight:600;color:var(--ink3);cursor:pointer">＋ ${S.lang==='en'?'Add hotel':'Agregar hotel'}</button>`;
+      if(eff?.dest) h+=`<button onclick="S.tab='search';S._srchDestIdx=0;S.scr='trip';render()" style="flex-shrink:0;padding:9px 12px;border:1.5px solid var(--blue-bd);border-radius:var(--r2);background:var(--blue-bg);font-family:var(--fb);font-size:11px;font-weight:700;color:var(--blue);cursor:pointer">🔍 ${S.lang==='en'?'Search':'Buscar'}</button>`;
+      h+='</div>';
+    }
   } else {
     // Hotel loaded — show extra options small and subtle
     h+='<div style="display:flex;gap:6px;align-items:center;margin-top:2px">';
@@ -3222,14 +3154,7 @@ function addDayArrItem(dayIdx, field) {
   const d=t.days[dayIdx]; if(!d) return;
   if(!Array.isArray(d[field])) d[field]=[];
   if(d[field].length>=3) return;
-  // Pre-fill with segment value on first add
-  const seg=segForDay(t,dayIdx);
-  let prefill='';
-  if(d[field].filter(Boolean).length===0 && seg){
-    if(field==='hotels' && seg.hotel) prefill=seg.hotel;
-    if(field==='flights' && seg.flight) prefill=seg.flight;
-  }
-  d[field].push(prefill);
+  d[field].push('');
   save(); render();
 }
 function delDayArrItem(dayIdx, field, arrIdx) {
@@ -3871,7 +3796,7 @@ function render() {
           });
           t.segments.sort((a,b)=>a.fromIdx-b.fromIdx);
         }
-        mergeAdjacentSegs(t);
+        mergeAdjacentSegs(t2);
         save(); render();
       };
     },50);

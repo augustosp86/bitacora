@@ -2769,7 +2769,7 @@ function rDay() {
     h+=`<div style="display:flex;gap:6px;margin-bottom:6px">
       <input type="text" value="${esc(fl)}" placeholder="${S.lang==='en'?'Flight number':'Número de vuelo'}"
         style="flex:1;padding:10px 13px;background:var(--white);border:1.5px solid var(--line2);border-radius:var(--r2);font-family:var(--fb);font-size:14px;outline:none;-webkit-appearance:none"
-        oninput="updDayArr(${i},'flights',${fi},this.value)"/>
+        onchange="askFieldScope(${i},'flights',this.value)"/>
       <button onclick="delDayArrItem(${i},'flights',${fi})" style="width:36px;height:42px;border-radius:var(--r2);border:1px solid var(--line2);background:var(--white);cursor:pointer;font-size:16px;color:var(--ink3)">✕</button>
     </div>`;
   });
@@ -2780,8 +2780,8 @@ function rDay() {
       h+=`<div style="display:flex;gap:6px;margin-bottom:6px">
         <input type="text" value="${esc(segFlightHint)}"
           style="flex:1;padding:10px 13px;background:var(--white);border:1.5px solid var(--line2);border-radius:var(--r2);font-family:var(--fb);font-size:14px;outline:none;-webkit-appearance:none;color:var(--ink)"
-          oninput="if(!t.days[${i}].flights)t.days[${i}].flights=[];t.days[${i}].flights[0]=this.value;save()"/>
-        <button onclick="const d2=trip()?.days[${i}];if(d2){d2.flights=[];save();render();}" style="width:36px;height:42px;border-radius:var(--r2);border:1px solid var(--line2);background:var(--white);cursor:pointer;font-size:16px;color:var(--ink3)">✕</button>
+          onchange="askFieldScope(${i},'flights',this.value)"/>
+        <button onclick="const _t=trip();const _d=_t?.days[${i}];if(_d){_d.flights=[];save();render();}" style="width:36px;height:42px;border-radius:var(--r2);border:1px solid var(--line2);background:var(--white);cursor:pointer;font-size:16px;color:var(--ink3)">✕</button>
       </div>`;
     } else {
       h+='<div style="display:flex;gap:7px;align-items:center">';
@@ -2804,7 +2804,7 @@ function rDay() {
     h+=`<div style="display:flex;gap:6px;margin-bottom:6px">
       <input type="text" value="${esc(ht)}" placeholder="${S.lang==='en'?'Hotel name':'Nombre del hotel'}"
         style="flex:1;padding:10px 13px;background:var(--white);border:1.5px solid var(--line2);border-radius:var(--r2);font-family:var(--fb);font-size:14px;outline:none;-webkit-appearance:none"
-        oninput="updDayArr(${i},'hotels',${hi},this.value)"/>
+        onchange="askFieldScope(${i},'hotels',this.value)"/>
       <button onclick="delDayArrItem(${i},'hotels',${hi})" style="width:36px;height:42px;border-radius:var(--r2);border:1px solid var(--line2);background:var(--white);cursor:pointer;font-size:16px;color:var(--ink3)">✕</button>
     </div>`;
   });
@@ -2815,8 +2815,8 @@ function rDay() {
       h+=`<div style="display:flex;gap:6px;margin-bottom:6px">
         <input type="text" value="${esc(segHotelHint)}"
           style="flex:1;padding:10px 13px;background:var(--white);border:1.5px solid var(--line2);border-radius:var(--r2);font-family:var(--fb);font-size:14px;outline:none;-webkit-appearance:none;color:var(--ink)"
-          oninput="if(!t.days[${i}].hotels)t.days[${i}].hotels=[];t.days[${i}].hotels[0]=this.value;save()"/>
-        <button onclick="const d2=trip()?.days[${i}];if(d2){d2.hotels=[];save();render();}" style="width:36px;height:42px;border-radius:var(--r2);border:1px solid var(--line2);background:var(--white);cursor:pointer;font-size:16px;color:var(--ink3)">✕</button>
+          onchange="askFieldScope(${i},'hotels',this.value)"/>
+        <button onclick="const _t=trip();const _d=_t?.days[${i}];if(_d){_d.hotels=[];save();render();}" style="width:36px;height:42px;border-radius:var(--r2);border:1px solid var(--line2);background:var(--white);cursor:pointer;font-size:16px;color:var(--ink3)">✕</button>
       </div>`;
     } else {
       h+='<div style="display:flex;gap:7px;align-items:center">';
@@ -3145,7 +3145,71 @@ function addDayArrItem(dayIdx, field) {
   const d=t.days[dayIdx]; if(!d) return;
   if(!Array.isArray(d[field])) d[field]=[];
   if(d[field].length>=3) return;
-  d[field].push('');
+  // Pre-fill with segment value on first add
+  const seg=segForDay(t,dayIdx);
+  let prefill='';
+  if(d[field].filter(Boolean).length===0 && seg){
+    if(field==='hotels' && seg.hotel) prefill=seg.hotel;
+    if(field==='flights' && seg.flight) prefill=seg.flight;
+  }
+  d[field].push(prefill);
+  save(); render();
+}
+
+// Ask scope: solo este día o todo el rango
+function askFieldScope(dayIdx, field, val) {
+  const t=trip(); if(!t) return;
+  const seg=segForDay(t,dayIdx);
+  if(!seg) {
+    // No segment — just update the day
+    applyFieldScope('day', dayIdx, field, val);
+    return;
+  }
+  const rangeLen = seg.toIdx - seg.fromIdx + 1;
+  if(rangeLen <= 1) {
+    applyFieldScope('day', dayIdx, field, val);
+    return;
+  }
+  // Has a multi-day range — show scope sheet
+  S._scopePending = {dayIdx, field, val};
+  S.sheet = 'fieldscope';
+  render();
+}
+function applyFieldScope(scope, dayIdx, field, val) {
+  if(dayIdx===undefined) { // called from sheet buttons
+    const p=S._scopePending; if(!p) return;
+    dayIdx=p.dayIdx; field=p.field; val=p.val;
+    S._scopePending=null; S.sheet=null;
+  }
+  const t=trip(); if(!t) return;
+  if(scope==='range') {
+    // Update segment hotel/flight
+    const seg=segForDay(t,dayIdx);
+    if(seg) {
+      if(field==='hotels') seg.hotel=val;
+      if(field==='flights') seg.flight=val;
+      // Clear day-level overrides within this segment so they inherit the range
+      for(let i=seg.fromIdx;i<=seg.toIdx;i++){
+        if(t.days[i]) {
+          if(field==='hotels') t.days[i].hotels=[];
+          if(field==='flights') t.days[i].flights=[];
+        }
+      }
+    }
+  } else {
+    // Update only this day
+    const d=t.days[dayIdx]; if(!d) return;
+    if(field==='hotels'){
+      if(!Array.isArray(d.hotels)) d.hotels=[];
+      if(d.hotels.length===0) d.hotels=[''];
+      d.hotels[0]=val;
+    }
+    if(field==='flights'){
+      if(!Array.isArray(d.flights)) d.flights=[];
+      if(d.flights.length===0) d.flights=[''];
+      d.flights[0]=val;
+    }
+  }
   save(); render();
 }
 function delDayArrItem(dayIdx, field, arrIdx) {
@@ -3510,6 +3574,37 @@ function rSheets() {
       <button class="btn-can" onclick="S.sheet=null;render()">${L('cancel')}</button>
       <button class="btn-ok" onclick="saveItem()">${L('save')}</button>
     </div></div>`;
+  }
+
+  // ── Field scope sheet (solo este día o todo el rango) ──
+  if(S.sheet==='fieldscope'&&t&&S._scopePending){
+    const p=S._scopePending;
+    const seg=segForDay(t,p.dayIdx);
+    const rangeLen=seg?(seg.toIdx-seg.fromIdx+1):1;
+    const fieldLabel=p.field==='hotels'?(S.lang==='en'?'Hotel':'Hotel'):(S.lang==='en'?'Flight':'Vuelo');
+    const valPreview=esc(p.val||'');
+    h+=`<div class="sheet"><div class="sh-handle"></div><div class="sh-body">
+      <div class="sh-title">${S.lang==='en'?'Change '+fieldLabel:'¿Cambiar '+fieldLabel+'?'}</div>
+      <div style="background:var(--bg2);border-radius:var(--r2);padding:11px 14px;margin-bottom:18px;font-size:13px;color:var(--ink2)">
+        <div style="font-weight:600;margin-bottom:3px">${valPreview||'—'}</div>
+        <div style="font-size:11px;color:var(--ink3)">${seg?esc(seg.dest)+' · '+rangeLen+' '+(S.lang==='en'?'days':'días'):''}</div>
+      </div>
+      <button onclick="applyFieldScope('day')" style="width:100%;padding:14px;background:var(--white);border:1.5px solid var(--line2);border-radius:var(--r2);font-family:var(--fb);font-size:14px;font-weight:600;color:var(--ink);cursor:pointer;margin-bottom:9px;text-align:left;display:flex;align-items:center;gap:12px">
+        <span style="font-size:22px">📅</span>
+        <div>
+          <div>${S.lang==='en'?'Only this day':'Solo este día'}</div>
+          <div style="font-size:11px;font-weight:400;color:var(--ink3);margin-top:2px">${S.lang==='en'?'Other days in the range keep their setting':'Los otros días del rango mantienen su configuración'}</div>
+        </div>
+      </button>
+      <button onclick="applyFieldScope('range')" style="width:100%;padding:14px;background:var(--ink);border:none;border-radius:var(--r2);font-family:var(--fb);font-size:14px;font-weight:600;color:white;cursor:pointer;text-align:left;display:flex;align-items:center;gap:12px">
+        <span style="font-size:22px">📍</span>
+        <div>
+          <div>${S.lang==='en'?'Whole range':'Todo el rango'} (${rangeLen} ${S.lang==='en'?'days':'días'})</div>
+          <div style="font-size:11px;font-weight:400;color:rgba(255,255,255,.6);margin-top:2px">${S.lang==='en'?'Updates '+esc(seg?.dest||'')+' for all days':'Actualiza '+esc(seg?.dest||'')+' para todos los días'}</div>
+        </div>
+      </button>
+    </div>
+    <div class="sh-btns"><button class="btn-can" onclick="S._scopePending=null;S.sheet=null;render()">${L('cancel')}</button></div></div>`;
   }
 
   // ── Activity sheet ──
